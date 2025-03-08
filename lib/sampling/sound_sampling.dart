@@ -2,8 +2,12 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:complex/complex.dart';
 import 'package:flutter/material.dart';
 import 'package:pitch_trainer/sampling/sampling_type.dart';
+import 'package:pitch_trainer/sampling/utils/frequencies.dart';
+import 'package:pitch_trainer/sampling/utils/recorder.dart';
+import 'package:pitch_trainer/sampling/utils/sound_processing.dart';
 import 'package:pitch_trainer/widgets/home_app_bar.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
@@ -29,8 +33,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   double _minFrequency = 0.0;
   double _maxFrequency = 0.0;
   late AudioRecorder _recorder;
-  late StreamSubscription<Uint8List>? _audioStreamSubscription;
-  bool isRecording = false;
+  bool _isRecording = false;
 
   @override
   void initState() {
@@ -43,23 +46,23 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
     _recorder = AudioRecorder();
     WidgetsBinding.instance.addObserver(this);
-    _requestPermissions();
+    _requestPermissions(_recorder);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _recorder.dispose();
-    _stopRecording();
+    Recorder.stopRecording(_recorder, _resetPitchValues);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.hidden) {
-      _pauseRecording();
+      Recorder.pauseRecording(_recorder, _resetPitchValues);
     } else if (state == AppLifecycleState.resumed) {
-      _resumeRecording();
+      Recorder.resumeRecording(_recorder, _setRecordingState);
     }
   }
 
@@ -112,7 +115,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         const ColorFilter.mode(Colors.white, BlendMode.srcIn),
       ),
       onPressed: () {
-        _pauseRecording();
+        Recorder.pauseRecording(_recorder, _resetPitchValues);
       },
     );
   }
@@ -127,7 +130,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         const ColorFilter.mode(Colors.white, BlendMode.srcIn),
       ),
       onPressed: () {
-        _resumeRecording();
+        Recorder.resumeRecording(_recorder, _setRecordingState);
       },
     );
   }
@@ -145,7 +148,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _noteOctaveText(size),
+              _noteLabel(size),
               _frequencyBar(size),
               _soundWave(size),
             ],
@@ -206,7 +209,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _noteOctaveText(size) {
+  Widget _noteLabel(size) {
     return Center(
         child: _isPermissionAllowed == true
             ? Text(
@@ -264,11 +267,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  //FUNCTIONAL WIDGETS
   Widget _startStopRecording(size) {
     Widget action;
 
-    (isRecording == true)
+    (_isRecording == true)
         ? action = _enabledRecordingButton(size)
         : action = _disabledRecordingButton(size);
 
@@ -292,11 +294,30 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   //METHODS
-  void _onPressedSettings() {
-    _stopRecording();
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const SamplingType(frequencies: frequencies,),
-    ));
+  void _setRecordingState(bool listening) {
+    setState(() {
+      _isRecording = listening;
+    });
+  }
+
+  void _resetPitchValues() {
+    setState(() {
+      _selectedFrequency = 0.0;
+      _selectedNote = "-";
+      _selectedOctave = "";
+      _accuracy = 0.0;
+      _samples = [];
+      _setRecordingState(false);
+    });
+  }
+
+  void _setPitchValues(String note, double frequency) {
+    setState(() {
+      _selectedNote = note;
+      _selectedFrequency = frequency;
+      _accuracy = SoundProcessing.getNoteAccuracy(note, frequency);
+      _samples = SoundProcessing.updateSamples(frequency);
+    });
   }
 
   Future<void> _loadFrequencyValues() async {
@@ -307,214 +328,44 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     });
   }
 
-  Future<void> _requestPermissions() async {
+  void _onPressedSettings() {
+    Recorder.stopRecording(_recorder, _resetPitchValues);
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => const SamplingType(),
+    ));
+  }
+
+  Future<void> _requestPermissions(AudioRecorder recorder) async {
     PermissionStatus audio = await Permission.microphone.request();
-    if(await _recorder.hasPermission() && !audio.isDenied) {
+    if(await recorder.hasPermission() && !audio.isDenied) {
       setState(() {
         _isPermissionAllowed = true;
-        _startRecording();
+        Recorder.startRecording(_recorder, _processAudio, _setRecordingState);
       });
     } else {
       setState(() async {
         _isPermissionAllowed = false;
-        if(await _recorder.isRecording()) {
-          _stopRecording();
+        if(await recorder.isRecording()) {
+          Recorder.stopRecording(_recorder, _resetPitchValues);
         }
       });
     }
   }
 
-  String _getClosestNoteFromFrequency(double frequency) {
-    String closestNote = "";
-    double closestFrequencyDiff = double.infinity;
-
-    frequencies.forEach((note, freq) {
-      double frequencyDiff = (frequency - freq).abs();
-      if (frequencyDiff < closestFrequencyDiff) {
-        closestFrequencyDiff = frequencyDiff;
-        closestNote = note;
-      }
-    });
-
-    return closestNote;
-  }
-
-  Future<void> _stopRecording() async {
-    if(await _recorder.isRecording()) {
-      try {
-        await _recorder.stop();
-        await _recorder.cancel();
-        _recorder.dispose();
-        debugPrint("Recorder stopped...");
-        setState(() {
-          _selectedFrequency = 0.0;
-          _selectedNote = "-";
-          _selectedOctave = "";
-          _accuracy = 0.0;
-          _samples = [];
-          isRecording = false;
-        });
-      } catch(e) {
-        debugPrint("Stop Recording Error: $e");
-      }
-    }
-  }
-
-  Future<void> _pauseRecording() async {
-    if(await _recorder.isRecording()) {
-      try {
-        await _recorder.pause();
-        debugPrint("Recorder paused...");
-        setState(() {
-          _selectedFrequency = 0.0;
-          _selectedNote = "-";
-          _selectedOctave = "";
-          _accuracy = 0.0;
-          _samples = [];
-          isRecording = false;
-        });
-      } catch(e) {
-        debugPrint("Pause Recording Error: $e");
-      }
-    }
-  }
-
-  Future<void> _resumeRecording() async {
-    if(await _recorder.isPaused()) {
-      try {
-        await _recorder.resume();
-        debugPrint("Recorder resumed...");
-        setState(() {
-          isRecording = true;
-        });
-      } catch(e) {
-        debugPrint("Resume Recording Error: $e");
-      }
-    }
-  }
-
-  Future<void> _startRecording() async {
-    try {
-      Stream<Uint8List> stream = await _recorder.startStream(
-          const RecordConfig(
-              encoder: AudioEncoder.pcm16bits,
-              sampleRate: 44100,
-              noiseSuppress: true,
-              bitRate: 12800));
-      debugPrint("Stream Started");
-      setState(() {
-        isRecording = true;
-      });
-
-      _processAudio(stream);
-
-    } catch (e) {
-      debugPrint("Start Recording Error: $e");
-    }
-  }
-
   Future<void> _processAudio(Stream<Uint8List> stream) async {
-    _audioStreamSubscription = stream.listen((data) {
-      debugPrint("Listening...");
+    debugPrint("Listening...");
+    debugPrint("Max: $_maxFrequency - Min: $_minFrequency");
 
-    });
-  }
+    stream.listen((data) {
+      List<Complex> processedData = SoundProcessing.fft(SoundProcessing.convertToComplex(data));
+      double frequency = SoundProcessing.getFrequency(SoundProcessing.getPeakIndex(processedData), 837202, data.length);
+      String note = SoundProcessing.getClosestNoteFromFrequency(frequency);
 
-  //_audioStreamSubscription = stream
-  //     await _fft.startRecorder();
-  //     print("Recorder started...");
-  //     setState(() {
-  //       debugPrint("Is Recording? ${_fft.getIsRecording}");
-  //     });
-  //   } catch(e) {
-  //     debugPrint("Start Recording Exception: $e");
-  //   }
-  //
-  //   _fft.onRecorderStateChanged.listen((data) {
-  //     print("Changed state, received: $data");
-  //     setState(
-  //           () {
-  //         double frequency = data[1] as double;
-  //
-  //         //loadFrequencyValues();
-  //         debugPrint("Max: $maxFrequency - Min: $minFrequency");
-  //         if(frequency <= maxFrequency && frequency >= minFrequency) {
-  //
-  //           String note = data[2] as String;
-  //           int octave = data[5] as int;
-  //
-  //           String correctedNote = _getClosestNoteFromFrequency(frequency);
-  //
-  //           if (correctedNote.contains("#")) {
-  //             selectedNote = correctedNote[0] + correctedNote[1];
-  //             selectedOctave = correctedNote[2];
-  //           } else {
-  //             selectedNote = correctedNote[0];
-  //             selectedOctave = correctedNote[1];
-  //           }
-  //
-  //           selectedFrequency = frequency;
-  //           // selectedNote = note;
-  //           // selectedOctave = octave.toString();
-  //
-  //           _getNoteAccuracy(selectedNote, selectedOctave, selectedFrequency);
-  //
-  //           _updateSamples(selectedFrequency);
-  //
-  //           // _fft.setNote = selectedNote;
-  //           // _fft.setFrequency = selectedFrequency;
-  //           // _fft.setOctave = int.parse(selectedOctave);
-  //           debugPrint("Samples: ${samples.length} - $samples - ${samples.last}");
-  //
-  //         }
-  //       },
-  //     );
-  //   }, onError: (err) {
-  //     Fluttertoast.showToast(msg: "Microphone Already In Use By Another App", gravity: ToastGravity.BOTTOM, backgroundColor: const Color.fromARGB(255, 70,70,70));
-  //     print("Error: $err");
-  //   }, onDone: () => {
-  //     print("Isdone"),
-  //   },
-  //   );
-
-
-  void _updateSamples(double frequency) {
-    const int sampleCount = 1024;
-    const double sampleRate = 44100.0;
-    List<double> newSamples = List.generate(sampleCount, (i) {
-      double time = i / sampleRate;
-      return sin(2 * pi * frequency * time);
-    });
-
-    setState(() {
-      _samples = newSamples;
-    });
-  }
-
-  double _getNoteAccuracy(String selectedNote, String selectedOctave, double selectedFrequency) {
-    String note = "$selectedNote$selectedOctave";
-    double closestFrequency = frequencies[note] ?? 0.0;
-
-    if (closestFrequency != 0.0) {
-      double frequencyDiff = selectedFrequency - closestFrequency;
-
-      if (frequencyDiff.abs() < 1.0) {
-        _accuracy = 0.0;
-      } else if (selectedFrequency < closestFrequency) {
-        _accuracy = -100 + (frequencyDiff.abs() / closestFrequency * 100);
-      } else {
-        _accuracy = 100 - (frequencyDiff.abs() / closestFrequency * 100);
+      debugPrint("NOTE: $note, FREQUENCY: $frequency");
+      if (frequency >= _minFrequency && frequency <= _maxFrequency) {
+        _setPitchValues(note, frequency);
       }
-
-      setState(() {
-        _accuracy = _accuracy.clamp(-100.0, 100.0);
-      });
-
-      print("Accuracy: ${_accuracy.toStringAsFixed(2)}%");
-      return _accuracy;
-    }
-    print("Not Recognized");
-    return 0.0;
+    });
   }
 
   //BUILD
@@ -538,7 +389,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             SizedBox(
               height: size.height * 0.001,
             ),
-            isRecording? _accuracyBar(size) : Container(),
+            _isRecording? _accuracyBar(size) : Container(),
             Expanded(
               child: Center(
                 child: Container(
@@ -558,95 +409,4 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       ),
     );
   }
-
-  static const Map<String, double> frequencies = {
-    'A0': 27.50,
-    'A#0': 29.14,
-    'B0': 30.87,
-    'C1': 32.70,
-    'C#1': 34.65,
-    'D1': 36.71,
-    'D#1': 38.89,
-    'E1': 41.20,
-    'F1': 43.65,
-    'F#1': 46.25,
-    'G1': 49.00,
-    'G#1': 51.91,
-    'A1': 55.00,
-    'A#1': 58.27,
-    'B1': 61.74,
-    'C2': 65.41,
-    'C#2': 69.30,
-    'D2': 73.42,
-    'D#2': 77.78,
-    'E2': 82.41,
-    'F2': 87.31,
-    'F#2': 92.50,
-    'G2': 98.00,
-    'G#2': 103.83,
-    'A2': 110.00,
-    'A#2': 116.54,
-    'B2': 123.47,
-    'C3': 130.81,
-    'C#3': 138.59,
-    'D3': 146.83,
-    'D#3': 155.56,
-    'E3': 164.81,
-    'F3': 174.61,
-    'F#3': 185.00,
-    'G3': 196.00,
-    'G#3': 207.65,
-    'A3': 220.00,
-    'A#3': 233.08,
-    'B3': 246.94,
-    'C4': 261.63,
-    'C#4': 277.18,
-    'D4': 293.66,
-    'D#4': 311.13,
-    'E4': 329.63,
-    'F4': 349.23,
-    'F#4': 369.99,
-    'G4': 392.00,
-    'G#4': 415.30,
-    'A4': 440.00,
-    'A#4': 466.16,
-    'B4': 493.88,
-    'C5': 523.25,
-    'C#5': 554.37,
-    'D5': 587.33,
-    'D#5': 622.25,
-    'E5': 659.26,
-    'F5': 698.46,
-    'F#5': 739.99,
-    'G5': 783.99,
-    'G#5': 830.61,
-    'A5': 880.00,
-    'A#5': 932.33,
-    'B5': 987.77,
-    'C6': 1046.50,
-    'C#6': 1108.73,
-    'D6': 1174.66,
-    'D#6': 1244.51,
-    'E6': 1318.51,
-    'F6': 1396.91,
-    'F#6': 1479.98,
-    'G6': 1567.98,
-    'G#6': 1661.22,
-    'A6': 1760.00,
-    'A#6': 1864.66,
-    'B6': 1975.53,
-    'C7': 2093.00,
-    'C#7': 2217.46,
-    'D7': 2349.32,
-    'D#7': 2489.02,
-    'E7': 2637.02,
-    'F7': 2793.83,
-    'F#7': 2959.96,
-    'G7': 3135.96,
-    'G#7': 3322.44,
-    'A7': 3520.00,
-    'A#7': 3729.31,
-    'B7': 3951.07,
-    'C8': 4186.01,
-  };
 }

@@ -1,16 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pitch_trainer/sampling/sound_sampling.dart';
-import 'package:pitch_trainer/widgets/instrument_card.dart';
-import 'package:pitch_trainer/widgets/instrument_expansion_tile.dart';
+import 'package:pitch_trainer/sampling/utils/frequencies.dart';
+import 'package:pitch_trainer/sampling/widgets/instrument_card.dart';
+import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/home_app_bar.dart';
 
 class SamplingType extends StatefulWidget {
-  const SamplingType({super.key, required this.frequencies,});
-
-  final Map<String, double> frequencies;
+  const SamplingType({super.key,});
 
   @override
   State<SamplingType> createState() => _SamplingType();
@@ -95,8 +94,8 @@ class _SamplingType extends State<SamplingType> {
           children: minFrequenciesList,
           onSelectedItemChanged: (index) {
             setState(() {
-              _selectedMin = widget.frequencies.values.toList()[index];
-              _selectedMax = widget.frequencies.values.toList()[index+1];
+              _selectedMin = Frequencies.frequencies.values.toList()[index];
+              _selectedMax = Frequencies.frequencies.values.toList()[index+1];
               _saveFrequencyValues(_selectedMin, _selectedMax, false);
               _minIndex = index;
             });
@@ -117,7 +116,7 @@ class _SamplingType extends State<SamplingType> {
         children: _frequenciesListMax,
         onSelectedItemChanged: (index) {
           //if(selectedMin != 0.0) {
-          List<double> frequencyList = widget.frequencies.values.toList().sublist(_minIndex!+1, widget.frequencies.length);
+          List<double> frequencyList = Frequencies.frequencies.values.toList().sublist(_minIndex!+1, Frequencies.frequencies.length);
 
           setState(() {
             _selectedMax = frequencyList[index];
@@ -135,8 +134,8 @@ class _SamplingType extends State<SamplingType> {
   List<Widget> _minFrequenciesList(size) {
     _frequenciesListMin = [];
 
-    for (int i = 0; i < widget.frequencies.length - 1; i++) {
-      var entry = widget.frequencies.entries.elementAt(i);
+    for (int i = 0; i < Frequencies.frequencies.length - 1; i++) {
+      var entry = Frequencies.frequencies.entries.elementAt(i);
       _frequenciesListMin.add(
         Text(
           "${entry.key} (${entry.value})",
@@ -164,8 +163,8 @@ class _SamplingType extends State<SamplingType> {
 
     Color bgLerp = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
 
-    for (int i = 1; i < widget.frequencies.length; i++) {
-      var entry = widget.frequencies.entries.elementAt(i);
+    for (int i = 1; i < Frequencies.frequencies.length; i++) {
+      var entry = Frequencies.frequencies.entries.elementAt(i);
 
       if(entry.value > _selectedMin) {
         _frequenciesListMax.add(
@@ -203,8 +202,8 @@ class _SamplingType extends State<SamplingType> {
   }
 
   Widget _cardList(size) {
-    String selectedMinFrequency = widget.frequencies.entries.firstWhere((entry) => entry.value == _minFrequency).key;
-    String selectedMaxFrequency = widget.frequencies.entries.firstWhere((entry) => entry.value == _maxFrequency).key;
+    String selectedMinFrequency = Frequencies.frequencies.entries.firstWhere((entry) => entry.value == _minFrequency).key;
+    String selectedMaxFrequency = Frequencies.frequencies.entries.firstWhere((entry) => entry.value == _maxFrequency).key;
 
     return Center(
       child: SizedBox(
