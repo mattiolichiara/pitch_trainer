@@ -2,21 +2,18 @@ import 'package:flutter/material.dart';
 
 class UiUtils {
 
-  static Widget loadingStyle() {
-    Color purpleLerpy = Color.lerp(
-        const Color(0xFF9168B6), Colors.white, 0.35)!;
-
+  static Widget loadingStyle(td) {
     return Center(
       child: CircularProgressIndicator(
-        color: purpleLerpy,
+        color: td.colorScheme.secondary,
         strokeWidth: 1,
       ),
     );
   }
 
-  static BoxShadow widgetsShadow(double spreadRadius, double blurRadius) {
+  static BoxShadow widgetsShadow(double spreadRadius, double blurRadius, td) {
     return BoxShadow(
-      color: const Color(0xFF9168B6),
+      color: td.colorScheme.primary,
       spreadRadius: spreadRadius,
       blurRadius: blurRadius,
       offset: const Offset(0, 1),

@@ -30,8 +30,8 @@ class InstrumentExpansionTile extends StatefulWidget {
 class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
 
   //STYLE
-  Color selectColor() {
-    return widget.isActive == true ? Colors.white : Colors.white38;
+  Color selectColor(td) {
+    return widget.isActive == true ? td.colorScheme.onSurface : Colors.white38;
   }
 
   //FUNCTIONAL WIDGETS
@@ -53,7 +53,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
     );
   }
 
-  Widget _selectTrailing() {
+  Widget _selectTrailing(td) {
     return widget.canOpen
         ? Icon(
       widget.isExpanded
@@ -84,17 +84,16 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
   Widget build(BuildContext context) {
     String text = widget.text;
     String leadingIcon = widget.leadingIcon;
-    Color purpleLerpy =
-    Color.lerp(const Color(0xFF9168B6), Colors.white, 0.35)!;
     Color bgLerp =
     Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
+    ThemeData td = Theme.of(context);
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(5),
         border: Border.all(
-          color: purpleLerpy,
+          color: td.colorScheme.primary,
           width: 1.5,
         ),
       ),
@@ -109,7 +108,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
               style: TextStyle(
                 fontWeight: FontWeight.w300,
                 fontSize: 12,
-                color: selectColor(),
+                color: selectColor(td),
               ),
             ),
             title: Text(
@@ -117,10 +116,10 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
               style: TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
-                color: selectColor(),
+                color: selectColor(td),
               ),
             ),
-            trailing: _selectTrailing(),
+            trailing: _selectTrailing(td),
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(3.5)),
             ),

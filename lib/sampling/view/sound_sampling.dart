@@ -67,16 +67,16 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   //STYLE
-  Widget _progressBarStyle(size) {
+  Widget _progressBarStyle(size, td) {
     return Center(
       child: Container(
         width: 10,
         height: size.height * 0.0035,
-        decoration: const BoxDecoration(
-            color: Colors.white,
+        decoration: BoxDecoration(
+            color: td.colorScheme.onSurface,
             boxShadow: [
               BoxShadow(
-                color: Colors.white,
+                color: td.colorScheme.onSurface,
                 spreadRadius: 1,
                 blurRadius: 15,
                 offset: Offset(0, 1),
@@ -87,23 +87,22 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _instrumentIcon(size) {
+  Widget _instrumentIcon(size, td) {
     return SvgPicture.asset(
       _selectedInstrument,
       height: size.height * 0.03,
       width: size.width * 0.03,
-      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
     );
   }
 
-  Widget _enabledRecordingButton(size) {
+  Widget _enabledRecordingButton(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
         "assets/icons/microphone-svgrepo-com.svg",
         height: size.height * 0.04,
         width: size.width * 0.04,
-        colorFilter:
-        const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
       ),
       onPressed: () {
         Recorder.pauseRecording(_recorder, _resetPitchValues);
@@ -111,14 +110,13 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _disabledRecordingButton(size) {
+  Widget _disabledRecordingButton(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
         "assets/icons/microphone-slash-svgrepo-com.svg",
         height: size.height * 0.04,
         width: size.width * 0.04,
-        colorFilter:
-        const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
       ),
       onPressed: () {
         Recorder.resumeRecording(_recorder, _setRecordingState);
@@ -127,10 +125,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   //WIDGETS
-  Widget _mainCard(size) {
+  Widget _mainCard(size, td) {
     return Card.outlined(
-      shadowColor: const Color(0xFF9168B6),
-      color: const Color(0xFF252525),
+      shadowColor: td.colorScheme.primary,
+      color: td.colorScheme.surface,
       child: Center(
         child: SizedBox(
           height: size.height * 0.85,
@@ -139,9 +137,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _noteLabel(size),
-              _frequencyBar(size),
-              _soundWave(size),
+              _noteLabel(size, td),
+              _frequencyBar(size, td),
+              _soundWave(size, td),
             ],
           ),
         ),
@@ -149,53 +147,50 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _instruments(size) {
+  Widget _instruments(size, td) {
     return IconButton(
-      icon: _instrumentIcon(size),
+      icon: _instrumentIcon(size, td),
       onPressed: _onPressedInstruments,
     );
   }
 
-  Widget _settings(size) {
+  Widget _settings(size, td) {
     return IconButton(
-      icon: Icon(Icons.settings_outlined, color: Colors.white, size: size.height*0.03,),
+      icon: Icon(Icons.settings_outlined, color: td.colorScheme.onSurface, size: size.height*0.03,),
       onPressed: _onPressedSettings,
     );
   }
 
-  Widget _accuracyBar(size) {
-    //Color purpleLerpy = Color.lerp(const Color(0xFF9168B6), Colors.white, 0.65)!;
-    Color greyLerpy = Color.lerp(const Color(0xFF252428), Colors.white, 0.20)!;
+  Widget _accuracyBar(size, ThemeData td) {
 
     int currentStep = ((_accuracy + 100) / 200 * 100).round();
 
     return Container(
       decoration: BoxDecoration(
-        color: greyLerpy,
+        color: td.colorScheme.primary,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Stack(
         children: [
-          _progressBar(size, currentStep, greyLerpy),
-          _progressBarStyle(size),
+          _progressBar(size, currentStep, td),
+          _progressBarStyle(size, td),
         ],
       ),
     );
   }
 
-  Widget _soundWave(size) {
-    Color waveColor = const Color(0xFF9168B6);
+  Widget _soundWave(size, td) {
 
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
-          UiUtils.widgetsShadow(1, 45)
+          UiUtils.widgetsShadow(1, 45, td)
         ],
       ),
       child: CurvedPolygonWaveform(
         strokeWidth: 0.6,
         style: PaintingStyle.stroke,
-        activeColor: Color.lerp(waveColor, Colors.white, 0.35)!,
+        activeColor: td.colorScheme.secondary,
         inactiveColor: const Color(0xFF252428),
         samples: _samples,
         height: size.height * 0.035,
@@ -207,32 +202,32 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _noteLabel(size) {
+  Widget _noteLabel(size, td) {
     return Center(
         child: _isPermissionAllowed == true
             ? Text(
           "$_selectedNote$_selectedOctave",
           style: TextStyle(
-            color: Colors.white,
+            color: td.colorScheme.onSurface,
             fontSize: size.width * 0.35,
             shadows: [
-              UiUtils.widgetsShadow(80, 20),
+              UiUtils.widgetsShadow(80, 20, td),
             ],
           ),
         )
             : Text(
           "Allow Microphone Access To Use The App",
           style: TextStyle(
-            color: Colors.white,
+            color: td.colorScheme.onSurface,
             fontSize: size.width * 0.04,
             shadows: [
-              UiUtils.widgetsShadow(80, 20),
+              UiUtils.widgetsShadow(80, 20, td),
             ],
           ),
         ));
   }
 
-  Widget _frequencyBar(size) {
+  Widget _frequencyBar(size, td) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -242,10 +237,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
               ? "${_selectedFrequency.toStringAsFixed(2)} HZ"
               : "",
           style: TextStyle(
-            color: Colors.white,
+            color: td.colorScheme.onSurface,
             fontSize: size.width * 0.038,
             shadows: [
-              UiUtils.widgetsShadow(80, 20),
+              UiUtils.widgetsShadow(80, 20, td),
             ],
           ),
         ),
@@ -254,10 +249,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
               ? "            ${_accuracy.toStringAsFixed(2)}"
               : "",
           style: TextStyle(
-            color: Colors.white,
+            color: td.colorScheme.onSurface,
             fontSize: size.width * 0.038,
             shadows: [
-              UiUtils.widgetsShadow(80, 20),
+              UiUtils.widgetsShadow(80, 20, td),
             ],
           ),
         ),
@@ -265,25 +260,25 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _startStopRecording(size) {
+  Widget _startStopRecording(size, td) {
     Widget action;
 
     (_isRecording == true)
-        ? action = _enabledRecordingButton(size)
-        : action = _disabledRecordingButton(size);
+        ? action = _enabledRecordingButton(size, td)
+        : action = _disabledRecordingButton(size, td);
 
     return action;
   }
 
-  Widget _progressBar(size, currentStep, greyLerpy) {
+  Widget _progressBar(size, currentStep, td) {
     return LinearProgressBar(
       maxSteps: 100,
       progressType: LinearProgressBar.progressTypeLinear,
       currentStep: currentStep.clamp(0, 100),
-      progressColor: Colors.white,
-      backgroundColor: greyLerpy,
+      progressColor: td.colorScheme.onSurface,
+      backgroundColor: td.colorScheme.onSurfaceVariant,
       dotsAxis: Axis.horizontal,
-      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+      valueColor: AlwaysStoppedAnimation<Color>(td.colorScheme.onSurface),
       semanticsLabel: "Label",
       semanticsValue: "Value",
       minHeight: size.height * 0.0035,
@@ -386,6 +381,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    ThemeData td = Theme.of(context);
 
     return PopScope(
       canPop: false,
@@ -394,16 +390,16 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         appBar: HomeAppBar(
           title: 'Pitch Trainer',
           isHome: true,
-          action1: _startStopRecording(size),
-          action2: _isLoading ? UiUtils.loadingStyle() : _instruments(size),
-          action3: _settings(size),
+          action1: _startStopRecording(size, td),
+          action2: _isLoading ? UiUtils.loadingStyle(td) : _instruments(size, td),
+          action3: _settings(size, td),
         ),
         body: Column(
           children: [
             SizedBox(
               height: size.height * 0.001,
             ),
-            _isRecording? _accuracyBar(size) : Container(),
+            _isRecording? _accuracyBar(size, td) : Container(),
             Expanded(
               child: Center(
                 child: Container(
@@ -411,10 +407,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
                   width: size.width * 0.9,
                   decoration: BoxDecoration(
                     boxShadow: [
-                      UiUtils.widgetsShadow(2, 20),
+                      UiUtils.widgetsShadow(2, 20, td),
                     ],
                   ),
-                  child: _mainCard(size),
+                  child: _mainCard(size, td),
                 ),
               ),
             ),

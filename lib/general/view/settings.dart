@@ -14,51 +14,54 @@ class Settings extends StatefulWidget {
 class _Settings extends State<Settings> {
 
   //STYLE
-  Widget _themeTitle(size) {
+  Widget _themeTitle(size, td) {
     return SizedBox(
       width: size.width*0.8,
       child: Align(
         alignment: Alignment.center,
         child: Text(
           "Select Theme",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 17, shadows: [UiUtils.widgetsShadow(80, 20),],),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td)],),
         ),
       ),
     );
   }
 
-  Widget _wrapTheWrap(Size size, BuildContext context) {
-    final themeCubit = BlocProvider.of<ThemeCubit>(context);
-    final themes = themeCubit.availableThemes;
-
+  Widget _languageTitle(size, td) {
     return SizedBox(
-      width: size.width * 0.8,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: _themeWrapper(size, themes, themeCubit),
+      width: size.width*0.8,
+      child: Align(
+        alignment: Alignment.center,
+        child: Text(
+          "Language",
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td)],),
+        ),
       ),
     );
   }
 
-  Widget _themeWrapper(Size size, Map<AppThemeMode, ThemeData> themes, ThemeCubit themeCubit) {
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      direction: Axis.horizontal,
-      children: _getThemeColors(size, themes, themeCubit),
+  //WIDGETS
+  Widget _languageSelection() {
+    return DropdownButton(
+      autofocus: true,
+
+      items: [],
+      onChanged: (val) {
+        return null;
+      },
     );
   }
 
-  Widget _themeSection(size) {
+  Widget _themeSection(size, td) {
     return Center(
       child: SizedBox(
         width: size.width*0.9,
         child: Column(
           children: [
             SizedBox(height: size.height*0.04,),
-            _themeTitle(size),
+            _themeTitle(size, td),
             SizedBox(height: size.height*0.03,),
-            _wrapTheWrap(size, context),
+            _wrapTheWrap(size, context, td),
             SizedBox(height: size.height*0.04,),
           ],
         ),
@@ -66,37 +69,72 @@ class _Settings extends State<Settings> {
     );
   }
 
-  //WIDGETS
-  List<Widget> _getThemeColors(Size size, Map<AppThemeMode, ThemeData> themes, ThemeCubit themeCubit) {
-    return themes.entries.map((theme) {
-      final themeData = theme.value;
-      final color = themeData.colorScheme.primary;
-
-      return GestureDetector(
-        onTap: () {
-          themeCubit.changeTheme(theme.key);
-        },
-        child: _themeBoxes(size, color),
-      );
-    }).toList();
+  Widget _themeWrapper(Size size, Map<AppThemeMode, ThemeData> themes, ThemeCubit themeCubit, td) {
+    return Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        direction: Axis.horizontal,
+        children: _getThemeColors(size, themes, themeCubit, td),
+    );
   }
 
-  Widget _themeBoxes(Size size, Color color) {
+  Widget _wrapTheWrap(Size size, BuildContext context, td) {
+    ThemeCubit themeCubit = BlocProvider.of<ThemeCubit>(context);
+    Map<AppThemeMode, ThemeData> themes = themeCubit.availableThemes;
+
+    return Container(
+      decoration: BoxDecoration(
+          boxShadow: [UiUtils.widgetsShadow(10, 30, td)]
+      ),
+      width: size.width * 0.8,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: _themeWrapper(size, themes, themeCubit, td),
+      ),
+    );
+  }
+
+  //FUNCTIONAL WIDGETS
+  Widget _themeBoxes(Size size, Color color, isSelected, td) {
     return Container(
       width: size.width * 0.2,
       height: size.height * 0.1,
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black, width: 1),
+        border: Border.all(
+          color: isSelected ? Colors.white54 : Colors.black,
+          width: isSelected ? 3 : 1,
+        ),
       ),
+      child: isSelected
+          ? Icon(Icons.check, color: Colors.white54)
+          : null,
     );
+  }
+
+  List<Widget> _getThemeColors(Size size, Map<AppThemeMode, ThemeData> themes, ThemeCubit themeCubit, td) {
+    return themes.entries.map((theme) {
+      ThemeData themeData = theme.value;
+      Color color = themeData.colorScheme.primary;
+      bool isSelected = themeCubit.state == themeData;
+
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            themeCubit.changeTheme(theme.key);
+          });
+        },
+        child: _themeBoxes(size, color, isSelected, td),
+      );
+    }).toList();
   }
 
   //BUILD
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    ThemeData td = Theme.of(context);
 
     return PopScope(
       canPop: true,
@@ -110,7 +148,7 @@ class _Settings extends State<Settings> {
         ),
         body: Column(
           children: [
-            _themeSection(size),
+            _themeSection(size, td),
           ],
         ),
       ),

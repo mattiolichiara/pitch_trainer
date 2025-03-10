@@ -45,13 +45,13 @@ class _SamplingType extends State<SamplingType> {
     'Custom': 'assets/icons/sound-0-svgrepo-com.svg',
   };
 
-  TextStyle textStyling(size, fontSize) {
+  TextStyle textStyling(size, fontSize, td) {
     return TextStyle(
       color: Colors.white,
       fontSize: fontSize,
-      shadows: const [
+      shadows: [
         BoxShadow(
-          color: Color(0xFF9168B6),
+          color: td.colorScheme.primary,
           spreadRadius: 20,
           blurRadius: 80,
           offset: Offset(0, 1),
@@ -61,22 +61,22 @@ class _SamplingType extends State<SamplingType> {
   }
 
   //WIDGETS
-  Widget _wheelsLayout() {
-    return const Row(
+  Widget _wheelsLayout(td) {
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         Text("Min", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500, shadows: [BoxShadow(
-          color: Color(0xFF9168B6),
+          color: td.colorScheme.primary,
           spreadRadius: 1,
           blurRadius: 20,
-          offset: Offset(0, 1),
+          offset: const Offset(0, 1),
         )]),),
         Text("Max", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500, shadows: [BoxShadow(
-          color: Color(0xFF9168B6),
+          color: td.colorScheme.primary,
           spreadRadius: 1,
           blurRadius: 20,
-          offset: Offset(0, 1),
+          offset: const Offset(0, 1),
         )]),),
       ],
     );
@@ -131,7 +131,7 @@ class _SamplingType extends State<SamplingType> {
   }
 
   //FUNCTIONAL WIDGETS
-  List<Widget> _minFrequenciesList(size) {
+  List<Widget> _minFrequenciesList(size, td) {
     _frequenciesListMin = [];
 
     for (int i = 0; i < Frequencies.frequencies.length - 1; i++) {
@@ -139,12 +139,12 @@ class _SamplingType extends State<SamplingType> {
       _frequenciesListMin.add(
         Text(
           "${entry.key} (${entry.value})",
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white70,
             fontSize: 12,
             shadows: [
               BoxShadow(
-                color: Color(0xFF9168B6),
+                color: td.colorScheme.primary,
                 spreadRadius: 1,
                 blurRadius: 20,
                 offset: Offset(0, 1),
@@ -158,7 +158,7 @@ class _SamplingType extends State<SamplingType> {
     return _frequenciesListMin;
   }
 
-  Widget _maxFrequenciesList(size, minFrequenciesList) {
+  Widget _maxFrequenciesList(size, minFrequenciesList, td) {
     _frequenciesListMax = [];
 
     Color bgLerp = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
@@ -173,9 +173,9 @@ class _SamplingType extends State<SamplingType> {
             style: TextStyle(
               color: _minFrequency == 0.0 ? Colors.white38 : Colors.white70,
               fontSize: 12,
-              shadows: const [
+              shadows: [
                 BoxShadow(
-                  color: Color(0xFF9168B6),
+                  color: td.colorScheme.primary,
                   spreadRadius: 1,
                   blurRadius: 20,
                   offset: Offset(0, 1),
@@ -201,7 +201,7 @@ class _SamplingType extends State<SamplingType> {
     );
   }
 
-  Widget _cardList(size) {
+  Widget _cardList(size, td) {
     String selectedMinFrequency = Frequencies.frequencies.entries.firstWhere((entry) => entry.value == _minFrequency).key;
     String selectedMaxFrequency = Frequencies.frequencies.entries.firstWhere((entry) => entry.value == _maxFrequency).key;
 
@@ -272,8 +272,8 @@ class _SamplingType extends State<SamplingType> {
               onTap: _onPressedCustomCard,
               canOpen: true,
               children: [
-                _wheelsLayout(),
-                _maxFrequenciesList(size, _minFrequenciesList(size)),
+                _wheelsLayout(td),
+                _maxFrequenciesList(size, _minFrequenciesList(size, td), td),
               ],
             )
           ],
@@ -346,6 +346,7 @@ class _SamplingType extends State<SamplingType> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    ThemeData td = Theme.of(context);
 
     return PopScope(
       canPop: false,
@@ -379,10 +380,7 @@ class _SamplingType extends State<SamplingType> {
             SizedBox(
               height: size.height*0.02,
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: _isLoading ? UiUtils.loadingStyle() : _cardList(size),
-            )
+            _isLoading ? UiUtils.loadingStyle(td) : _cardList(size, td),
           ],
         ),
       ),

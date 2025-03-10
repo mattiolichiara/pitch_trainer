@@ -16,12 +16,7 @@ class MyApp extends StatelessWidget {
         builder: (context, theme) {
           return MaterialApp(
             title: 'Pitch Trainer',
-            theme: ThemeData(
-              scaffoldBackgroundColor: const Color(0xFF1B1B1B),
-              focusColor: const Color(0xFF9168B6),
-              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF9168B6)),
-              useMaterial3: true,
-            ),
+            theme: theme,
             home: const SoundSampling(),
           );
         },

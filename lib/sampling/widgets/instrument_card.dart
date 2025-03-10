@@ -24,31 +24,30 @@ class InstrumentCard extends StatefulWidget {
 }
 
 class _InstrumentCardState extends State<InstrumentCard> {
-  late Color _purpleLerpy;
   late Color _bgLerp;
 
   @override
   void initState() {
-    super.initState();
-    _purpleLerpy = Color.lerp(const Color(0xFF9168B6), Colors.white, 0.35)!;
     _bgLerp = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
+
+    super.initState();
   }
 
   //STYLE
-  Color _getTextColor() {
-    return widget.isActive ? Colors.white : Colors.white38;
+  Color _getTextColor(td) {
+    return widget.isActive ? td.colorScheme.onSurface : Colors.white38;
   }
 
-  Color _getIconColor() {
+  Color _getIconColor(td) {
     return widget.isActive ? Colors.white70 : Colors.white38;
   }
 
   //FUNCTIONAL WIDGETS
-  Widget _buildTrailingIcon() {
+  Widget _buildTrailingIcon(td) {
     if (widget.canOpen) {
       return Icon(
         Icons.arrow_forward_ios,
-        color: _getIconColor(),
+        color: _getIconColor(td),
         size: 11,
       );
     } else {
@@ -60,7 +59,7 @@ class _InstrumentCardState extends State<InstrumentCard> {
     }
   }
 
-  Widget _instrumentListTile() {
+  Widget _instrumentListTile(td) {
     return ListTile(
       onTap: widget.isActive ? widget.onPressed : null,
       tileColor: _bgLerp,
@@ -68,14 +67,14 @@ class _InstrumentCardState extends State<InstrumentCard> {
         widget.leadingIcon,
         width: 20,
         height: 20,
-        colorFilter: ColorFilter.mode(_getIconColor(), BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(_getIconColor(td), BlendMode.srcIn),
       ),
       subtitle: Text(
         widget.subText,
         style: TextStyle(
           fontWeight: FontWeight.w300,
           fontSize: 12,
-          color: _getTextColor(),
+          color: _getTextColor(td),
         ),
       ),
       title: Text(
@@ -83,10 +82,10 @@ class _InstrumentCardState extends State<InstrumentCard> {
         style: TextStyle(
           fontWeight: FontWeight.w500,
           fontSize: 14,
-          color: _getTextColor(),
+          color: _getTextColor(td),
         ),
       ),
-      trailing: _buildTrailingIcon(),
+      trailing: _buildTrailingIcon(td),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(3.5)),
       ),
@@ -96,16 +95,18 @@ class _InstrumentCardState extends State<InstrumentCard> {
   //BUILD
   @override
   Widget build(BuildContext context) {
+    ThemeData td = Theme.of(context);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(5),
         border: Border.all(
-          color: _purpleLerpy,
+          color: td.colorScheme.primary,
           width: 1.5,
         ),
       ),
-      child: _instrumentListTile(),
+      child: _instrumentListTile(td),
     );
   }
 }

@@ -22,21 +22,21 @@ class HomeAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _HomeAppBar extends State<HomeAppBar> {
 
   //FUNCTIONAL WIDGETS
-  Widget titleText() {
+  Widget titleText(td) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
         widget.title,
-        style: const TextStyle(
+        style: TextStyle(
             fontSize: 18,
-            color: Colors.white,
+            color: td.colorScheme.onSurface,
             fontWeight: FontWeight.w500,
             shadows: [
               BoxShadow(
-                color: Color(0xFF9168B6),
+                color: td.colorScheme.primary,
                 spreadRadius: 1,
                 blurRadius: 30,
-                offset: Offset(0, 1),
+                offset: const Offset(0, 1),
               )
             ]
         ),
@@ -65,12 +65,12 @@ class _HomeAppBar extends State<HomeAppBar> {
     }
   }
 
-  Widget _homeButton() {
+  Widget _homeButton(td) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Color(0xFF9168B6),
+              color: td.colorScheme.primary,
               spreadRadius: 1,
               blurRadius: 40,
               offset: Offset(0, 1),
@@ -84,17 +84,19 @@ class _HomeAppBar extends State<HomeAppBar> {
   //BUILD
   @override
   Widget build(BuildContext context) {
+    ThemeData td = Theme.of(context);
+
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: const Color(0xFF252525),
-      title: titleText(),
-      leading: _homeButton(),
+      title: titleText(td),
+      leading: _homeButton(td),
       actions: [
         widget.action1,
         widget.action2,
         widget.action3,
       ],
-      shadowColor: const Color(0xFF9168B6),
+      shadowColor: td.colorScheme.primary,
       elevation: 10,
     );
   }

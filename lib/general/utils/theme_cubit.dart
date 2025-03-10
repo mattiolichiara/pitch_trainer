@@ -7,82 +7,83 @@ enum AppThemeMode {purple, green, blue, red, pink, yellow, orange}
 class ThemeCubit extends Cubit<ThemeData> {
   ThemeCubit() : super(_themes[AppThemeMode.purple]!);
 
+  static const Color purple = Color(0xFFAA60C8);
+  static const Color blue = Color(0xFF15DAE7);
+  static const Color green = Color(0xB81EC771);
+  static const Color red = Color(0xFFE52020);
+  static const Color pink = Color(0xFFDA0C81);
+  static const Color orange = Color(0xFFFF7F3E);
+  static const Color yellow = Color(0xFFFFF574);
+
   static final Map<AppThemeMode, ThemeData> _themes = {
     AppThemeMode.purple: ThemeData(
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: Colors.purple,
-        secondary: Colors.blueAccent,
-        surface: Colors.grey,
-        onPrimary: Colors.black,
-        onSecondary: Colors.white,
-        onSurface: Colors.black,
+      colorScheme: ColorScheme.dark(
+        primary: purple,
+        secondary: Color.lerp(purple, Colors.white, 0.35)!,
+        surface: Color(0xFF1B1B1B),
+        onSurfaceVariant: Color.lerp(const Color(0xFF252428), Colors.white, 0.20)!,
+        onSurface: Colors.white,
       ),
     ),
     AppThemeMode.green: ThemeData(
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: Colors.green,
-        secondary: Colors.deepPurple,
-        surface: Colors.grey,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
+      colorScheme: ColorScheme.dark(
+        primary: green,
+        secondary: Color.lerp(green, Colors.white, 0.35)!,
+        surface: Color(0xFF1B1B1B),
+        onSurfaceVariant: Color.lerp(const Color(0xFF252428), Colors.white, 0.20)!,
         onSurface: Colors.white,
       ),
     ),
     AppThemeMode.blue: ThemeData(
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: Colors.blue,
-        secondary: Colors.blueAccent,
-        surface: Colors.white,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: Colors.black,
-      ),
-    ),
-    AppThemeMode.red: ThemeData(
-      brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: Colors.red,
-        secondary: Colors.lightGreen,
-        surface: Colors.white,
-        onPrimary: Colors.white,
-        onSecondary: Colors.black,
-        onSurface: Colors.black,
+      colorScheme: ColorScheme.dark(
+        primary: blue,
+        secondary: Color.lerp(blue, Colors.white, 0.35)!,
+        surface: Color(0xFF1B1B1B),
+        onSurfaceVariant: Color.lerp(const Color(0xFF252428), Colors.white, 0.20)!,
+        onSurface: Colors.white,
       ),
     ),
     AppThemeMode.pink: ThemeData(
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: Colors.pink,
-        secondary: Colors.redAccent,
-        surface: Colors.white,
-        onPrimary: Colors.white,
-        onSecondary: Colors.black,
-        onSurface: Colors.black,
+      colorScheme: ColorScheme.dark(
+        primary: pink,
+        secondary: Color.lerp(pink, Colors.white, 0.35)!,
+        surface: Color(0xFF1B1B1B),
+        onSurfaceVariant: Color.lerp(const Color(0xFF252428), Colors.white, 0.20)!,
+        onSurface: Colors.white,
       ),
     ),
     AppThemeMode.yellow: ThemeData(
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: Colors.yellow,
-        secondary: Colors.pinkAccent,
-        surface: Colors.white,
-        onPrimary: Colors.white,
-        onSecondary: Colors.black,
-        onSurface: Colors.black,
+      colorScheme: ColorScheme.dark(
+        primary: yellow,
+        secondary: Color.lerp(yellow, Colors.white, 0.35)!,
+        surface: Color(0xFF1B1B1B),
+        onSurfaceVariant: Color.lerp(const Color(0xFF252428), Colors.white, 0.20)!,
+        onSurface: Colors.white,
+      ),
+    ),
+    AppThemeMode.red: ThemeData(
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.dark(
+        primary: red,
+        secondary: Color.lerp(red, Colors.white, 0.35)!,
+        surface: Color(0xFF1B1B1B),
+        onSurfaceVariant: Color.lerp(const Color(0xFF252428), Colors.white, 0.20)!,
+        onSurface: Colors.white,
       ),
     ),
     AppThemeMode.orange: ThemeData(
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: Colors.orange,
-        secondary: Colors.pinkAccent,
-        surface: Colors.white,
-        onPrimary: Colors.white,
-        onSecondary: Colors.black,
-        onSurface: Colors.black,
+      colorScheme: ColorScheme.dark(
+        primary: orange,
+        secondary: Color.lerp(orange, Colors.white, 0.35)!,
+        surface: Color(0xFF1B1B1B),
+        onSurfaceVariant: Color.lerp(const Color(0xFF252428), Colors.white, 0.20)!,
+        onSurface: Colors.white,
       ),
     ),
   };
