@@ -22,6 +22,7 @@ If you're using a peculiar instrument or you want to check your singin, you can 
 
 ## DETAILS
 -Audio and frequency processing is done with FFT 
+
 -Audio processing is done by using the package: [record: ^5.2.1](https://pub.dev/packages/record)
 
 
