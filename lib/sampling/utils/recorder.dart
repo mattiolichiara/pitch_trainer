@@ -11,7 +11,7 @@ class Recorder {
       Stream<Uint8List> stream = await recorder.startStream(
           const RecordConfig(
               encoder: AudioEncoder.pcm16bits,
-              sampleRate: 200,//44100
+              sampleRate: 44100,
               bitRate: 128000,
               noiseSuppress: true));
       debugPrint("Stream Started");
