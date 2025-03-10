@@ -1,8 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import '../../sampling/view/sound_sampling.dart';
 
-import '../sampling/sound_sampling.dart';
 
 class HomeAppBar extends StatefulWidget implements PreferredSizeWidget {
   const HomeAppBar({super.key, this.title = '', required this.action1, required this.action2, required this.action3, this.isHome = false});

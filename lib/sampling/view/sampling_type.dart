@@ -1,12 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pitch_trainer/sampling/sound_sampling.dart';
 import 'package:pitch_trainer/sampling/utils/frequencies.dart';
+import 'package:pitch_trainer/sampling/view/sound_sampling.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_card.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../widgets/home_app_bar.dart';
+import '../../general/widgets/home_app_bar.dart';
+import '../../general/widgets/ui_utils.dart';
 
 class SamplingType extends StatefulWidget {
   const SamplingType({super.key,});
@@ -21,6 +21,7 @@ class _SamplingType extends State<SamplingType> {
   bool _isNotCustom = true;
   double _selectedMin = 0.0;
   double _selectedMax = 0.0;
+  String _selectedInstrument = "";
   bool _isExpanded = false;
   int? _minIndex;
   bool _isLoading = true;
@@ -59,18 +60,6 @@ class _SamplingType extends State<SamplingType> {
     );
   }
 
-  Widget _loadingStyle() {
-    Color purpleLerpy = Color.lerp(
-        const Color(0xFF9168B6), Colors.white, 0.35)!;
-
-    return Center(
-        child: CircularProgressIndicator(
-          color: purpleLerpy,
-          strokeWidth: 1,
-        ),
-    );
-  }
-
   //WIDGETS
   Widget _wheelsLayout() {
     return const Row(
@@ -106,7 +95,8 @@ class _SamplingType extends State<SamplingType> {
             setState(() {
               _selectedMin = Frequencies.frequencies.values.toList()[index];
               _selectedMax = Frequencies.frequencies.values.toList()[index+1];
-              _saveFrequencyValues(_selectedMin, _selectedMax, false);
+              _selectedInstrument = _instrumentIcons["Custom"]!;
+              _saveFrequencyValues(_selectedMin, _selectedMax, false, _instrumentIcons["Custom"]!);
               _minIndex = index;
             });
           },
@@ -132,7 +122,7 @@ class _SamplingType extends State<SamplingType> {
             _selectedMax = frequencyList[index];
           });
           //if(selectedMax > selectedMin) {
-          _saveFrequencyValues(_selectedMin, _selectedMax, false);
+          _saveFrequencyValues(_selectedMin, _selectedMax, false, _instrumentIcons["Custom"]!);
           //}
           //}
         },
@@ -229,7 +219,7 @@ class _SamplingType extends State<SamplingType> {
               isActive: !(_minFrequency == 27.50 && _maxFrequency == 4186.01 && _isNotCustom),
               leadingIcon: _instrumentIcons["Piano"]!,
               onPressed: () {
-                _saveFrequencyValues(27.50, 4186.01, true);
+                _saveFrequencyValues(27.50, 4186.01, true, _instrumentIcons["Piano"]);
               },
             ),
             SizedBox(height: size.height * 0.006),
@@ -239,7 +229,7 @@ class _SamplingType extends State<SamplingType> {
               isActive: !(_minFrequency == 82.41 && _maxFrequency == 329.63 && _isNotCustom),
               leadingIcon: _instrumentIcons["Guitar"]!,
               onPressed: () {
-                _saveFrequencyValues(82.41, 329.63, true);
+                _saveFrequencyValues(82.41, 329.63, true, _instrumentIcons["Guitar"]);
               },
             ),
             SizedBox(height: size.height * 0.006),
@@ -249,7 +239,7 @@ class _SamplingType extends State<SamplingType> {
               isActive: !(_minFrequency == 41.20 && _maxFrequency == 98.00 && _isNotCustom),
               leadingIcon: _instrumentIcons["Bass Guitar"]!,
               onPressed: () {
-                _saveFrequencyValues(41.20, 98.00, true);
+                _saveFrequencyValues(41.20, 98.00, true, _instrumentIcons["Bass Guitar"]);
               },
             ),
             SizedBox(height: size.height * 0.006),
@@ -259,7 +249,7 @@ class _SamplingType extends State<SamplingType> {
               isActive: !(_minFrequency == 196.00 && _maxFrequency == 2637.02 && _isNotCustom),
               leadingIcon: _instrumentIcons["Violin"]!,
               onPressed: () {
-                _saveFrequencyValues(196.00, 2637.02, true);
+                _saveFrequencyValues(196.00, 2637.02, true, _instrumentIcons["Violin"]);
               },
             ),
             SizedBox(height: size.height * 0.006),
@@ -269,7 +259,7 @@ class _SamplingType extends State<SamplingType> {
               isActive: !(_minFrequency == 392.00 && _maxFrequency == 1760.00 && _isNotCustom),
               leadingIcon: _instrumentIcons["Ukulele"]!,
               onPressed: () {
-                _saveFrequencyValues(392.00, 1760.00, true);
+                _saveFrequencyValues(392.00, 1760.00, true, _instrumentIcons["Ukulele"]);
               },
             ),
             SizedBox(height: size.height * 0.006),
@@ -295,7 +285,7 @@ class _SamplingType extends State<SamplingType> {
   //METHODS
   Future<void> _loadPreferences() async {
     await _loadFrequencyValues();
-    debugPrint("Min: $_minFrequency - Max: $_maxFrequency");
+    //debugPrint("Min: $_minFrequency - Max: $_maxFrequency");
 
     setState(() {
       _isLoading = false;
@@ -308,19 +298,22 @@ class _SamplingType extends State<SamplingType> {
       _minFrequency = prefs.getDouble('minFrequency') ?? 27.50;
       _maxFrequency = prefs.getDouble('maxFrequency') ?? 4186.01;
       _isNotCustom = prefs.getBool('isNotCustom') ?? true;
+      _selectedInstrument = prefs.getString('instrumentIcon') ?? 'assets/icons/piano-instrument-keyboard-svgrepo-com.svg';
     });
   }
 
-  Future<void> _saveFrequencyValues(min, max, notCustom) async {
+  Future<void> _saveFrequencyValues(min, max, notCustom, selectedInstrument) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setDouble('minFrequency', min);
     prefs.setDouble('maxFrequency', max);
     prefs.setBool('isNotCustom', notCustom);
+    prefs.setString('instrumentIcon', selectedInstrument);
 
     setState(() {
       _minFrequency = min;
       _maxFrequency = max;
       _isNotCustom = notCustom;
+      _selectedInstrument = selectedInstrument;
       if(_isNotCustom) {
         _resetWheels();
       }
@@ -388,7 +381,7 @@ class _SamplingType extends State<SamplingType> {
             ),
             SingleChildScrollView(
               scrollDirection: Axis.vertical,
-              child: _isLoading ? _loadingStyle() : _cardList(size),
+              child: _isLoading ? UiUtils.loadingStyle() : _cardList(size),
             )
           ],
         ),

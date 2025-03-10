@@ -1,20 +1,21 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:complex/complex.dart';
 import 'package:flutter/material.dart';
-import 'package:pitch_trainer/sampling/sampling_type.dart';
-import 'package:pitch_trainer/sampling/utils/frequencies.dart';
 import 'package:pitch_trainer/sampling/utils/recorder.dart';
 import 'package:pitch_trainer/sampling/utils/sound_processing.dart';
-import 'package:pitch_trainer/widgets/home_app_bar.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
+import 'package:pitch_trainer/sampling/view/sampling_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:record/record.dart';
+
+import '../../general/view/settings.dart';
+import '../../general/widgets/home_app_bar.dart';
+import '../../general/widgets/ui_utils.dart';
 
 class SoundSampling extends StatefulWidget {
   const SoundSampling({super.key});
@@ -32,21 +33,20 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   double _accuracy = 0.0;
   double _minFrequency = 0.0;
   double _maxFrequency = 0.0;
+  String _selectedInstrument = "";
   late AudioRecorder _recorder;
   bool _isRecording = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
-    super.initState();
-
-    WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((_) async {
-      await _loadFrequencyValues();
-      debugPrint("Min: $_minFrequency - Max: $_maxFrequency");
-    });
+    _loadPreferences().then((_){});
 
     _recorder = AudioRecorder();
     WidgetsBinding.instance.addObserver(this);
     _requestPermissions(_recorder);
+
+    super.initState();
   }
 
   @override
@@ -67,15 +67,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   //STYLE
-  BoxShadow _widgetsShadow(double spreadRadius, double blurRadius) {
-    return BoxShadow(
-      color: const Color(0xFF9168B6),
-      spreadRadius: spreadRadius,
-      blurRadius: blurRadius,
-      offset: const Offset(0, 1),
-    );
-  }
-
   Widget _progressBarStyle(size) {
     return Center(
       child: Container(
@@ -96,9 +87,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _settingsIcon(size) {
+  Widget _instrumentIcon(size) {
     return SvgPicture.asset(
-      "assets/icons/guitar-svgrepo-com.svg",
+      _selectedInstrument,
       height: size.height * 0.03,
       width: size.width * 0.03,
       colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
@@ -158,9 +149,16 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
+  Widget _instruments(size) {
+    return IconButton(
+      icon: _instrumentIcon(size),
+      onPressed: _onPressedInstruments,
+    );
+  }
+
   Widget _settings(size) {
     return IconButton(
-      icon: _settingsIcon(size),
+      icon: Icon(Icons.settings_outlined, color: Colors.white, size: size.height*0.03,),
       onPressed: _onPressedSettings,
     );
   }
@@ -191,7 +189,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
-          _widgetsShadow(1, 45)
+          UiUtils.widgetsShadow(1, 45)
         ],
       ),
       child: CurvedPolygonWaveform(
@@ -218,7 +216,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             color: Colors.white,
             fontSize: size.width * 0.35,
             shadows: [
-              _widgetsShadow(80, 20),
+              UiUtils.widgetsShadow(80, 20),
             ],
           ),
         )
@@ -228,7 +226,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             color: Colors.white,
             fontSize: size.width * 0.04,
             shadows: [
-              _widgetsShadow(80, 20),
+              UiUtils.widgetsShadow(80, 20),
             ],
           ),
         ));
@@ -247,7 +245,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             color: Colors.white,
             fontSize: size.width * 0.038,
             shadows: [
-              _widgetsShadow(80, 20),
+              UiUtils.widgetsShadow(80, 20),
             ],
           ),
         ),
@@ -259,7 +257,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             color: Colors.white,
             fontSize: size.width * 0.038,
             shadows: [
-              _widgetsShadow(80, 20),
+              UiUtils.widgetsShadow(80, 20),
             ],
           ),
         ),
@@ -320,18 +318,34 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     });
   }
 
+  Future<void> _loadPreferences() async {
+    await _loadFrequencyValues();
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   Future<void> _loadFrequencyValues() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _minFrequency = prefs.getDouble('minFrequency') ?? 27.50;
       _maxFrequency = prefs.getDouble('maxFrequency') ?? 4186.01;
+      _selectedInstrument = prefs.getString('instrumentIcon') ?? 'assets/icons/piano-instrument-keyboard-svgrepo-com.svg';
     });
+  }
+
+  void _onPressedInstruments() {
+    Recorder.stopRecording(_recorder, _resetPitchValues);
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => const SamplingType(),
+    ));
   }
 
   void _onPressedSettings() {
     Recorder.stopRecording(_recorder, _resetPitchValues);
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const SamplingType(),
+      builder: (context) => const Settings(),
     ));
   }
 
@@ -354,14 +368,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
   Future<void> _processAudio(Stream<Uint8List> stream) async {
     debugPrint("Listening...");
-    debugPrint("Max: $_maxFrequency - Min: $_minFrequency");
+    //debugPrint("Max: $_maxFrequency - Min: $_minFrequency");
 
     stream.listen((data) {
       List<Complex> processedData = SoundProcessing.fft(SoundProcessing.convertToComplex(SoundProcessing.convertToInt16(data)));
       double frequency = SoundProcessing.getFrequency(SoundProcessing.getPeakIndex(processedData), Recorder.sampleRate, (data.length/2).toInt());
       String note = SoundProcessing.getClosestNoteFromFrequency(frequency);
 
-      debugPrint("NOTE: $note, FREQUENCY: $frequency");
+      //debugPrint("NOTE: $note, FREQUENCY: $frequency");
       if (frequency >= _minFrequency && frequency <= _maxFrequency) {
         _setPitchValues(note, frequency);
       }
@@ -381,8 +395,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
           title: 'Pitch Trainer',
           isHome: true,
           action1: _startStopRecording(size),
-          action2: _settings(size),
-          action3: Container(),
+          action2: _isLoading ? UiUtils.loadingStyle() : _instruments(size),
+          action3: _settings(size),
         ),
         body: Column(
           children: [
@@ -397,7 +411,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
                   width: size.width * 0.9,
                   decoration: BoxDecoration(
                     boxShadow: [
-                      _widgetsShadow(2, 20),
+                      UiUtils.widgetsShadow(2, 20),
                     ],
                   ),
                   child: _mainCard(size),
