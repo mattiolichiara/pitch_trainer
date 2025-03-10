@@ -5,15 +5,17 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 
 class Recorder {
+  static final int sampleRate = 44100;
+  static final int bitRate = 128000;
 
   static Future<void> startRecording(AudioRecorder recorder, Function? processAudio, Function? setRecordingState) async {
     try {
       Stream<Uint8List> stream = await recorder.startStream(
-          const RecordConfig(
+           RecordConfig(
               encoder: AudioEncoder.pcm16bits,
-              sampleRate: 44100,
-              bitRate: 128000,
-              noiseSuppress: true));
+              sampleRate: sampleRate,
+              bitRate: bitRate,
+              noiseSuppress: true,));
       debugPrint("Stream Started");
 
       if(processAudio!=null) processAudio(stream);

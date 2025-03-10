@@ -63,13 +63,11 @@ class _SamplingType extends State<SamplingType> {
     Color purpleLerpy = Color.lerp(
         const Color(0xFF9168B6), Colors.white, 0.35)!;
 
-    return Expanded(
-      child: Center(
+    return Center(
         child: CircularProgressIndicator(
           color: purpleLerpy,
           strokeWidth: 1,
         ),
-      ),
     );
   }
 
@@ -299,9 +297,9 @@ class _SamplingType extends State<SamplingType> {
     await _loadFrequencyValues();
     debugPrint("Min: $_minFrequency - Max: $_maxFrequency");
 
-    // setState(() {
-    //   _isLoading = false;
-    // });
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _loadFrequencyValues() async {

@@ -357,8 +357,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     debugPrint("Max: $_maxFrequency - Min: $_minFrequency");
 
     stream.listen((data) {
-      List<Complex> processedData = SoundProcessing.fft(SoundProcessing.convertToComplex(data));
-      double frequency = SoundProcessing.getFrequency(SoundProcessing.getPeakIndex(processedData), 837202, data.length);
+      List<Complex> processedData = SoundProcessing.fft(SoundProcessing.convertToComplex(SoundProcessing.convertToInt16(data)));
+      double frequency = SoundProcessing.getFrequency(SoundProcessing.getPeakIndex(processedData), Recorder.sampleRate, (data.length/2).toInt());
       String note = SoundProcessing.getClosestNoteFromFrequency(frequency);
 
       debugPrint("NOTE: $note, FREQUENCY: $frequency");

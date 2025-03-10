@@ -1,9 +1,21 @@
 import 'dart:math';
 import 'dart:core';
+import 'dart:typed_data';
 import 'package:complex/complex.dart';
 import 'frequencies.dart';
 
 class SoundProcessing {
+
+  static List<int> convertToInt16(Uint8List audioData) {
+    ByteData byteData = ByteData.sublistView(audioData);
+    List<int> int16Samples = [];
+
+    for (int i = 0; i < byteData.lengthInBytes; i += 2) {
+      int16Samples.add(byteData.getInt16(i, Endian.little));  // Ensure LITTLE-ENDIAN
+    }
+
+    return int16Samples;
+  }
 
   static List<Complex> convertToComplex(List<int> audioData) {
     return audioData.map((e) => Complex(e.toDouble(), 0.0)).toList();
