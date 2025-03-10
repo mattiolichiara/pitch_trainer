@@ -14,7 +14,7 @@ In this way you can avoid annoying and unwanted frequencies to be detected.<br/>
 
 ![image](https://github.com/user-attachments/assets/bdf39eb6-76f3-402b-b62a-294534a304f8)<br/>
 
-If you're using a peculiar instrument or you want to check your singin, you can add a custom range of frequencies or your vocal range.<br/><br/>
+If you're using a peculiar instrument or you want to check your singing, you can add a custom range of frequencies or your vocal range.<br/><br/>
 
 ![image](https://github.com/user-attachments/assets/23578cad-cd0c-4221-a4a2-90ea06c63416)<br/>
 
