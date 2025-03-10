@@ -23,17 +23,15 @@ class _SamplingType extends State<SamplingType> {
   double _selectedMax = 0.0;
   bool _isExpanded = false;
   int? _minIndex;
+  bool _isLoading = true;
   List<Widget> _frequenciesListMin = [];
   List<Widget> _frequenciesListMax = [];
 
   @override
   void initState() {
-    super.initState();
+    _loadPreferences().then((_){});
 
-    WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((_) async {
-      await _loadFrequencyValues();
-      debugPrint("Min: $_minFrequency - Max: $_maxFrequency");
-    });
+    super.initState();
   }
 
   //STYLING
@@ -58,6 +56,20 @@ class _SamplingType extends State<SamplingType> {
           offset: Offset(0, 1),
         )
       ],
+    );
+  }
+
+  Widget _loadingStyle() {
+    Color purpleLerpy = Color.lerp(
+        const Color(0xFF9168B6), Colors.white, 0.35)!;
+
+    return Expanded(
+      child: Center(
+        child: CircularProgressIndicator(
+          color: purpleLerpy,
+          strokeWidth: 1,
+        ),
+      ),
     );
   }
 
@@ -283,6 +295,15 @@ class _SamplingType extends State<SamplingType> {
   }
 
   //METHODS
+  Future<void> _loadPreferences() async {
+    await _loadFrequencyValues();
+    debugPrint("Min: $_minFrequency - Max: $_maxFrequency");
+
+    // setState(() {
+    //   _isLoading = false;
+    // });
+  }
+
   Future<void> _loadFrequencyValues() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -369,7 +390,7 @@ class _SamplingType extends State<SamplingType> {
             ),
             SingleChildScrollView(
               scrollDirection: Axis.vertical,
-              child: _cardList(size),
+              child: _isLoading ? _loadingStyle() : _cardList(size),
             )
           ],
         ),
