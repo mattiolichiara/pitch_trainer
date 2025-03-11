@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:pitch_trainer/general/utils/languages.dart';
+import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../utils/theme_cubit.dart';
 import '../widgets/ui_utils.dart';
@@ -12,6 +15,22 @@ class Settings extends StatefulWidget {
 }
 
 class _Settings extends State<Settings> {
+  bool _isExpanded = false;
+  late String _selectedLanguage;
+
+  @override
+  void initState() {
+    WidgetsFlutterBinding.ensureInitialized();
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setState(() {
+      _selectedLanguage = Languages.langsMap[Localizations.localeOf(context).languageCode] ?? "-";
+    });
+  }
 
   //STYLE
   Widget _themeTitle(size, td) {
@@ -20,7 +39,7 @@ class _Settings extends State<Settings> {
       child: Align(
         alignment: Alignment.center,
         child: Text(
-          "Select Theme",
+          Languages.selectTheme.getString(context),
           style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td)],),
         ),
       ),
@@ -33,22 +52,25 @@ class _Settings extends State<Settings> {
       child: Align(
         alignment: Alignment.center,
         child: Text(
-          "Language",
+          Languages.languages.getString(context),
           style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td)],),
         ),
       ),
     );
   }
 
-  //WIDGETS
-  Widget _languageSelection() {
-    return DropdownButton(
-      autofocus: true,
-
-      items: [],
-      onChanged: (val) {
-        return null;
-      },
+  Widget _languageSelection(td, subtext) {
+    return InstrumentExpansionTile(
+      leadingIcon: Icon(Icons.language, color: td.colorScheme.onSurface, size: 20,),
+      isExpanded: _isExpanded,
+      text: Languages.languages.getString(context),
+      onTap: _onPressedLanguageCard,
+      isActive: true,
+      subText: _selectedLanguage,
+      canOpen: true,
+      children: [
+        _languageList(td),
+      ],
     );
   }
 
@@ -68,6 +90,23 @@ class _Settings extends State<Settings> {
       ),
     );
   }
+  
+  Widget _languageSection(size, td) {
+    return Center(
+      child: SizedBox(
+        width: size.width*0.9,
+        child: Column(
+          children: [
+            SizedBox(height: size.height*0.04,),
+            _languageTitle(size, td),
+            SizedBox(height: size.height*0.03,),
+            _languageSelection(td, ""),
+            SizedBox(height: size.height*0.04,),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _themeWrapper(Size size, Map<AppThemeMode, ThemeData> themes, ThemeCubit themeCubit, td) {
     return Wrap(
@@ -78,6 +117,38 @@ class _Settings extends State<Settings> {
     );
   }
 
+  Widget _languageList(td) {
+    List<Widget> tiles = [];
+    final greyLerpy = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
+
+    for (MapEntry<String, dynamic> entry in Languages.langsMap.entries) {
+      tiles.add(ListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(
+          "${entry.value}",
+          style: TextStyle(color: td.colorScheme.onSurface, fontSize: 12),
+        ),
+        tileColor: greyLerpy,
+        textColor: td.colorScheme.onSurface,
+        onTap: () {
+          _onPressedLangTile(entry.key, entry.value);
+        },
+      ));
+    }
+
+    return Container(
+      color: greyLerpy,
+      height: tiles.length * 60,
+      child: ListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: tiles,
+      ),
+    );
+  }
+
+
+  //WIDGETS
   Widget _wrapTheWrap(Size size, BuildContext context, td) {
     ThemeCubit themeCubit = BlocProvider.of<ThemeCubit>(context);
     Map<AppThemeMode, ThemeData> themes = themeCubit.availableThemes;
@@ -130,6 +201,25 @@ class _Settings extends State<Settings> {
     }).toList();
   }
 
+  //METHODS
+  void _onPressedLanguageCard() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+      debugPrint("expanded $_isExpanded");
+      if (_isExpanded == false) {
+        setState(() {
+        });
+      }
+    });
+  }
+
+  void _onPressedLangTile(keyLang, valueLang) {
+    setState(() {
+      _selectedLanguage = valueLang;
+    });
+    FlutterLocalization.instance.translate(keyLang);
+  }
+
   //BUILD
   @override
   Widget build(BuildContext context) {
@@ -141,7 +231,7 @@ class _Settings extends State<Settings> {
       onPopInvoked: (pop) async {},
       child: Scaffold(
         appBar: HomeAppBar(
-          title: 'Pitch Trainer - Settings',
+          title: 'Pitch Trainer - ${Languages.settings.getString(context)}',
           action1: Container(),
           action2: Container(),
           action3: Container(),
@@ -149,6 +239,7 @@ class _Settings extends State<Settings> {
         body: Column(
           children: [
             _themeSection(size, td),
+            _languageSection(size, td)
           ],
         ),
       ),

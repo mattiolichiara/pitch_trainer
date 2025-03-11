@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:complex/complex.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:pitch_trainer/sampling/utils/recorder.dart';
 import 'package:pitch_trainer/sampling/utils/sound_processing.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,6 +14,7 @@ import 'package:pitch_trainer/sampling/view/sampling_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:record/record.dart';
 
+import '../../general/utils/languages.dart';
 import '../../general/view/settings.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
@@ -216,7 +218,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
           ),
         )
             : Text(
-          "Allow Microphone Access To Use The App",
+          Languages.permissionsWarning.getString(context),
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontSize: size.width * 0.04,

@@ -14,7 +14,7 @@ class InstrumentExpansionTile extends StatefulWidget {
         required this.onTap});
 
   final String text;
-  final String leadingIcon;
+  final Object leadingIcon;
   final bool isActive;
   final String subText;
   final bool canOpen;
@@ -42,16 +42,19 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
           ? CrossFadeState.showSecond
           : CrossFadeState.showFirst,
       firstChild: const SizedBox.shrink(),
-      secondChild: Container(
-          height: MediaQuery.of(context).size.height * 0.2,
+      secondChild: IntrinsicHeight(
+        child: Container(
           width: MediaQuery.of(context).size.width * 0.85,
           color: bgLerp,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: widget.children,
-          )
+          ),
+        ),
       ),
     );
   }
+
 
   Widget _selectTrailing(td) {
     return widget.canOpen
@@ -68,6 +71,8 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
   }
 
   Widget _leadingIcon(leadingIcon) {
+    if(leadingIcon.runtimeType != String) return leadingIcon;
+
     return SvgPicture.asset(
       leadingIcon,
       width: 20,
@@ -83,7 +88,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
   @override
   Widget build(BuildContext context) {
     String text = widget.text;
-    String leadingIcon = widget.leadingIcon;
+    Object leadingIcon = widget.leadingIcon;
     Color bgLerp =
     Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
     ThemeData td = Theme.of(context);

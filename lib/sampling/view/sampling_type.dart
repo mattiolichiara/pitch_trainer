@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:pitch_trainer/sampling/utils/frequencies.dart';
 import 'package:pitch_trainer/sampling/view/sound_sampling.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_card.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../general/utils/languages.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
 
@@ -214,7 +216,7 @@ class _SamplingType extends State<SamplingType> {
           scrollDirection: Axis.vertical,
           children: [
             InstrumentCard(
-              text: "Piano - 88 Keys",
+              text: "${Languages.piano.getString(context)} - 88 Keys",
               subText: "A0 (27.50) - C8 (4186.01)",
               isActive: !(_minFrequency == 27.50 && _maxFrequency == 4186.01 && _isNotCustom),
               leadingIcon: _instrumentIcons["Piano"]!,
@@ -224,7 +226,7 @@ class _SamplingType extends State<SamplingType> {
             ),
             SizedBox(height: size.height * 0.006),
             InstrumentCard(
-              text: "Guitar - 6 Strings",
+              text: "${Languages.guitar.getString(context)} - 6 Strings",
               subText: "E2 (82.41) - E4 (329.63)",
               isActive: !(_minFrequency == 82.41 && _maxFrequency == 329.63 && _isNotCustom),
               leadingIcon: _instrumentIcons["Guitar"]!,
@@ -234,7 +236,7 @@ class _SamplingType extends State<SamplingType> {
             ),
             SizedBox(height: size.height * 0.006),
             InstrumentCard(
-              text: "Bass Guitar",
+              text: Languages.bass.getString(context),
               subText: "E1 (41.20) - G2 (98.00)",
               isActive: !(_minFrequency == 41.20 && _maxFrequency == 98.00 && _isNotCustom),
               leadingIcon: _instrumentIcons["Bass Guitar"]!,
@@ -244,7 +246,7 @@ class _SamplingType extends State<SamplingType> {
             ),
             SizedBox(height: size.height * 0.006),
             InstrumentCard(
-              text: "Violin",
+              text: Languages.violin.getString(context),
               subText: "G3 (196.00) - E7 (2637.02)",
               isActive: !(_minFrequency == 196.00 && _maxFrequency == 2637.02 && _isNotCustom),
               leadingIcon: _instrumentIcons["Violin"]!,
@@ -264,8 +266,8 @@ class _SamplingType extends State<SamplingType> {
             ),
             SizedBox(height: size.height * 0.006),
             InstrumentExpansionTile(
-              subText: _isNotCustom ? "Select your frequency range" : "${selectedMinFrequency}($_minFrequency) - ${selectedMaxFrequency}($_maxFrequency)",
-              text: "Custom",
+              subText: _isNotCustom ? Languages.customText.getString(context) : "${selectedMinFrequency}($_minFrequency) - ${selectedMaxFrequency}($_maxFrequency)",
+              text: Languages.custom.getString(context),
               isActive: _isNotCustom,
               leadingIcon: _instrumentIcons["Custom"]!,
               isExpanded: _isExpanded,
@@ -357,7 +359,7 @@ class _SamplingType extends State<SamplingType> {
       },
       child: Scaffold(
         appBar: HomeAppBar(
-          title: 'Pitch Trainer - Options',
+          title: 'Pitch Trainer - ${Languages.options.getString(context)}',
           action1: Container(),
           action2: Container(),
           action3: Container(),
@@ -369,8 +371,8 @@ class _SamplingType extends State<SamplingType> {
             ),
             SizedBox(
               width: size.width*0.85,
-              child: const Text("To avoid for unwanted frequencies to be detected, select an instrument and if needed, add a custom frequency range.",
-                style: TextStyle(
+              child: Text(Languages.samplingTypeSubtitle.getString(context),
+                style: const TextStyle(
                   fontWeight: FontWeight.w300,
                   fontSize: 12,
                   color: Colors.white,
@@ -380,7 +382,13 @@ class _SamplingType extends State<SamplingType> {
             SizedBox(
               height: size.height*0.02,
             ),
-            _isLoading ? UiUtils.loadingStyle(td) : _cardList(size, td),
+            _isLoading ? UiUtils.loadingStyle(td) :
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: _cardList(size, td),
+              ),
+            ),
           ],
         ),
       ),
