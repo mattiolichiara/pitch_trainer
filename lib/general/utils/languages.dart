@@ -18,7 +18,7 @@ mixin Languages {
     selectTheme: "Select Theme",
     languages: "Select Language",
     samplingTypeSubtitle: "To avoid for unwanted frequencies to be detected, select an instrument and if needed, add a custom frequency range.",
-    options: "options",
+    options: "Options",
     permissionsWarning: "Allow Microphone Access To Use The App",
     piano : "Piano",
     guitar : "Guitar",
