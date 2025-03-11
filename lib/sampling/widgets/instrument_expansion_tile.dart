@@ -36,24 +36,26 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
 
   //FUNCTIONAL WIDGETS
   Widget _animationWidget(bgLerp) {
-    return AnimatedCrossFade(
-      duration: const Duration(milliseconds: 200),
-      crossFadeState: widget.isExpanded
-          ? CrossFadeState.showSecond
-          : CrossFadeState.showFirst,
-      firstChild: const SizedBox.shrink(),
-      secondChild: IntrinsicHeight(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.85,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(5),
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        child: widget.isExpanded
+            ? Container(
+          width: double.infinity,
           color: bgLerp,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: widget.children,
           ),
-        ),
+        )
+            : const SizedBox.shrink(),
       ),
     );
   }
+
+
 
 
   Widget _selectTrailing(td) {

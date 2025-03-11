@@ -59,18 +59,27 @@ class _Settings extends State<Settings> {
     );
   }
 
-  Widget _languageSelection(td, subtext) {
-    return InstrumentExpansionTile(
-      leadingIcon: Icon(Icons.language, color: td.colorScheme.onSurface, size: 20,),
-      isExpanded: _isExpanded,
-      text: Languages.languages.getString(context),
-      onTap: _onPressedLanguageCard,
-      isActive: true,
-      subText: _selectedLanguage,
-      canOpen: true,
-      children: [
-        _languageList(td),
-      ],
+  Widget _languageSelection(td, subtext, size) {
+    Color bgLerp = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: bgLerp,
+        boxShadow: [UiUtils.widgetsShadow(5, 90, td)],
+      ),
+      child: InstrumentExpansionTile(
+        leadingIcon: Icon(Icons.language, color: td.colorScheme.onSurface, size: 20,),
+        isExpanded: _isExpanded,
+        text: Languages.languages.getString(context),
+        onTap: _onPressedLanguageCard,
+        isActive: true,
+        subText: _selectedLanguage,
+        canOpen: true,
+        children: [
+          _languageList(td, size),
+        ],
+      ),
     );
   }
 
@@ -100,7 +109,7 @@ class _Settings extends State<Settings> {
             SizedBox(height: size.height*0.04,),
             _languageTitle(size, td),
             SizedBox(height: size.height*0.03,),
-            _languageSelection(td, ""),
+            _languageSelection(td, "", size),
             SizedBox(height: size.height*0.04,),
           ],
         ),
@@ -117,13 +126,13 @@ class _Settings extends State<Settings> {
     );
   }
 
-  Widget _languageList(td) {
+  Widget _languageList(td, size) {
     List<Widget> tiles = [];
     final greyLerpy = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
 
     for (MapEntry<String, dynamic> entry in Languages.langsMap.entries) {
       tiles.add(ListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: EdgeInsets.only(left: size.width*0.07),
         title: Text(
           "${entry.value}",
           style: TextStyle(color: td.colorScheme.onSurface, fontSize: 12),
@@ -136,13 +145,15 @@ class _Settings extends State<Settings> {
       ));
     }
 
-    return Container(
-      color: greyLerpy,
-      height: tiles.length * 60,
-      child: ListView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        children: tiles,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(5),
+      child: Material(
+        color: greyLerpy,
+        child: ListView(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: tiles,
+        ),
       ),
     );
   }
@@ -238,8 +249,8 @@ class _Settings extends State<Settings> {
         ),
         body: Column(
           children: [
+            _languageSection(size, td),
             _themeSection(size, td),
-            _languageSection(size, td)
           ],
         ),
       ),
