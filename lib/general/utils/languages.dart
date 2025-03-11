@@ -13,6 +13,7 @@ mixin Languages {
   static const String custom = "custom";
   static const String customText = "customText";
   static const String settings = "settings";
+  static const String exitToast = "exitToast";
 
   static const Map<String, dynamic> EN = {
     selectTheme: "Select Theme",
@@ -27,6 +28,7 @@ mixin Languages {
     custom : "Custom",
     customText: "Select your frequency range",
     settings: "Settings",
+    exitToast: "Double Tap to Exit",
   };
 
   static const Map<String, dynamic> IT = {
@@ -42,5 +44,6 @@ mixin Languages {
     custom : "Personalizzato",
     customText: "Seleziona un range di frequenze",
     settings: "Impostazioni",
+    exitToast: "Tocca due volte per uscire",
   };
 }

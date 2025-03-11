@@ -26,7 +26,7 @@ class Recorder {
     }
   }
 
-  static Future<void> resumeRecording(AudioRecorder recorder, Function? setRecordingState) async {
+  static Future<void> resumeRecording(AudioRecorder recorder, Function? setRecordingState, Future<void>? startRecording) async {
     if(await recorder.isPaused()) {
       try {
         await recorder.resume();
@@ -35,6 +35,8 @@ class Recorder {
       } catch(e) {
         debugPrint("Resume Recording Error: $e");
       }
+    } else {
+      if(startRecording!=null) startRecording;
     }
   }
 

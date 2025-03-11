@@ -3,7 +3,9 @@ import 'dart:typed_data';
 
 import 'package:complex/complex.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pitch_trainer/sampling/utils/recorder.dart';
 import 'package:pitch_trainer/sampling/utils/sound_processing.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -16,6 +18,7 @@ import 'package:record/record.dart';
 
 import '../../general/utils/languages.dart';
 import '../../general/view/settings.dart';
+import '../../general/widgets/double_tap_to_exit.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
 
@@ -64,7 +67,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.hidden) {
       Recorder.pauseRecording(_recorder, _resetPitchValues);
     } else if (state == AppLifecycleState.resumed) {
-      Recorder.resumeRecording(_recorder, _setRecordingState);
+      Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
     }
   }
 
@@ -121,7 +124,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
       ),
       onPressed: () {
-        Recorder.resumeRecording(_recorder, _setRecordingState);
+        Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
       },
     );
   }
@@ -333,14 +336,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   void _onPressedInstruments() {
-    Recorder.stopRecording(_recorder, _resetPitchValues);
+    Recorder.pauseRecording(_recorder, _resetPitchValues);
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const SamplingType(),
     ));
   }
 
   void _onPressedSettings() {
-    Recorder.stopRecording(_recorder, _resetPitchValues);
+    Recorder.pauseRecording(_recorder, _resetPitchValues);
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const Settings(),
     ));
@@ -385,9 +388,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     Size size = MediaQuery.of(context).size;
     ThemeData td = Theme.of(context);
 
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (pop) async {},
+    return DoubleTapToExit(
+      toastText: Languages.exitToast.getString(context),
       child: Scaffold(
         appBar: HomeAppBar(
           title: 'Pitch Trainer',

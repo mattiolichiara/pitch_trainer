@@ -227,6 +227,7 @@ class _Settings extends State<Settings> {
   void _onPressedLangTile(keyLang, valueLang) {
     setState(() {
       _selectedLanguage = valueLang;
+      _isExpanded = false;
     });
     FlutterLocalization.instance.translate(keyLang);
   }
