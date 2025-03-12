@@ -232,6 +232,14 @@ class _Settings extends State<Settings> {
     FlutterLocalization.instance.translate(keyLang);
   }
 
+  void _onTapOutOfFocus() {
+    if(_isExpanded) {
+      setState(() {
+        _isExpanded = false;
+      });
+    }
+  }
+
   //BUILD
   @override
   Widget build(BuildContext context) {
@@ -248,11 +256,14 @@ class _Settings extends State<Settings> {
           action2: Container(),
           action3: Container(),
         ),
-        body: Column(
-          children: [
-            _languageSection(size, td),
-            _themeSection(size, td),
-          ],
+        body: UiUtils.detectEmptyTaps(
+            _onTapOutOfFocus,
+          Column(
+            children: [
+              _languageSection(size, td),
+              _themeSection(size, td),
+            ],
+          ),
         ),
       ),
     );

@@ -16,8 +16,8 @@ mixin Languages {
   static const String exitToast = "exitToast";
 
   static const Map<String, dynamic> EN = {
-    selectTheme: "Select Theme",
-    languages: "Select Language",
+    selectTheme: "Themes",
+    languages: "Language",
     samplingTypeSubtitle: "To avoid for unwanted frequencies to be detected, select an instrument and if needed, add a custom frequency range.",
     options: "Options",
     permissionsWarning: "Allow Microphone Access To Use The App",

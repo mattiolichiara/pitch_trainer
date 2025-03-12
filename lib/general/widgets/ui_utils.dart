@@ -20,4 +20,17 @@ class UiUtils {
     );
   }
 
+  static Widget detectEmptyTaps(void Function()? onTap, Widget child) {
+    return Stack(
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Container(),
+        ),
+        child,
+      ],
+    );
+  }
+
 }
