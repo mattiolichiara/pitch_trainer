@@ -24,14 +24,6 @@ class InstrumentCard extends StatefulWidget {
 }
 
 class _InstrumentCardState extends State<InstrumentCard> {
-  late Color _bgLerp;
-
-  @override
-  void initState() {
-    _bgLerp = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
-
-    super.initState();
-  }
 
   //STYLE
   Color _getTextColor(td) {
@@ -62,7 +54,7 @@ class _InstrumentCardState extends State<InstrumentCard> {
   Widget _instrumentListTile(td) {
     return ListTile(
       onTap: widget.isActive ? widget.onPressed : null,
-      tileColor: _bgLerp,
+      tileColor: td.colorScheme.onPrimaryContainer,
       leading: SvgPicture.asset(
         widget.leadingIcon,
         width: 20,
@@ -109,4 +101,5 @@ class _InstrumentCardState extends State<InstrumentCard> {
       child: _instrumentListTile(td),
     );
   }
+
 }

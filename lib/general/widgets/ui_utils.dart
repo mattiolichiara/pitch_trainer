@@ -20,16 +20,31 @@ class UiUtils {
     );
   }
 
-  static Widget detectEmptyTaps(void Function()? onTap, Widget child) {
+  static Widget handleEmptyTaps(void Function()? onTap, Widget child) {
     return Stack(
       children: [
         GestureDetector(
-          behavior: HitTestBehavior.opaque,
+          behavior: HitTestBehavior.translucent,
           onTap: onTap,
           child: Container(),
         ),
         child,
       ],
+    );
+  }
+
+
+  static Widget handleUnfocusedTaps(void Function() onTap, PreferredSizeWidget? appBar, FocusNode focusNode, Widget scaffoldBody) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: onTap,
+      child: Scaffold(
+        appBar: appBar,
+        body: Focus(
+          focusNode: focusNode,
+          child: scaffoldBody,
+        ),
+      )
     );
   }
 

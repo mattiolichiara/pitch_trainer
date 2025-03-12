@@ -40,46 +40,28 @@ class _Settings extends State<Settings> {
         alignment: Alignment.center,
         child: Text(
           Languages.selectTheme.getString(context),
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td)],),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18),
         ),
       ),
     );
   }
 
-  Widget _languageTitle(size, td) {
-    return SizedBox(
-      width: size.width*0.8,
-      child: Align(
-        alignment: Alignment.center,
-        child: Text(
-          Languages.languages.getString(context),
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td)],),
-        ),
-      ),
+  Widget _themeWrapper(Size size, Map<AppThemeMode, ThemeData> themes, ThemeCubit themeCubit, td) {
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      direction: Axis.horizontal,
+      children: _getThemeColors(size, themes, themeCubit, td),
     );
   }
 
-  Widget _languageSelection(td, subtext, size) {
-    Color bgLerp = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
+  Widget _wrapTheWrap(Size size, BuildContext context, td) {
+    ThemeCubit themeCubit = BlocProvider.of<ThemeCubit>(context);
+    Map<AppThemeMode, ThemeData> themes = themeCubit.availableThemes;
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
-        color: bgLerp,
-        boxShadow: [UiUtils.widgetsShadow(5, 90, td)],
-      ),
-      child: InstrumentExpansionTile(
-        leadingIcon: Icon(Icons.language, color: td.colorScheme.onSurface, size: 20,),
-        isExpanded: _isExpanded,
-        text: Languages.languages.getString(context),
-        onTap: _onPressedLanguageCard,
-        isActive: true,
-        subText: _selectedLanguage,
-        canOpen: true,
-        children: [
-          _languageList(td, size),
-        ],
-      ),
+    return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: _themeWrapper(size, themes, themeCubit, td),
     );
   }
 
@@ -96,82 +78,6 @@ class _Settings extends State<Settings> {
             SizedBox(height: size.height*0.04,),
           ],
         ),
-      ),
-    );
-  }
-  
-  Widget _languageSection(size, td) {
-    return Center(
-      child: SizedBox(
-        width: size.width*0.9,
-        child: Column(
-          children: [
-            SizedBox(height: size.height*0.04,),
-            _languageTitle(size, td),
-            SizedBox(height: size.height*0.03,),
-            _languageSelection(td, "", size),
-            SizedBox(height: size.height*0.04,),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _themeWrapper(Size size, Map<AppThemeMode, ThemeData> themes, ThemeCubit themeCubit, td) {
-    return Wrap(
-        spacing: 4,
-        runSpacing: 4,
-        direction: Axis.horizontal,
-        children: _getThemeColors(size, themes, themeCubit, td),
-    );
-  }
-
-  Widget _languageList(td, size) {
-    List<Widget> tiles = [];
-    final greyLerpy = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
-
-    for (MapEntry<String, dynamic> entry in Languages.langsMap.entries) {
-      tiles.add(ListTile(
-        contentPadding: EdgeInsets.only(left: size.width*0.07),
-        title: Text(
-          "${entry.value}",
-          style: TextStyle(color: td.colorScheme.onSurface, fontSize: 12),
-        ),
-        tileColor: greyLerpy,
-        textColor: td.colorScheme.onSurface,
-        onTap: () {
-          _onPressedLangTile(entry.key, entry.value);
-        },
-      ));
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(5),
-      child: Material(
-        color: greyLerpy,
-        child: ListView(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          children: tiles,
-        ),
-      ),
-    );
-  }
-
-
-  //WIDGETS
-  Widget _wrapTheWrap(Size size, BuildContext context, td) {
-    ThemeCubit themeCubit = BlocProvider.of<ThemeCubit>(context);
-    Map<AppThemeMode, ThemeData> themes = themeCubit.availableThemes;
-
-    return Container(
-      decoration: BoxDecoration(
-          boxShadow: [UiUtils.widgetsShadow(10, 30, td)]
-      ),
-      width: size.width * 0.8,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: _themeWrapper(size, themes, themeCubit, td),
       ),
     );
   }
@@ -206,38 +112,117 @@ class _Settings extends State<Settings> {
           setState(() {
             themeCubit.changeTheme(theme.key);
           });
+          _onTapOutOfFocus();
+
         },
         child: _themeBoxes(size, color, isSelected, td),
       );
     }).toList();
   }
 
+  //LANGUAGE
+  //STYLE
+  Widget _languageTitle(size, td) {
+    return SizedBox(
+      width: size.width*0.8,
+      child: Align(
+        alignment: Alignment.center,
+        child: Text(
+          Languages.languages.getString(context),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18),
+        ),
+      ),
+    );
+  }
+
+  Widget _languageSelection(td, subtext, size) {
+
+    return InstrumentExpansionTile(
+        leadingIcon: Icon(Icons.language, color: Colors.white70, size: 20,),
+        isExpanded: _isExpanded,
+        text: Languages.languages.getString(context),
+        onTap: _onPressedLanguageCard,
+        isActive: true,
+        subText: _selectedLanguage,
+        canOpen: true,
+        children: [
+          _languageList(td, size),
+        ],
+    );
+  }
+  
+  Widget _languageSection(size, td) {
+    return Center(
+      child: SizedBox(
+        width: size.width*0.9,
+        child: Column(
+          children: [
+            SizedBox(height: size.height*0.04,),
+            _languageTitle(size, td),
+            SizedBox(height: size.height*0.03,),
+            _languageSelection(td, "", size),
+            SizedBox(height: size.height*0.04,),
+          ],
+        ),
+      ),
+    );
+  }
+
+  //FUNCTIONAL WIDGETS
+  Widget _languageList(td, size) {
+    List<Widget> tiles = [];
+
+    for (MapEntry<String, dynamic> entry in Languages.langsMap.entries) {
+      tiles.add(ListTile(
+        contentPadding: EdgeInsets.only(left: size.width*0.07),
+        title: Text(
+          "${entry.value}",
+          style: TextStyle(color: td.colorScheme.onSurface, fontSize: 12),
+        ),
+        tileColor: td.colorScheme.onPrimaryContainer,
+        textColor: td.colorScheme.onSurface,
+        onTap: () {
+          _onPressedLangTile(entry.key, entry.value);
+        },
+      ));
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(5),
+      child: Material(
+        color: td.colorScheme.onSurfaceVariant,
+        child: ListView(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: tiles,
+        ),
+      ),
+    );
+  }
+
   //METHODS
   void _onPressedLanguageCard() {
     setState(() {
       _isExpanded = !_isExpanded;
-      debugPrint("expanded $_isExpanded");
-      if (_isExpanded == false) {
-        setState(() {
-        });
-      }
     });
   }
 
   void _onPressedLangTile(keyLang, valueLang) {
     setState(() {
       _selectedLanguage = valueLang;
-      _isExpanded = false;
+      _onTapOutOfFocus();
     });
     FlutterLocalization.instance.translate(keyLang);
   }
 
   void _onTapOutOfFocus() {
-    if(_isExpanded) {
-      setState(() {
-        _isExpanded = false;
-      });
-    }
+    Future.delayed(Duration(milliseconds: 200), () {
+      if(_isExpanded) {
+        setState(() {
+          _isExpanded = false;
+        });
+      }
+    });
   }
 
   //BUILD
@@ -256,8 +241,8 @@ class _Settings extends State<Settings> {
           action2: Container(),
           action3: Container(),
         ),
-        body: UiUtils.detectEmptyTaps(
-            _onTapOutOfFocus,
+        body: UiUtils.handleEmptyTaps(
+          _onTapOutOfFocus,
           Column(
             children: [
               _languageSection(size, td),
@@ -269,3 +254,4 @@ class _Settings extends State<Settings> {
     );
   }
 }
+

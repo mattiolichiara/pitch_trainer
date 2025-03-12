@@ -163,8 +163,6 @@ class _SamplingType extends State<SamplingType> {
   Widget _maxFrequenciesList(size, minFrequenciesList, td) {
     _frequenciesListMax = [];
 
-    Color bgLerp = Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
-
     for (int i = 1; i < Frequencies.frequencies.length; i++) {
       var entry = Frequencies.frequencies.entries.elementAt(i);
 
@@ -190,7 +188,7 @@ class _SamplingType extends State<SamplingType> {
     }
 
     return Container(
-      color: bgLerp,
+      color: td.colorScheme.onPrimaryContainer,
       width: size.width * 0.85,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -210,13 +208,14 @@ class _SamplingType extends State<SamplingType> {
     return Center(
       child: SizedBox(
         width: size.width * 0.85,
-        height: size.height* 0.8,
+        height: size.height,
         child: ListView(
           shrinkWrap: true,
+          physics: AlwaysScrollableScrollPhysics(),
           scrollDirection: Axis.vertical,
           children: [
             InstrumentCard(
-              text: "${Languages.piano.getString(context)} - 88 Keys",
+              text: "${Languages.piano.getString(context)}",
               subText: "A0 (27.50) - C8 (4186.01)",
               isActive: !(_minFrequency == 27.50 && _maxFrequency == 4186.01 && _isNotCustom),
               leadingIcon: _instrumentIcons["Piano"]!,
@@ -226,7 +225,7 @@ class _SamplingType extends State<SamplingType> {
             ),
             SizedBox(height: size.height * 0.006),
             InstrumentCard(
-              text: "${Languages.guitar.getString(context)} - 6 Strings",
+              text: "${Languages.guitar.getString(context)}",
               subText: "E2 (82.41) - E4 (329.63)",
               isActive: !(_minFrequency == 82.41 && _maxFrequency == 329.63 && _isNotCustom),
               leadingIcon: _instrumentIcons["Guitar"]!,
@@ -284,6 +283,32 @@ class _SamplingType extends State<SamplingType> {
     );
   }
 
+  //SCAFFOLD
+  Widget _scaffoldContent(size, td) {
+    return Column(
+      children: [
+        SizedBox(
+          height: size.height*0.02,
+        ),
+        SizedBox(
+          width: size.width*0.85,
+          child: Text(Languages.samplingTypeSubtitle.getString(context),
+            style: const TextStyle(
+              fontWeight: FontWeight.w300,
+              fontSize: 12,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: size.height*0.02,
+        ),
+        _isLoading ? UiUtils.loadingStyle(td) :
+        Expanded(flex: 1, child: _cardList(size, td)),
+      ],
+    );
+  }
+
   //METHODS
   Future<void> _loadPreferences() async {
     await _loadFrequencyValues();
@@ -326,7 +351,7 @@ class _SamplingType extends State<SamplingType> {
     _selectedMin = 0.0;
     _selectedMax = 0.0;
     _minIndex = null;
-    _isExpanded = false;
+    _onTapOutOfFocus();
     _frequenciesListMin = [];
     _frequenciesListMax = [];
   }
@@ -339,6 +364,16 @@ class _SamplingType extends State<SamplingType> {
         setState(() {
           _frequenciesListMin = [];
           _frequenciesListMax = [];
+        });
+      }
+    });
+  }
+
+  void _onTapOutOfFocus() {
+    Future.delayed(Duration(milliseconds: 200), () {
+      if(_isExpanded) {
+        setState(() {
+          _isExpanded = false;
         });
       }
     });
@@ -364,33 +399,7 @@ class _SamplingType extends State<SamplingType> {
           action2: Container(),
           action3: Container(),
         ),
-        body: Column(
-          children: [
-            SizedBox(
-              height: size.height*0.02,
-            ),
-            SizedBox(
-              width: size.width*0.85,
-              child: Text(Languages.samplingTypeSubtitle.getString(context),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w300,
-                  fontSize: 12,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            SizedBox(
-              height: size.height*0.02,
-            ),
-            _isLoading ? UiUtils.loadingStyle(td) :
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: _cardList(size, td),
-              ),
-            ),
-          ],
-        ),
+        body: _scaffoldContent(size, td),
       ),
     );
   }

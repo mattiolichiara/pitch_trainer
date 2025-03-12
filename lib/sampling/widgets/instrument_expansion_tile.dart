@@ -35,7 +35,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
   }
 
   //FUNCTIONAL WIDGETS
-  Widget _animationWidget(bgLerp) {
+  Widget _animationWidget(td) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(5),
       child: AnimatedSize(
@@ -44,7 +44,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
         child: widget.isExpanded
             ? Container(
           width: double.infinity,
-          color: bgLerp,
+          color: td.colorScheme.onPrimaryContainer,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: widget.children,
@@ -91,8 +91,6 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
   Widget build(BuildContext context) {
     String text = widget.text;
     Object leadingIcon = widget.leadingIcon;
-    Color bgLerp =
-    Color.lerp(const Color.fromARGB(255, 70, 70, 70), Colors.black, 0.30)!;
     ThemeData td = Theme.of(context);
 
     return Container(
@@ -108,7 +106,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
         children: [
           ListTile(
             onTap: widget.onTap,
-            tileColor: bgLerp,
+            tileColor: td.colorScheme.onPrimaryContainer,
             leading: _leadingIcon(leadingIcon),
             subtitle: Text(
               widget.subText,
@@ -131,7 +129,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
               borderRadius: BorderRadius.all(Radius.circular(3.5)),
             ),
           ),
-          _animationWidget(bgLerp),
+          _animationWidget(td),
         ],
       ),
     );
