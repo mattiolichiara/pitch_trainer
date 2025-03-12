@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:complex/complex.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:pitch_trainer/sampling/utils/note_overlay.dart';
 import 'package:pitch_trainer/sampling/utils/recorder.dart';
 import 'package:pitch_trainer/sampling/utils/sound_processing.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,9 +34,10 @@ class SoundSampling extends StatefulWidget {
 
 class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   String _selectedNote = "-";
-  String _selectedOctave = "";
+  //String _selectedOctave = "";
   double _selectedFrequency = 0.0;
-  bool _isPermissionAllowed = false;
+  bool _isMicPermissionAllowed = false;
+  bool _isOverlayPermissionAllowed = false;
   List<double> _samples = [];
   double _accuracy = 0.0;
   double _minFrequency = 0.0;
@@ -49,7 +53,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
     _recorder = AudioRecorder();
     WidgetsBinding.instance.addObserver(this);
-    _requestPermissions(_recorder);
+    _requestMicrophonePermissions(_recorder);
+    _requestOverlayPermissions();
 
     super.initState();
   }
@@ -67,7 +72,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.hidden) {
       Recorder.pauseRecording(_recorder, _resetPitchValues);
     } else if (state == AppLifecycleState.resumed) {
-      Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
+      Recorder.resumeRecording(_recorder, _setRecordingState, _requestMicrophonePermissions(_recorder));
     }
   }
 
@@ -124,7 +129,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
       ),
       onPressed: () {
-        Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
+        Recorder.resumeRecording(_recorder, _setRecordingState, _requestMicrophonePermissions(_recorder));
       },
     );
   }
@@ -208,28 +213,34 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Widget _noteLabel(size, td) {
-    return Center(
-        child: _isPermissionAllowed == true
-            ? Text(
-          "$_selectedNote$_selectedOctave",
-          style: TextStyle(
-            color: td.colorScheme.onSurface,
-            fontSize: size.width * 0.35,
-            shadows: [
-              UiUtils.widgetsShadow(80, 20, td),
-            ],
-          ),
-        )
-            : Text(
-          Languages.permissionsWarning.getString(context),
-          style: TextStyle(
-            color: td.colorScheme.onSurface,
-            fontSize: size.width * 0.04,
-            shadows: [
-              UiUtils.widgetsShadow(80, 20, td),
-            ],
-          ),
-        ));
+    return GestureDetector(
+      onDoubleTap: () {
+        debugPrint("Double Tap");
+        if(_isMicPermissionAllowed) _showNoteOverlay(_selectedNote);
+      },
+      child: Center(
+          child: _isMicPermissionAllowed == true
+              ? Text(
+            _selectedNote,/*_selectedOctave*/
+            style: TextStyle(
+              color: td.colorScheme.onSurface,
+              fontSize: size.width * 0.35,
+              shadows: [
+                UiUtils.widgetsShadow(80, 20, td),
+              ],
+            ),
+          )
+              : Text(
+            Languages.permissionsWarning.getString(context),
+            style: TextStyle(
+              color: td.colorScheme.onSurface,
+              fontSize: size.width * 0.04,
+              shadows: [
+                UiUtils.widgetsShadow(80, 20, td),
+              ],
+            ),
+          )),
+    );
   }
 
   Widget _frequencyBar(size, td) {
@@ -238,7 +249,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          _isPermissionAllowed == true
+          _isMicPermissionAllowed == true
               ? "${_selectedFrequency.toStringAsFixed(2)} HZ"
               : "",
           style: TextStyle(
@@ -250,7 +261,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
           ),
         ),
         Text(
-          _isPermissionAllowed == true
+          _isMicPermissionAllowed == true
               ? "            ${_accuracy.toStringAsFixed(2)}"
               : "",
           style: TextStyle(
@@ -302,7 +313,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     setState(() {
       _selectedFrequency = 0.0;
       _selectedNote = "-";
-      _selectedOctave = "";
+      //_selectedOctave = "";
       _accuracy = 0.0;
       _samples = [];
       _setRecordingState(false);
@@ -349,21 +360,55 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     ));
   }
 
-  Future<void> _requestPermissions(AudioRecorder recorder) async {
+  Future<void> _requestMicrophonePermissions(AudioRecorder recorder) async {
     PermissionStatus audio = await Permission.microphone.request();
     if(await recorder.hasPermission() && !audio.isDenied) {
       setState(() {
-        _isPermissionAllowed = true;
+        _isMicPermissionAllowed = true;
         Recorder.startRecording(_recorder, _processAudio, _setRecordingState);
       });
     } else {
       setState(() async {
-        _isPermissionAllowed = false;
+        _isMicPermissionAllowed = false;
         if(await recorder.isRecording()) {
           Recorder.stopRecording(_recorder, _resetPitchValues);
         }
       });
     }
+  }
+
+  Future<void> _requestOverlayPermissions() async {
+    await FlutterOverlayWindow.requestPermission();
+    if(await FlutterOverlayWindow.isPermissionGranted()) {
+      setState(() {
+        _isOverlayPermissionAllowed = true;
+      });
+    } else {
+      setState(() async {
+        _isOverlayPermissionAllowed = false;
+      });
+    }
+  }
+
+  void _showNoteOverlay(String selectedNote) {
+    debugPrint("In Overlay");
+    final Map<String, dynamic> args = {'note': selectedNote};
+    final String payload = jsonEncode(args);
+
+    FlutterOverlayWindow.showOverlay(
+      overlayTitle: '',
+      overlayContent: '',
+      enableDrag: true,
+      positionGravity: PositionGravity.auto,
+      flag: OverlayFlag.defaultFlag,
+    );
+  }
+
+  void closeOverlay() async {
+    await FlutterOverlayWindow.closeOverlay();
+    // setState(() {
+    //   _isFloating = false;
+    // });
   }
 
   Future<void> _processAudio(Stream<Uint8List> stream) async {

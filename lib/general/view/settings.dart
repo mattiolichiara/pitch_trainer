@@ -40,7 +40,7 @@ class _Settings extends State<Settings> {
         alignment: Alignment.center,
         child: Text(
           Languages.selectTheme.getString(context),
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
         ),
       ),
     );
@@ -129,7 +129,7 @@ class _Settings extends State<Settings> {
         alignment: Alignment.center,
         child: Text(
           Languages.languages.getString(context),
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
         ),
       ),
     );
