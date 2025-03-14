@@ -40,7 +40,7 @@ class _Settings extends State<Settings> {
         alignment: Alignment.center,
         child: Text(
           Languages.selectTheme.getString(context),
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
         ),
       ),
     );
@@ -60,8 +60,8 @@ class _Settings extends State<Settings> {
     Map<AppThemeMode, ThemeData> themes = themeCubit.availableThemes;
 
     return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: _themeWrapper(size, themes, themeCubit, td),
+      scrollDirection: Axis.horizontal,
+      child: _themeWrapper(size, themes, themeCubit, td),
     );
   }
 
@@ -129,7 +129,7 @@ class _Settings extends State<Settings> {
         alignment: Alignment.center,
         child: Text(
           Languages.languages.getString(context),
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
         ),
       ),
     );
@@ -138,19 +138,19 @@ class _Settings extends State<Settings> {
   Widget _languageSelection(td, subtext, size) {
 
     return InstrumentExpansionTile(
-        leadingIcon: Icon(Icons.language, color: Colors.white70, size: 20,),
-        isExpanded: _isExpanded,
-        text: Languages.languages.getString(context),
-        onTap: _onPressedLanguageCard,
-        isActive: true,
-        subText: _selectedLanguage,
-        canOpen: true,
-        children: [
-          _languageList(td, size),
-        ],
+      leadingIcon: Icon(Icons.language, color: Colors.white70, size: 20,),
+      isExpanded: _isExpanded,
+      text: Languages.languages.getString(context),
+      onTap: _onPressedLanguageCard,
+      isActive: true,
+      subText: _selectedLanguage,
+      canOpen: true,
+      children: [
+        _languageList(td, size),
+      ],
     );
   }
-  
+
   Widget _languageSection(size, td) {
     return Center(
       child: SizedBox(
