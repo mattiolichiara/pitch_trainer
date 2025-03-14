@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
+import 'package:pitch_trainer/sampling/widgets/text_field_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../general/widgets/home_app_bar.dart';
+import '../../sampling/utils/recorder.dart';
 import '../utils/theme_cubit.dart';
 import '../widgets/ui_utils.dart';
 
@@ -17,10 +21,14 @@ class Settings extends StatefulWidget {
 class _Settings extends State<Settings> {
   bool _isExpanded = false;
   late String _selectedLanguage;
+  final TextEditingController _sampleRateController = TextEditingController();
+  final TextEditingController _bitRateController = TextEditingController();
+  late SharedPreferences _prefs;
 
   @override
   void initState() {
     WidgetsFlutterBinding.ensureInitialized();
+    _getPreferences();
     super.initState();
   }
 
@@ -32,6 +40,149 @@ class _Settings extends State<Settings> {
     });
   }
 
+  void _getPreferences() async {
+    _prefs = await SharedPreferences.getInstance();
+    _getBitRate();
+    _getSampleRate();
+    setState(() {
+
+    });
+  }
+
+  //BIT RATE
+  //STYLE
+  Widget _bitRateTitle(size, td) {
+    return SizedBox(
+      width: size.width*0.4,
+      child: Align(
+        alignment: Alignment.center,
+        child: Text(
+          "Bit Rate",
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
+        ),
+      ),
+    );
+  }
+
+  Widget _bitRateField(Size size) {
+    return SizedBox(
+      width: size.width*0.4,
+      child: TextFieldCard(
+        controller: _bitRateController,
+        hintText: Recorder.defaultBitRate.toString(),
+        isEnabled: true,
+        trailingIcon: Icons.save_outlined,
+        onTrailingIconPressed: () => _setBitRate(_bitRateController.text),
+        onChanged: (value) {
+          _bitRateController.text = value;
+        },
+      ),
+    );
+  }
+
+  Widget _bitRate(Size size, td) {
+    return Column(
+      children: [
+        _bitRateTitle(size, td),
+        SizedBox(height: size.height*0.03,),
+        _bitRateField(size),
+      ],
+    );
+  }
+
+  //METHODS
+  void _getBitRate() async {
+    _bitRateController.text = (_prefs.getInt('bitRate') ?? Recorder.defaultBitRate).toString();
+  }
+
+  VoidCallback? _setBitRate(String bitRate) {
+    if(bitRate=="") {
+      setState(() {
+        bitRate = Recorder.defaultBitRate.toString();
+      });
+    }
+    setState(() {
+      _bitRateController.text = bitRate;
+    });
+    _prefs.setInt('bitRate', int.parse(bitRate));
+    Fluttertoast.showToast(msg: Languages.savedBitRate.getString(context));
+    return null;
+  }
+
+  //SAMPLE RATE
+  //STYLE
+  Widget _sampleRateTitle(size, td) {
+    return SizedBox(
+      width: size.width*0.4,
+      child: Align(
+        alignment: Alignment.center,
+        child: Text(
+          "Sample Rate",
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
+        ),
+      ),
+    );
+  }
+
+  Widget _sampleRateField(Size size) {
+    return SizedBox(
+      width: size.width*0.4,
+      child: TextFieldCard(
+          controller: _sampleRateController,
+          hintText: Recorder.defaultSampleRate.toString(),
+          isEnabled: true,
+          onChanged: (value) {
+            _sampleRateController.text = value;
+          },
+          onTrailingIconPressed: () => _setSampleRate(_sampleRateController.text),
+          trailingIcon: Icons.save_outlined,
+      ),
+    );
+  }
+
+  Widget _sampleRate(Size size, td) {
+    return Column(
+        children: [
+          _sampleRateTitle(size, td),
+          SizedBox(height: size.height*0.03,),
+          _sampleRateField(size),
+        ],
+    );
+  }
+
+  //METHODS
+  void _getSampleRate() async {
+    _sampleRateController.text = (_prefs.getInt('sampleRate') ?? Recorder.defaultSampleRate).toString();
+  }
+
+  VoidCallback? _setSampleRate(String sampleRate) {
+    if(sampleRate=="") {
+      setState(() {
+        sampleRate = Recorder.defaultSampleRate.toString();
+      });
+    }
+    setState(() {
+      _sampleRateController.text = sampleRate;
+    });
+    _prefs.setInt('sampleRate', int.parse(sampleRate));
+    Fluttertoast.showToast(msg: Languages.savedSampleRate.getString(context));
+    return null;
+  }
+
+  //SAMPLE + BIT RATE
+  Widget _audioOptions(Size size, ThemeData td) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _sampleRate(size, td),
+        SizedBox(width: size.width*0.06,),
+        _bitRate(size, td),
+      ],
+    );
+  }
+
+  //THEME
   //STYLE
   Widget _themeTitle(size, td) {
     return SizedBox(
@@ -215,6 +366,7 @@ class _Settings extends State<Settings> {
     FlutterLocalization.instance.translate(keyLang);
   }
 
+  //GENERAL
   void _onTapOutOfFocus() {
     Future.delayed(Duration(milliseconds: 200), () {
       if(_isExpanded) {
@@ -243,12 +395,18 @@ class _Settings extends State<Settings> {
         ),
         body: UiUtils.handleEmptyTaps(
           _onTapOutOfFocus,
-          Column(
-            children: [
-              _languageSection(size, td),
-              _themeSection(size, td),
-            ],
-          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              children: [
+                _languageSection(size, td),
+                SizedBox(height: size.height*0.05,),
+                _audioOptions(size, td),
+                SizedBox(height: size.height*0.05,),
+                _themeSection(size, td),
+              ],
+            ),
+          )
         ),
       ),
     );

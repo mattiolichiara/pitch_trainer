@@ -5,6 +5,7 @@ import 'package:complex/complex.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pitch_trainer/sampling/utils/recorder.dart';
 import 'package:pitch_trainer/sampling/utils/sound_processing.dart';
@@ -14,7 +15,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
 import 'package:pitch_trainer/sampling/view/sampling_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:record/record.dart';
 
 import '../../general/utils/languages.dart';
 import '../../general/view/settings.dart';
@@ -39,7 +39,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   double _minFrequency = 0.0;
   double _maxFrequency = 0.0;
   String _selectedInstrument = "";
-  late AudioRecorder _recorder;
+  late FlutterSoundRecorder _recorder;
   bool _isRecording = false;
   bool _isLoading = true;
 
@@ -47,7 +47,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   void initState() {
     _loadPreferences().then((_){});
 
-    _recorder = AudioRecorder();
+    _recorder = FlutterSoundRecorder();
     WidgetsBinding.instance.addObserver(this);
     _requestPermissions(_recorder);
 
@@ -57,15 +57,15 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _recorder.dispose();
-    Recorder.stopRecording(_recorder, _resetPitchValues);
+    _recorder.closeRecorder();
+    Recorder.stopRecording(_recorder, _resetPitchValues, _setRecordingState);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.hidden) {
-      Recorder.pauseRecording(_recorder, _resetPitchValues);
+      Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
     } else if (state == AppLifecycleState.resumed) {
       Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
     }
@@ -110,7 +110,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
       ),
       onPressed: () {
-        Recorder.pauseRecording(_recorder, _resetPitchValues);
+        Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
       },
     );
   }
@@ -305,7 +305,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       _selectedOctave = "";
       _accuracy = 0.0;
       _samples = [];
-      _setRecordingState(false);
     });
   }
 
@@ -336,22 +335,23 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   void _onPressedInstruments() {
-    Recorder.pauseRecording(_recorder, _resetPitchValues);
+    Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const SamplingType(),
     ));
   }
 
   void _onPressedSettings() {
-    Recorder.pauseRecording(_recorder, _resetPitchValues);
+    Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const Settings(),
     ));
   }
 
-  Future<void> _requestPermissions(AudioRecorder recorder) async {
+  Future<void> _requestPermissions(FlutterSoundRecorder recorder) async {
+    await _recorder.openRecorder();
     PermissionStatus audio = await Permission.microphone.request();
-    if(await recorder.hasPermission() && !audio.isDenied) {
+    if(audio.isGranted) {
       setState(() {
         _isPermissionAllowed = true;
         Recorder.startRecording(_recorder, _processAudio, _setRecordingState);
@@ -359,8 +359,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     } else {
       setState(() async {
         _isPermissionAllowed = false;
-        if(await recorder.isRecording()) {
-          Recorder.stopRecording(_recorder, _resetPitchValues);
+        if(recorder.isRecording) {
+          Recorder.stopRecording(_recorder, _resetPitchValues, _setRecordingState);
         }
       });
     }
@@ -373,10 +373,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     stream.listen((data) {
       List<Complex> processedData = SoundProcessing.fft(SoundProcessing.convertToComplex(SoundProcessing.convertToInt16(data)));
       double frequency = SoundProcessing.getFrequency(SoundProcessing.getPeakIndex(processedData), Recorder.sampleRate, (data.length/2).toInt());
-      String note = SoundProcessing.getClosestNoteFromFrequency(frequency);
 
       //debugPrint("NOTE: $note, FREQUENCY: $frequency");
       if (frequency >= _minFrequency && frequency <= _maxFrequency) {
+        String note = SoundProcessing.getClosestNoteFromFrequency(frequency);
         _setPitchValues(note, frequency);
       }
     });

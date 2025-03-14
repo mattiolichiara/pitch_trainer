@@ -11,7 +11,7 @@ class SoundProcessing {
     List<int> int16Samples = [];
 
     for (int i = 0; i < byteData.lengthInBytes; i += 2) {
-      int16Samples.add(byteData.getInt16(i, Endian.little));  // Ensure LITTLE-ENDIAN
+      int16Samples.add(byteData.getInt16(i, Endian.little));
     }
 
     return int16Samples;
