@@ -11,14 +11,13 @@ class Recorder {
   static final int defaultBitRate = 128000;
   static StreamController<Uint8List>? _controller;
 
-  static void _getValues() async {
+  static Future<void> getValues() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     sampleRate = prefs.getInt('sampleRate') ?? defaultSampleRate;
     bitRate = prefs.getInt('bitRate') ?? defaultBitRate;
   }
 
   static Future<void> startRecording(FlutterSoundRecorder recorder, Function(Stream<Uint8List>) processAudio, Function? setRecordingState) async {
-    _getValues();
     try {
       _controller = StreamController<Uint8List>();
 

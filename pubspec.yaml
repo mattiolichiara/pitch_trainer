@@ -43,6 +43,7 @@ dependencies:
   fluttertoast: ^8.2.12
   flutter_overlay_window: ^0.4.5
   flutter_sound: ^9.25.9
+  fftea: ^1.5.0+1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

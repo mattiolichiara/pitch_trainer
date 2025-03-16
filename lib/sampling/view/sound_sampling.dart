@@ -46,7 +46,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   @override
   void initState() {
     _loadPreferences().then((_){});
-
+    Recorder.getValues().then((_){});
     _recorder = FlutterSoundRecorder();
     WidgetsBinding.instance.addObserver(this);
     _requestPermissions(_recorder);
@@ -313,7 +313,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       _selectedNote = note;
       _selectedFrequency = frequency;
       _accuracy = SoundProcessing.getNoteAccuracy(note, frequency);
-      _samples = SoundProcessing.updateSamples(frequency);
+      _samples = SoundProcessing.updateSamples(frequency, Recorder.sampleRate);
     });
   }
 
@@ -368,19 +368,27 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
   Future<void> _processAudio(Stream<Uint8List> stream) async {
     debugPrint("Listening...");
-    //debugPrint("Max: $_maxFrequency - Min: $_minFrequency");
 
     stream.listen((data) {
-      List<Complex> processedData = SoundProcessing.fft(SoundProcessing.convertToComplex(SoundProcessing.convertToInt16(data)));
-      double frequency = SoundProcessing.getFrequency(SoundProcessing.getPeakIndex(processedData), Recorder.sampleRate, (data.length/2).toInt());
+      Uint8List noiseSuppressedData = SoundProcessing.applyBasicFilter(data, Recorder.sampleRate);
+      List<double> convertedData = SoundProcessing.convertData(noiseSuppressedData);
+      double frequency = SoundProcessing.getDominantFrequency(convertedData, Recorder.sampleRate, _minFrequency, _maxFrequency);
+      debugPrint("f: $frequency");
 
-      //debugPrint("NOTE: $note, FREQUENCY: $frequency");
-      if (frequency >= _minFrequency && frequency <= _maxFrequency) {
-        String note = SoundProcessing.getClosestNoteFromFrequency(frequency);
-        _setPitchValues(note, frequency);
-      }
+      //if (frequency >= _minFrequency && frequency <= _maxFrequency) {
+        setState(() {//TODO usare pitch values + mettere la selezione della clean o raw wave
+          _selectedNote = SoundProcessing.getClosestNoteFromFrequency(frequency);
+          _accuracy = SoundProcessing.getNoteAccuracy(_selectedNote, frequency);
+          _selectedFrequency = frequency;
+          _samples = convertedData;
+          _samples = SoundProcessing.updateSamples(frequency, Recorder.sampleRate);
+        });
+      //} //else {
+      //   _resetPitchValues();
+      // }
     });
   }
+
 
   //BUILD
   @override
