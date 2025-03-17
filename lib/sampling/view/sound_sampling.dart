@@ -42,6 +42,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   late FlutterSoundRecorder _recorder;
   bool _isRecording = false;
   bool _isLoading = true;
+  StreamSubscription<Uint8List>? _listenSubscription;
 
   @override
   void initState() {
@@ -58,6 +59,12 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _recorder.closeRecorder();
+
+    if (_listenSubscription != null) {
+      _listenSubscription!.cancel();
+      _listenSubscription = null;
+    }
+
     Recorder.stopRecording(_recorder, _resetPitchValues, _setRecordingState);
     super.dispose();
   }
@@ -65,9 +72,11 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.hidden) {
-      Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
+      //Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
+      Recorder.stopRecording(_recorder, _resetPitchValues, _setRecordingState);
     } else if (state == AppLifecycleState.resumed) {
-      Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
+      //Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
+      _requestPermissions(_recorder);
     }
   }
 
@@ -110,7 +119,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
       ),
       onPressed: () {
-        Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
+        Recorder.stopRecording(_recorder, _resetPitchValues, _setRecordingState);
+        //Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
       },
     );
   }
@@ -124,7 +134,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
       ),
       onPressed: () {
-        Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
+        //Recorder.resumeRecording(_recorder, _setRecordingState, _requestPermissions(_recorder));
+        _requestPermissions(_recorder);
       },
     );
   }
@@ -305,6 +316,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       _selectedOctave = "";
       _accuracy = 0.0;
       _samples = [];
+      if(_listenSubscription!=null) {
+        _listenSubscription!.cancel();
+        _listenSubscription = null;
+      }
     });
   }
 
@@ -335,14 +350,16 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   void _onPressedInstruments() {
-    Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
+    Recorder.stopRecording(_recorder, _resetPitchValues, _setRecordingState);
+    //Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const SamplingType(),
     ));
   }
 
   void _onPressedSettings() {
-    Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
+    Recorder.stopRecording(_recorder, _resetPitchValues, _setRecordingState);
+    //Recorder.pauseRecording(_recorder, _resetPitchValues, _setRecordingState);
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const Settings(),
     ));
@@ -369,24 +386,32 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   Future<void> _processAudio(Stream<Uint8List> stream) async {
     debugPrint("Listening...");
 
-    stream.listen((data) {
+    _listenSubscription = stream.listen((data) {
       Uint8List noiseSuppressedData = SoundProcessing.applyBasicFilter(data, Recorder.sampleRate);
       List<double> convertedData = SoundProcessing.convertData(noiseSuppressedData);
+      convertedData = SoundProcessing.applyMedianFilter(convertedData);
+      convertedData = SoundProcessing.applyWeightedMovingAverage(convertedData);
+      convertedData = SoundProcessing.applyDynamicNoiseGate(convertedData);
+      convertedData = SoundProcessing.applyHammingWindow(convertedData);
       double frequency = SoundProcessing.getDominantFrequency(convertedData, Recorder.sampleRate, _minFrequency, _maxFrequency);
       debugPrint("f: $frequency");
 
-      //if (frequency >= _minFrequency && frequency <= _maxFrequency) {
+      if (frequency >= _minFrequency && frequency <= _maxFrequency) {
         setState(() {//TODO usare pitch values + mettere la selezione della clean o raw wave
           _selectedNote = SoundProcessing.getClosestNoteFromFrequency(frequency);
           _accuracy = SoundProcessing.getNoteAccuracy(_selectedNote, frequency);
           _selectedFrequency = frequency;
-          _samples = convertedData;
+          //_samples = convertedData;
           _samples = SoundProcessing.updateSamples(frequency, Recorder.sampleRate);
         });
       //} //else {
       //   _resetPitchValues();
-      // }
-    });
+      }
+    },
+      onError: (error) => debugPrint("Error in stream: $error"),
+      onDone: () => debugPrint("Stream Closed"),
+      cancelOnError: true,
+    );
   }
 
 

@@ -1,14 +1,16 @@
 import 'dart:math';
 import 'dart:core';
 import 'dart:typed_data';
+import 'package:complex/complex.dart';
 import 'package:fftea/impl.dart';
+import 'package:flutter/material.dart';
 import 'frequencies.dart';
 
 class SoundProcessing {
 
   static Uint8List applyBasicFilter(Uint8List samples, int sampleRate) {
-    const int highPassThreshold = 70;
-    const int lowPassThreshold = 3700;
+    const int highPassThreshold = 150;
+    const int lowPassThreshold = 4000;
 
     double rcHigh = 1.0 / (2 * pi * highPassThreshold);
     double dt = 1.0 / sampleRate;
@@ -37,12 +39,11 @@ class SoundProcessing {
     return filtered;
   }
 
-
   // Args -> List of 8bit unsigned integers ranging 0-255
   // Return type is a List of double -> it represents the PCM samples
   // a.k.a. Pulse Code Modulation
   // They're normalized between -1 anc 1
-  static List<double> convertData(Uint8List data) {
+  static List<double> convertData(Uint8List data, {double amplitudeThreshold = 0.12}) {
     // subListView allows to read bytes as integers
     ByteData byteData = ByteData.sublistView(data);
     List<double> pcmSamples = [];
@@ -57,12 +58,93 @@ class SoundProcessing {
       //0 is silence, 32767 is Compression (spinta dello speaker in avanti), -32767 Rarefaction (indietro)
       //Quindi e' come vibra effettivamente il suono
       int sample = byteData.getInt16(i, Endian.little);
+
       //normalization (-32768 -> -1 ~ 0 -> 0 ~ 32767 -> 1)
       //si normalizza perche' cosi' hai un range compatibile con DSP -> standard
       //DSP = Digital Signal Processing int16sample/32768
-      pcmSamples.add(sample / 32768.0);
+      double normalizedSample = sample / 32768.0;
+
+      //Noise removal -> if amplitude is 0.02 eg then sounds that less loud than 2% are not gonna be detected
+      //Amplitude Treshold
+      if (normalizedSample.abs() < amplitudeThreshold) {
+        normalizedSample = 0.0; //low noise will considered as silence
+      }
+
+      pcmSamples.add(normalizedSample);
     }
     return pcmSamples;
+  }
+
+  static List<double> applyMedianFilter(List<double> samples, {int windowSize = 5}) {
+    List<double> filtered = List.from(samples);
+    int halfWindow = windowSize ~/ 2;
+
+    for (int i = halfWindow; i < samples.length - halfWindow; i++) {
+      List<double> window = samples.sublist(i - halfWindow, i + halfWindow + 1);
+      window.sort();
+      filtered[i] = window[halfWindow];
+    }
+    return filtered;
+  }
+
+
+  //A moving average filter smooths out variations in the signal, reducing noise. The weighted version gives more importance to recent values.
+  static List<double> applyWeightedMovingAverage(List<double> samples, {int windowSize = 7}) {
+    List<double> smoothedSamples = List.filled(samples.length, 0.0);
+
+    for (int i = 0; i < samples.length; i++) {
+      double sum = 0.0;
+      double weightSum = 0.0;
+
+      for (int j = 0; j < windowSize; j++) {
+        int index = i - j;
+        if (index < 0) break; // Avoid negative indices
+
+        double weight = (windowSize - j).toDouble(); // More weight to recent values
+        sum += samples[index] * weight;
+        weightSum += weight;
+      }
+
+      smoothedSamples[i] = sum / weightSum; // Normalize by weight sum
+    }
+
+    return smoothedSamples;
+  }
+
+  //A noise gate ensures that only signals above a threshold (for a consistent duration) are kept.
+  //Instead of a fixed amplitude threshold, you can adapt it to the average energy of a sliding window of samples.
+  static List<double> applyDynamicNoiseGate(List<double> samples, {double baseThreshold = 0.05, int windowSize = 4410}) {
+    List<double> gatedSamples = List.filled(samples.length, 0.0);
+
+    for (int i = 0; i < samples.length; i++) {
+      // Calculate local average energy
+      int start = (i - windowSize ~/ 2).clamp(0, samples.length - 1);
+      int end = (i + windowSize ~/ 2).clamp(0, samples.length - 1);
+      double localEnergy = 0.0;
+
+      for (int j = start; j < end; j++) {
+        localEnergy += samples[j].abs();
+      }
+      localEnergy /= (end - start + 1);
+
+      // Adaptive threshold
+      double dynamicThreshold = baseThreshold + (localEnergy * 0.5); // adjust multiplier
+
+      if (samples[i].abs() >= dynamicThreshold) {
+        gatedSamples[i] = samples[i];
+      }
+    }
+
+    return gatedSamples;
+  }
+
+  //reduce spectral leakage (false frequencies bleeding into spectrum).
+  static List<double> applyHammingWindow(List<double> samples) {
+    int N = samples.length;
+    for (int n = 0; n < N; n++) {
+      samples[n] *= 0.54 - 0.46 * cos(2 * pi * n / (N - 1));
+    }
+    return samples;
   }
 
   //It takes as input the normalized signal
@@ -89,10 +171,10 @@ class SoundProcessing {
         maxValue = magnitude;
         maxIndex = i;
       }
-      print("Sample Rate: $sampleRate");
-      print("samples.length: ${samples.length}");
-      print("maxIndex: $maxIndex");
-      print("Magnitude: $magnitude");
+      debugPrint("Sample Rate: $sampleRate");
+      debugPrint("samples.length: ${samples.length}");
+      debugPrint("maxIndex: $maxIndex");
+      debugPrint("Magnitude: $magnitude");
     }
 
     //frequenza = bin index*sample rate/grandezza fft
@@ -156,3 +238,48 @@ class SoundProcessing {
   }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// static List<Complex> convertToComplex(List<int> audioData) {
+//   return audioData.map((e) => Complex(e.toDouble(), 0.0)).toList();
+// }
+//
+// static List<Complex> fft(List<Complex> input) {
+//   int n = input.length;
+//
+//   if (n <= 1) return input;
+//
+//   List<Complex> even = [];
+//   List<Complex> odd = [];
+//   for (int i = 0; i < n; i++) {
+//     if (i.isEven) {
+//       even.add(input[i]);
+//     } else {
+//       odd.add(input[i]);
+//     }
+//   }
+//
+//   even = fft(even);
+//   odd = fft(odd);
+//
+//   List<Complex> result = List.filled(n, Complex.zero);
+//
+//   for (int k = 0; k < n ~/ 2; k++) {
+//     Complex t = Complex.polar(1.0, -2 * pi * k / n) * odd[k];
+//     result[k] = even[k] + t;
+//     result[k + n ~/ 2] = even[k] - t;
+//   }
+//
+//   return result;
+// }

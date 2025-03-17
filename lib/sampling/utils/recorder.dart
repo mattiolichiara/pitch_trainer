@@ -17,12 +17,13 @@ class Recorder {
     bitRate = prefs.getInt('bitRate') ?? defaultBitRate;
   }
 
-  static Future<void> startRecording(FlutterSoundRecorder recorder, Function(Stream<Uint8List>) processAudio, Function? setRecordingState) async {
+  static Future<void> startRecording(FlutterSoundRecorder recorder, Function? processAudio, Function? setRecordingState) async {
     try {
+
       _controller = StreamController<Uint8List>();
 
       await recorder.startRecorder(
-        toStream: _controller!.sink,
+        toStream: _controller?.sink,
         codec: Codec.pcm16,
         sampleRate: sampleRate,
         enableVoiceProcessing: true
@@ -30,7 +31,7 @@ class Recorder {
 
       debugPrint("Recording started...");
 
-      processAudio(_controller!.stream);
+      if (processAudio!= null) processAudio(_controller!.stream);
 
       if (setRecordingState != null) setRecordingState(true);
     } catch (e) {
@@ -66,14 +67,22 @@ class Recorder {
   }
 
   static Future<void> stopRecording(FlutterSoundRecorder recorder, Function? resetValues, Function? setRecordingState) async {
-    if(recorder.isRecording) {
+    if (recorder.isRecording) {
       try {
         await recorder.stopRecorder();
-        recorder.closeRecorder();
+        await recorder.closeRecorder();
         debugPrint("Recorder stopped...");
-        if(resetValues!=null) resetValues();
-        if(setRecordingState!=null) setRecordingState(false);
-      } catch(e) {
+
+        if (resetValues != null) resetValues();
+        if (setRecordingState != null) setRecordingState(false);
+
+        if (_controller != null) {
+          _controller!.close();
+          _controller = null;
+          debugPrint("StreamController closed.");
+        }
+
+      } catch (e) {
         debugPrint("Stop Recording Error: $e");
       }
     }
