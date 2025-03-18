@@ -39,6 +39,24 @@ class SoundProcessing {
     return filtered;
   }
 
+  static List<double> applySecondOrderHighPass(List<double> samples, int sampleRate, {double cutoff = 80.0}) {
+    double RC = 1.0 / (2 * pi * cutoff);
+    double dt = 1.0 / sampleRate;
+    double alpha = RC / (RC + dt);
+
+    List<double> filteredSamples = List.filled(samples.length, 0.0);
+    double prevFiltered = 0.0;
+    double prevInput = 0.0;
+
+    for (int i = 0; i < samples.length; i++) {
+      filteredSamples[i] = alpha * (prevFiltered + samples[i] - prevInput);
+      prevFiltered = filteredSamples[i];
+      prevInput = samples[i];
+    }
+
+    return filteredSamples;
+  }
+
   // Args -> List of 8bit unsigned integers ranging 0-255
   // Return type is a List of double -> it represents the PCM samples
   // a.k.a. Pulse Code Modulation
@@ -171,10 +189,10 @@ class SoundProcessing {
         maxValue = magnitude;
         maxIndex = i;
       }
-      debugPrint("Sample Rate: $sampleRate");
-      debugPrint("samples.length: ${samples.length}");
-      debugPrint("maxIndex: $maxIndex");
-      debugPrint("Magnitude: $magnitude");
+      // debugPrint("Sample Rate: $sampleRate");
+      // debugPrint("samples.length: ${samples.length}");
+      // debugPrint("maxIndex: $maxIndex");
+      // debugPrint("Magnitude: $magnitude");
     }
 
     //frequenza = bin index*sample rate/grandezza fft

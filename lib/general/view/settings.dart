@@ -24,9 +24,12 @@ class _Settings extends State<Settings> {
   final TextEditingController _sampleRateController = TextEditingController();
   final TextEditingController _bitRateController = TextEditingController();
   late SharedPreferences _prefs;
+  late Recorder recorder;
 
   @override
   void initState() {
+    recorder = Recorder();
+    recorder.initialize();
     WidgetsFlutterBinding.ensureInitialized();
     _getPreferences();
     super.initState();
@@ -44,6 +47,8 @@ class _Settings extends State<Settings> {
     _prefs = await SharedPreferences.getInstance();
     _getBitRate();
     _getSampleRate();
+
+
     setState(() {
 
     });
@@ -69,7 +74,7 @@ class _Settings extends State<Settings> {
       width: size.width*0.4,
       child: TextFieldCard(
         controller: _bitRateController,
-        hintText: Recorder.defaultBitRate.toString(),
+        hintText: recorder.defaultBitRate.toString(),
         isEnabled: true,
         trailingIcon: Icons.save_outlined,
         onTrailingIconPressed: () => _setBitRate(_bitRateController.text),
@@ -92,13 +97,13 @@ class _Settings extends State<Settings> {
 
   //METHODS
   void _getBitRate() async {
-    _bitRateController.text = (_prefs.getInt('bitRate') ?? Recorder.defaultBitRate).toString();
+    _bitRateController.text = (_prefs.getInt('bitRate') ?? recorder.defaultBitRate).toString();
   }
 
   VoidCallback? _setBitRate(String bitRate) {
     if(bitRate=="") {
       setState(() {
-        bitRate = Recorder.defaultBitRate.toString();
+        bitRate = recorder.defaultBitRate.toString();
       });
     }
     setState(() {
@@ -129,7 +134,7 @@ class _Settings extends State<Settings> {
       width: size.width*0.4,
       child: TextFieldCard(
           controller: _sampleRateController,
-          hintText: Recorder.defaultSampleRate.toString(),
+          hintText: recorder.defaultSampleRate.toString(),
           isEnabled: true,
           onChanged: (value) {
             _sampleRateController.text = value;
@@ -152,13 +157,13 @@ class _Settings extends State<Settings> {
 
   //METHODS
   void _getSampleRate() async {
-    _sampleRateController.text = (_prefs.getInt('sampleRate') ?? Recorder.defaultSampleRate).toString();
+    _sampleRateController.text = (_prefs.getInt('sampleRate') ?? recorder.defaultSampleRate).toString();
   }
 
   VoidCallback? _setSampleRate(String sampleRate) {
     if(sampleRate=="") {
       setState(() {
-        sampleRate = Recorder.defaultSampleRate.toString();
+        sampleRate = recorder.defaultSampleRate.toString();
       });
     }
     setState(() {
