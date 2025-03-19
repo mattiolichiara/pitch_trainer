@@ -44,7 +44,7 @@ class Recorder {
     await getValues();
   }
 
-  Future<void> startRecording(Function? setRecordingState, double minFrequency, double maxFrequency, Function? setPitchValues) async {
+  Future<void> startRecording(Function? setRecordingState, double minFrequency, double maxFrequency, Function? setPitchValues, Function? resetPitchValues) async {
     if (!await _requestPermissions()) {
       debugPrint("Recording cannot start without permissions.");
       return;
@@ -65,7 +65,7 @@ class Recorder {
       );
 
       debugPrint("Recording started...");
-      processAudio(controller!.stream, minFrequency, maxFrequency, setPitchValues);
+      processAudio(controller!.stream, minFrequency, maxFrequency, setPitchValues, resetPitchValues);
 
       if (setRecordingState != null) setRecordingState(true);
     } catch (e) {
@@ -73,41 +73,45 @@ class Recorder {
     }
   }
 
-  Future<void> processAudio(Stream<Uint8List> stream, double minFrequency, double maxFrequency, Function? setPitchValues) async {
+  Future<void> processAudio(Stream<Uint8List> stream, double minFrequency, double maxFrequency, Function? setPitchValues, Function? resetPitchValues) async {
     debugPrint("Listening...");
 
     _listenSubscription?.cancel();
+    Timer? zeroFrequencyTimer;
+    double previousFrequency = 0.0;
 
     _listenSubscription = stream.listen((data) {
-      double previousFrequency = 0.0;
-      if (recorder!.isRecording) {
-        Uint8List noiseSuppressedData = SoundProcessing.applyBasicFilter(data, sampleRate);
-        List<double> convertedData = SoundProcessing.convertData(noiseSuppressedData);
+        if (recorder!.isRecording) {
+          //Future.delayed(Duration(milliseconds: 1000), () {
+          List<double> convertedData = SoundProcessing.convertData(data);
 
-        convertedData = SoundProcessing.applySecondOrderHighPass(convertedData, sampleRate, cutoff: 200.0);
-        convertedData = SoundProcessing.applyMedianFilter(convertedData, windowSize: 11);
-        convertedData = SoundProcessing.applyMedianFilter(convertedData, windowSize: 9);
-        convertedData = SoundProcessing.applyMedianFilter(convertedData, windowSize: 7);
-        convertedData = SoundProcessing.applyWeightedMovingAverage(convertedData, windowSize: 10);
-        convertedData = SoundProcessing.applyAdaptiveNoiseGate(convertedData, baseThreshold: 0.15, windowSize: 10240);
-        convertedData = SoundProcessing.applyHammingWindow(convertedData, alpha: 0.6);
+          //Energy-Based Noise Filtering (Skip Low Energy Signals)
+          // double energy = convertedData.fold(0.0, (sum, val) => sum + val.abs()) / convertedData.length;
+          // if (energy < 0.2) return;
 
-        //Energy-Based Noise Filtering (Skip Low Energy Signals)
-        double energy = convertedData.fold(0.0, (sum, val) => sum + val.abs()) / convertedData.length;
-        if (energy < 0.2) return;
+          double loudness = SoundProcessing.calculateLoudnessInDbSPL(convertedData);
 
-        double frequency = SoundProcessing.getDominantFrequency(convertedData, sampleRate, minFrequency, maxFrequency);
+          double frequency = SoundProcessing.getDominantFrequency(convertedData, sampleRate, minFrequency, maxFrequency);
 
-        //Frequency Smoothing (Ignore Quick Shifts)
-        if(previousFrequency==0.0) previousFrequency=frequency;
-        previousFrequency = previousFrequency * 0.7 + frequency * 0.3;
+          if (frequency == 0.0) {
+            zeroFrequencyTimer ??= Timer(Duration(seconds: 5), () {
+              resetPitchValues?.call();
+            });
+          } else {
+            zeroFrequencyTimer?.cancel();
+            zeroFrequencyTimer = null;
+          }
 
-        if (previousFrequency >= minFrequency && previousFrequency <= maxFrequency) {
-          setPitchValues?.call(SoundProcessing.getClosestNoteFromFrequency(previousFrequency), previousFrequency, isCleanWave, convertedData);
+            //Frequency Smoothing (Ignore Quick Shifts)
+            if(frequency==0.0) return;
+            if(previousFrequency==frequency) return;
+            debugPrint("f: $frequency");
+            previousFrequency = previousFrequency * 0.7 + frequency * 0.3;
+
+          if (previousFrequency >= minFrequency && previousFrequency <= maxFrequency) {
+            setPitchValues?.call(SoundProcessing.getClosestNoteFromFrequency(previousFrequency), previousFrequency, isCleanWave, convertedData, loudness);
+          }
         }
-      }
-
-
     },
       onError: (error) => debugPrint("Error in stream: $error"),
       onDone: () => debugPrint("Stream Closed"),

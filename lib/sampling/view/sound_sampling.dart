@@ -41,6 +41,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   bool _isRecording = false;
   bool _isLoading = true;
   Recorder? recorder;
+  double _loudness = 0;
 
   @override
   void initState() {
@@ -48,7 +49,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     _loadPreferences().then((_) {
-      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues);
+      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues, _resetPitchValues);
     });
   }
 
@@ -65,15 +66,15 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.hidden) {
       //recorder.pauseRecording(_resetPitchValues, _setRecordingState);
-      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues);
+      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues, _resetPitchValues);
     } else if (state == AppLifecycleState.resumed) {
       //recorder.resumeRecording(_setRecordingState);
-      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues);
+      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues, _resetPitchValues);
     }
   }
 
   //STYLE
-  Widget _progressBarStyle(size, td) {
+  Widget _loudnessBarStyle(size, td) {
     return Center(
       child: Container(
         width: 10,
@@ -127,7 +128,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       ),
       onPressed: () {
         //recorder.resumeRecording(_setRecordingState);
-        recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues);
+        recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues, _resetPitchValues);
       },
     );
   }
@@ -169,9 +170,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _accuracyBar(size, ThemeData td) {
+  Widget _loudnessBar(size, ThemeData td) {
 
-    int currentStep = ((_accuracy + 100) / 200 * 100).round();
+    int currentStep = normalizeLoudness(_loudness).toInt();
 
     return Container(
       decoration: BoxDecoration(
@@ -180,8 +181,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       ),
       child: Stack(
         children: [
-          _progressBar(size, currentStep, td),
-          _progressBarStyle(size, td),
+          _progressLoudBar(size, currentStep, td),
+          //_loudnessBarStyle(size, td),
         ],
       ),
     );
@@ -264,6 +265,18 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             ],
           ),
         ),
+        Text(
+          (recorder!=null && recorder!.permissionsAllowed)
+              ? "            ${_loudness.toStringAsFixed(2)} dB"
+              : "",
+          style: TextStyle(
+            color: td.colorScheme.onSurface,
+            fontSize: size.width * 0.038,
+            shadows: [
+              UiUtils.widgetsShadow(80, 20, td),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -278,11 +291,11 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     return action;
   }
 
-  Widget _progressBar(size, currentStep, td) {
+  Widget _progressLoudBar(size, currentStep, td) {
     return LinearProgressBar(
       maxSteps: 100,
       progressType: LinearProgressBar.progressTypeLinear,
-      currentStep: currentStep.clamp(0, 100),
+      currentStep: currentStep,
       progressColor: td.colorScheme.onSurface,
       backgroundColor: td.colorScheme.onSurfaceVariant,
       dotsAxis: Axis.horizontal,
@@ -295,6 +308,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   //METHODS
+  double normalizeLoudness(double dbfs) {
+    const double minDb = 0;
+    const double maxDb = 140;
+
+    double normalized = ((dbfs - minDb) / (maxDb - minDb)) * 100;
+    return normalized.clamp(0, 100);
+  }
+
   void _setRecordingState(bool listening) {
     setState(() {
       _isRecording = listening;
@@ -307,16 +328,18 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       _selectedNote = "-";
       _selectedOctave = "";
       _accuracy = 0.0;
+      _loudness = 0;
       _samples = [];
     });
   }
 
-  void _setPitchValues(String note, double frequency, bool isCleanWave, List<double> rawData) {
+  void _setPitchValues(String note, double frequency, bool isCleanWave, List<double> rawData, double loudness) {
     setState(() {
       _selectedNote = note;
       _selectedFrequency = frequency;
       _accuracy = SoundProcessing.getNoteAccuracy(note, frequency);
       _samples = isCleanWave? SoundProcessing.updateSamples(frequency, recorder!.sampleRate) : rawData;
+      _loudness = loudness;
     });
   }
 
@@ -376,7 +399,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             SizedBox(
               height: size.height * 0.001,
             ),
-            _isRecording? _accuracyBar(size, td) : Container(),
+            _isRecording? _loudnessBar(size, td) : Container(),
             Expanded(
               child: Center(
                 child: Container(

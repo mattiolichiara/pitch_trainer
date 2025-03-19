@@ -74,7 +74,7 @@ class _Settings extends State<Settings> {
     return Text(
       text,
       style: TextStyle(
-        color: Colors.white54,
+        color: Colors.white,
         fontSize: 12,
         shadows: [UiUtils.widgetsShadow(80, 20, td),],
         fontWeight: FontWeight.w300,

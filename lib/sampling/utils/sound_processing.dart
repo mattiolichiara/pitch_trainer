@@ -8,37 +8,6 @@ import 'frequencies.dart';
 
 class SoundProcessing {
 
-  static Uint8List applyBasicFilter(Uint8List samples, int sampleRate) {
-    const int highPassThreshold = 150;
-    const int lowPassThreshold = 4000;
-
-    double rcHigh = 1.0 / (2 * pi * highPassThreshold);
-    double dt = 1.0 / sampleRate;
-    double alphaHigh = rcHigh / (rcHigh + dt);
-
-    double rcLow = 1.0 / (2 * pi * lowPassThreshold);
-    double alphaLow = dt / (rcLow + dt);
-
-    Uint8List filtered = Uint8List(samples.length);
-    double lastHigh = 0;
-    double lastLow = 0;
-
-    for (int i = 0; i < samples.length; i++) {
-      int currentSample = samples[i] - 128;
-      int previousSample = (i > 0) ? (samples[i - 1] - 128) : 0;
-
-      double high = alphaHigh * (lastHigh + currentSample - previousSample);
-      lastHigh = high;
-
-      lastLow = lastLow + alphaLow * (high - lastLow);
-
-      int outputSample = (lastLow + 128).round().clamp(0, 255);
-      filtered[i] = outputSample;
-    }
-
-    return filtered;
-  }
-
   // Args -> List of 8bit unsigned integers ranging 0-255
   // Return type is a List of double -> it represents the PCM samples
   // a.k.a. Pulse Code Modulation
@@ -75,169 +44,19 @@ class SoundProcessing {
     return pcmSamples;
   }
 
-  static List<double> applySpectralSubtraction(List<double> samples, int sampleRate) {
-    int frameSize = 1024;
-    int stepSize = frameSize ~/ 2;
-    FFT fft = FFT(frameSize);
-    List<List<double>> frames = [];
+  static double calculateLoudnessInDbSPL(List<double> samples) {
+    if (samples.isEmpty) return 0.0; // Silence
 
-    // Frame the signal with overlapping windows
-    for (int i = 0; i < samples.length - frameSize; i += stepSize) {
-      frames.add(samples.sublist(i, i + frameSize));
-    }
+    const double referencePressure = 20e-6; // Reference sound pressure (20 µPa)
+    const double epsilon = 1e-12; // Small value to prevent log(0)
 
-    List<double> noiseProfile = List.filled(frameSize, 0.0);
-    int noiseFrames = min(5, frames.length);
+    // Calculate RMS
+    double rms = sqrt(samples.map((s) => s * s).reduce((a, b) => a + b) / samples.length);
 
-    // Estimate noise from the first few frames
-    for (int i = 0; i < noiseFrames; i++) {
-      var spectrum = fft.realFft(frames[i]);
-      for (int j = 0; j < spectrum.length ~/ 2; j++) {
-        noiseProfile[j] += sqrt(spectrum[j].x * spectrum[j].x + spectrum[j].y * spectrum[j].y);
-      }
-    }
-    for (int j = 0; j < noiseProfile.length; j++) {
-      noiseProfile[j] /= noiseFrames;
-    }
+    // Convert to dB SPL
+    double dbSPL = 20 * log(max(rms / referencePressure, epsilon)) / ln10;
 
-    // Apply spectral subtraction
-    List<double> processedSamples = List.filled(samples.length, 0.0);
-    int sampleIndex = 0;
-
-    for (var frame in frames) {
-      var spectrum = fft.realFft(frame);
-      for (int j = 0; j < spectrum.length ~/ 2; j++) {
-        double magnitude = sqrt(spectrum[j].x * spectrum[j].x + spectrum[j].y * spectrum[j].y);
-        magnitude = max(magnitude - noiseProfile[j], 0.0);
-        double phase = atan2(spectrum[j].y, spectrum[j].x);
-
-        // Correct way to modify Float64x2 values
-        spectrum[j] = Float64x2(magnitude * cos(phase), magnitude * sin(phase));
-      }
-      List<double> filteredFrame = fft.realInverseFft(spectrum);
-      for (int i = 0; i < frameSize; i++) {
-        if (sampleIndex + i < processedSamples.length) {
-          processedSamples[sampleIndex + i] += filteredFrame[i];
-        }
-      }
-      sampleIndex += stepSize;
-    }
-    return processedSamples;
-  }
-
-  static List<double> applyAdaptiveNoiseGate(List<double> samples, {double baseThreshold = 0.05, int windowSize = 4410}) {
-    List<double> gatedSamples = List.filled(samples.length, 0.0);
-
-    for (int i = 0; i < samples.length; i++) {
-      int start = max(0, i - windowSize ~/ 2);
-      int end = min(samples.length - 1, i + windowSize ~/ 2);
-      double localEnergy = 0.0;
-
-      for (int j = start; j < end; j++) {
-        localEnergy += samples[j].abs();
-      }
-      localEnergy /= (end - start + 1);
-
-      double dynamicThreshold = baseThreshold + (localEnergy * 0.5);
-
-      if (samples[i].abs() >= dynamicThreshold) {
-        gatedSamples[i] = samples[i];
-      }
-    }
-
-    return gatedSamples;
-  }
-
-  static List<double> applySecondOrderHighPass(List<double> samples, int sampleRate, {double cutoff = 80.0}) {
-    double RC = 1.0 / (2 * pi * cutoff);
-    double dt = 1.0 / sampleRate;
-    double alpha = RC / (RC + dt);
-
-    List<double> filteredSamples = List.filled(samples.length, 0.0);
-    double prevFiltered = 0.0;
-    double prevInput = 0.0;
-
-    for (int i = 0; i < samples.length; i++) {
-      filteredSamples[i] = alpha * (prevFiltered + samples[i] - prevInput);
-      prevFiltered = filteredSamples[i];
-      prevInput = samples[i];
-    }
-
-    return filteredSamples;
-  }
-
-  static List<double> applyMedianFilter(List<double> samples, {int windowSize = 5}) {
-    List<double> filtered = List.from(samples);
-    int halfWindow = windowSize ~/ 2;
-
-    for (int i = halfWindow; i < samples.length - halfWindow; i++) {
-      List<double> window = samples.sublist(i - halfWindow, i + halfWindow + 1);
-      window.sort();
-      filtered[i] = window[halfWindow];
-    }
-    return filtered;
-  }
-
-  //A moving average filter smooths out variations in the signal, reducing noise. The weighted version gives more importance to recent values.
-  static List<double> applyWeightedMovingAverage(List<double> samples, {int windowSize = 7}) {
-    List<double> smoothedSamples = List.filled(samples.length, 0.0);
-
-    for (int i = 0; i < samples.length; i++) {
-      double sum = 0.0;
-      double weightSum = 0.0;
-
-      for (int j = 0; j < windowSize; j++) {
-        int index = i - j;
-        if (index < 0) break; // Avoid negative indices
-
-        double weight = (windowSize - j).toDouble(); // More weight to recent values
-        sum += samples[index] * weight;
-        weightSum += weight;
-      }
-
-      smoothedSamples[i] = sum / weightSum; // Normalize by weight sum
-    }
-
-    return smoothedSamples;
-  }
-
-  //A noise gate ensures that only signals above a threshold (for a consistent duration) are kept.
-  //Instead of a fixed amplitude threshold, you can adapt it to the average energy of a sliding window of samples.
-  // static List<double> applyDynamicNoiseGate(List<double> samples, {double baseThreshold = 0.05, int windowSize = 4410}) {
-  //   List<double> gatedSamples = List.filled(samples.length, 0.0);
-  //
-  //   for (int i = 0; i < samples.length; i++) {
-  //     // Calculate local average energy
-  //     int start = (i - windowSize ~/ 2).clamp(0, samples.length - 1);
-  //     int end = (i + windowSize ~/ 2).clamp(0, samples.length - 1);
-  //     double localEnergy = 0.0;
-  //
-  //     for (int j = start; j < end; j++) {
-  //       localEnergy += samples[j].abs();
-  //     }
-  //     localEnergy /= (end - start + 1);
-  //
-  //     // Adaptive threshold
-  //     double dynamicThreshold = baseThreshold + (localEnergy * 0.5); // adjust multiplier
-  //
-  //     if (samples[i].abs() >= dynamicThreshold) {
-  //       gatedSamples[i] = samples[i];
-  //     }
-  //   }
-  //
-  //   return gatedSamples;
-  // }
-
-  //reduce spectral leakage (false frequencies bleeding into spectrum).
-  static List<double> applyHammingWindow(List<double> samples, {double alpha = 0.54}) {
-    int N = samples.length;
-    double beta = 1 - alpha; // Beta is the complement of alpha
-
-    for (int n = 0; n < N; n++) {
-      samples[n] *= alpha - beta * cos(2 * pi * n / (N - 1));
-    }
-
-    return samples;
+    return dbSPL.clamp(0, 140); // Within a realistic range
   }
 
   //It takes as input the normalized signal
@@ -275,9 +94,10 @@ class SoundProcessing {
     //Nyquist frequency -> rileva frequenze da 0 alla meta' del sample rate
     double dominantFrequency = maxIndex * sampleRate / samples.length;
 
-    if (dominantFrequency < minFrequency) {
-      dominantFrequency = minFrequency;
-    } else if (dominantFrequency > maxFrequency) {
+    // if (dominantFrequency < minFrequency) {
+    //   dominantFrequency = minFrequency;
+    // } else
+    if (dominantFrequency > maxFrequency) {
       dominantFrequency = maxFrequency;
     }
 
@@ -344,35 +164,3 @@ class SoundProcessing {
 
 
 
-// static List<Complex> convertToComplex(List<int> audioData) {
-//   return audioData.map((e) => Complex(e.toDouble(), 0.0)).toList();
-// }
-//
-// static List<Complex> fft(List<Complex> input) {
-//   int n = input.length;
-//
-//   if (n <= 1) return input;
-//
-//   List<Complex> even = [];
-//   List<Complex> odd = [];
-//   for (int i = 0; i < n; i++) {
-//     if (i.isEven) {
-//       even.add(input[i]);
-//     } else {
-//       odd.add(input[i]);
-//     }
-//   }
-//
-//   even = fft(even);
-//   odd = fft(odd);
-//
-//   List<Complex> result = List.filled(n, Complex.zero);
-//
-//   for (int k = 0; k < n ~/ 2; k++) {
-//     Complex t = Complex.polar(1.0, -2 * pi * k / n) * odd[k];
-//     result[k] = even[k] + t;
-//     result[k + n ~/ 2] = even[k] - t;
-//   }
-//
-//   return result;
-// }
