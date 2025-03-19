@@ -16,6 +16,8 @@ mixin Languages {
   static const String exitToast = "exitToast";
   static const String savedSampleRate = "savedSampleRate";
   static const String savedBitRate = "savedBitRate";
+  static const String rawWave = "rawWave";
+  static const String polishedWave = "naturalWave";
 
   static const Map<String, dynamic> EN = {
     selectTheme: "Themes",
@@ -33,6 +35,8 @@ mixin Languages {
     exitToast: "Double Tap to Exit",
     savedSampleRate: "Sample Rate Saved",
     savedBitRate: "Bit Rate Saved",
+    rawWave: "Raw",
+    polishedWave: "Polished",
   };
 
   static const Map<String, dynamic> IT = {
@@ -51,5 +55,7 @@ mixin Languages {
     exitToast: "Tocca due volte per uscire",
     savedSampleRate: "Sample Rate Aggiornato",
     savedBitRate: "Bit Rate Aggiornato",
+    rawWave: "Naturale",
+    polishedWave: "Elaborata",
   };
 }

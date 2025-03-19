@@ -16,6 +16,7 @@ class Recorder {
   final int defaultBitRate = 128000;
   bool permissionsAllowed = false;
   StreamController<Uint8List>? controller;
+  bool isCleanWave = true;
 
   Recorder._internal();
 
@@ -25,6 +26,7 @@ class Recorder {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     sampleRate = prefs.getInt('sampleRate') ?? defaultSampleRate;
     bitRate = prefs.getInt('bitRate') ?? defaultBitRate;
+    isCleanWave = prefs.getBool('isCleanWave') ?? true;
   }
 
   Future<bool> _requestPermissions() async {
@@ -101,7 +103,7 @@ class Recorder {
         previousFrequency = previousFrequency * 0.7 + frequency * 0.3;
 
         if (previousFrequency >= minFrequency && previousFrequency <= maxFrequency) {
-          setPitchValues?.call(SoundProcessing.getClosestNoteFromFrequency(previousFrequency), previousFrequency, true, convertedData);
+          setPitchValues?.call(SoundProcessing.getClosestNoteFromFrequency(previousFrequency), previousFrequency, isCleanWave, convertedData);
         }
       }
 
