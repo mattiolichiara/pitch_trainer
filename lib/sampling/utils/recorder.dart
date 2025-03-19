@@ -77,19 +77,35 @@ class Recorder {
     _listenSubscription?.cancel();
 
     _listenSubscription = stream.listen((data) {
-      Uint8List noiseSuppressedData = SoundProcessing.applyBasicFilter(data, sampleRate);
-      List<double> convertedData = SoundProcessing.convertData(noiseSuppressedData);
-      convertedData = SoundProcessing.applySecondOrderHighPass(convertedData, sampleRate);
-      convertedData = SoundProcessing.applyMedianFilter(convertedData);
-      convertedData = SoundProcessing.applyWeightedMovingAverage(convertedData);
-      convertedData = SoundProcessing.applyDynamicNoiseGate(convertedData);
-      convertedData = SoundProcessing.applyHammingWindow(convertedData);
-      double frequency = SoundProcessing.getDominantFrequency(convertedData, sampleRate, minFrequency, maxFrequency);
-      //debugPrint("f: $frequency");
+      double previousFrequency = 0.0;
+      if (recorder!.isRecording) {
+        Uint8List noiseSuppressedData = SoundProcessing.applyBasicFilter(data, sampleRate);
+        List<double> convertedData = SoundProcessing.convertData(noiseSuppressedData);
 
-      if (frequency >= minFrequency && frequency <= maxFrequency) {
-        setPitchValues?.call(SoundProcessing.getClosestNoteFromFrequency(frequency), frequency, true, convertedData);
+        convertedData = SoundProcessing.applySecondOrderHighPass(convertedData, sampleRate, cutoff: 200.0);
+        convertedData = SoundProcessing.applyMedianFilter(convertedData, windowSize: 11);
+        convertedData = SoundProcessing.applyMedianFilter(convertedData, windowSize: 9);
+        convertedData = SoundProcessing.applyMedianFilter(convertedData, windowSize: 7);
+        convertedData = SoundProcessing.applyWeightedMovingAverage(convertedData, windowSize: 10);
+        convertedData = SoundProcessing.applyAdaptiveNoiseGate(convertedData, baseThreshold: 0.15, windowSize: 10240);
+        convertedData = SoundProcessing.applyHammingWindow(convertedData, alpha: 0.6);
+
+        //Energy-Based Noise Filtering (Skip Low Energy Signals)
+        double energy = convertedData.fold(0.0, (sum, val) => sum + val.abs()) / convertedData.length;
+        if (energy < 0.2) return;
+
+        double frequency = SoundProcessing.getDominantFrequency(convertedData, sampleRate, minFrequency, maxFrequency);
+
+        //Frequency Smoothing (Ignore Quick Shifts)
+        if(previousFrequency==0.0) previousFrequency=frequency;
+        previousFrequency = previousFrequency * 0.7 + frequency * 0.3;
+
+        if (previousFrequency >= minFrequency && previousFrequency <= maxFrequency) {
+          setPitchValues?.call(SoundProcessing.getClosestNoteFromFrequency(previousFrequency), previousFrequency, true, convertedData);
+        }
       }
+
+
     },
       onError: (error) => debugPrint("Error in stream: $error"),
       onDone: () => debugPrint("Stream Closed"),
