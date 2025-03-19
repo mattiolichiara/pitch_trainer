@@ -17,6 +17,7 @@ class Recorder {
   bool permissionsAllowed = false;
   StreamController<Uint8List>? controller;
   bool isCleanWave = true;
+  double accuracyThreshold = 1;
 
   Recorder._internal();
 
@@ -27,6 +28,7 @@ class Recorder {
     sampleRate = prefs.getInt('sampleRate') ?? defaultSampleRate;
     bitRate = prefs.getInt('bitRate') ?? defaultBitRate;
     isCleanWave = prefs.getBool('isCleanWave') ?? true;
+    accuracyThreshold = prefs.getDouble("accuracyThreshold") ?? 1;
   }
 
   Future<bool> _requestPermissions() async {
@@ -94,7 +96,7 @@ class Recorder {
           double frequency = SoundProcessing.getDominantFrequency(convertedData, sampleRate, minFrequency, maxFrequency);
 
           if (frequency == 0.0) {
-            zeroFrequencyTimer ??= Timer(Duration(seconds: 5), () {
+            zeroFrequencyTimer ??= Timer(Duration(seconds: 3), () {
               resetPitchValues?.call();
             });
           } else {
@@ -105,12 +107,10 @@ class Recorder {
             //Frequency Smoothing (Ignore Quick Shifts)
             if(frequency==0.0) return;
             if(previousFrequency==frequency) return;
-            debugPrint("f: $frequency");
+          if (frequency < minFrequency || frequency > maxFrequency) return;
+          debugPrint("f: $frequency");
             previousFrequency = previousFrequency * 0.7 + frequency * 0.3;
-
-          if (previousFrequency >= minFrequency && previousFrequency <= maxFrequency) {
             setPitchValues?.call(SoundProcessing.getClosestNoteFromFrequency(previousFrequency), previousFrequency, isCleanWave, convertedData, loudness);
-          }
         }
     },
       onError: (error) => debugPrint("Error in stream: $error"),

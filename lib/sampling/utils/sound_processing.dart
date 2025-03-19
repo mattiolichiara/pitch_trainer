@@ -122,7 +122,8 @@ class SoundProcessing {
     return closestNote;
   }
 
-  static double getNoteAccuracy(String selectedNote, double selectedFrequency) {
+  static double getNoteAccuracy(String selectedNote, double selectedFrequency, double accuracyThreshold) {
+    //debugPrint("threshold $accuracyThreshold");
     double closestFrequency = Frequencies.frequencies[selectedNote] ?? 0.0;
     double accuracy = 0.0;
 
@@ -131,10 +132,10 @@ class SoundProcessing {
       double frequencyDiff = selectedFrequency - closestFrequency;
 
       //tolerance of 1.5hz
-      if (frequencyDiff.abs() < 1.5) {//TODO permettere la modifica del accuracy accettabile
+      if (frequencyDiff.abs() < accuracyThreshold) {
         accuracy = 100.0 - frequencyDiff.abs();
       } else {
-        accuracy = 0.0; //if the difference is higher than 1.5hz then the accuracy is none
+        accuracy = 0.0; //if the difference is higher than num hz then the accuracy is none
       }
     }
     return accuracy;

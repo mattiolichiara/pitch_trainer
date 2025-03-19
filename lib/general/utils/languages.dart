@@ -18,6 +18,7 @@ mixin Languages {
   static const String savedBitRate = "savedBitRate";
   static const String rawWave = "rawWave";
   static const String polishedWave = "naturalWave";
+  static const String accuracyThreshold = "accuracyThreshold";
 
   static const Map<String, dynamic> EN = {
     selectTheme: "Themes",
@@ -37,6 +38,7 @@ mixin Languages {
     savedBitRate: "Bit Rate Saved",
     rawWave: "Raw",
     polishedWave: "Polished",
+    accuracyThreshold: "Accuracy Threshold",
   };
 
   static const Map<String, dynamic> IT = {
@@ -57,5 +59,6 @@ mixin Languages {
     savedBitRate: "Bit Rate Aggiornato",
     rawWave: "Naturale",
     polishedWave: "Elaborata",
+    accuracyThreshold: "Soglia di Precisione",
   };
 }

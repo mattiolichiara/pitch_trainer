@@ -17,7 +17,7 @@ import 'package:pitch_trainer/sampling/view/sampling_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../general/utils/languages.dart';
-import '../../general/view/settings.dart';
+import '../../settings/view/settings.dart';
 import '../../general/widgets/double_tap_to_exit.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
@@ -255,7 +255,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         ),
         Text(
           (recorder!=null && recorder!.permissionsAllowed)
-              ? "            ${_accuracy.toStringAsFixed(2)}"
+              ? "            ${_accuracy.toStringAsFixed(2)}%"
               : "",
           style: TextStyle(
             color: td.colorScheme.onSurface,
@@ -337,7 +337,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     setState(() {
       _selectedNote = note;
       _selectedFrequency = frequency;
-      _accuracy = SoundProcessing.getNoteAccuracy(note, frequency);
+      _accuracy = SoundProcessing.getNoteAccuracy(note, frequency, recorder!.accuracyThreshold);
       _samples = isCleanWave? SoundProcessing.updateSamples(frequency, recorder!.sampleRate) : rawData;
       _loudness = loudness;
     });
