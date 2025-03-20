@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../general/utils/languages.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
-import '../logic/frequencies.dart';
+import '../utils/frequencies.dart';
 
 class SamplingType extends StatefulWidget {
   const SamplingType({super.key,});
@@ -215,7 +215,7 @@ class _SamplingType extends State<SamplingType> {
           scrollDirection: Axis.vertical,
           children: [
             InstrumentCard(
-              text: "${Languages.piano.getString(context)}",
+              text: Languages.piano.getString(context),
               subText: "A0 (27.50) - C8 (4186.01)",
               isActive: !(_minFrequency == 27.50 && _maxFrequency == 4186.01 && _isNotCustom),
               leadingIcon: _instrumentIcons["Piano"]!,
@@ -265,7 +265,7 @@ class _SamplingType extends State<SamplingType> {
             ),
             SizedBox(height: size.height * 0.006),
             InstrumentExpansionTile(
-              subText: _isNotCustom ? Languages.customText.getString(context) : "${selectedMinFrequency}($_minFrequency) - ${selectedMaxFrequency}($_maxFrequency)",
+              subText: _isNotCustom ? Languages.customText.getString(context) : "$selectedMinFrequency($_minFrequency) - $selectedMaxFrequency($_maxFrequency)",
               text: Languages.custom.getString(context),
               isActive: _isNotCustom,
               leadingIcon: _instrumentIcons["Custom"]!,
