@@ -1,9 +1,9 @@
-import 'dart:math';
 import 'dart:core';
+import 'dart:math';
 import 'dart:typed_data';
-import 'package:complex/complex.dart';
+
 import 'package:fftea/impl.dart';
-import 'package:flutter/material.dart';
+
 import 'frequencies.dart';
 
 class SoundProcessing {

@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
-import 'package:pitch_trainer/settings/utils/language_setting.dart';
-import 'package:pitch_trainer/settings/widgets/button_select.dart';
-import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import 'package:pitch_trainer/settings/widgets/text_field_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../general/widgets/home_app_bar.dart';
-import '../../sampling/utils/recorder.dart';
-import '../../general/utils/theme_cubit.dart';
-import '../../general/widgets/ui_utils.dart';
+
+import '../../../general/widgets/ui_utils.dart';
+import '../../../sampling/logic/recorder.dart';
 
 class RatesSettings extends StatefulWidget {
   const RatesSettings({super.key,});

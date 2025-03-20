@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
-import 'package:pitch_trainer/sampling/utils/frequencies.dart';
 import 'package:pitch_trainer/sampling/view/sound_sampling.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_card.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
@@ -9,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../general/utils/languages.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
+import '../logic/frequencies.dart';
 
 class SamplingType extends StatefulWidget {
   const SamplingType({super.key,});

@@ -1,27 +1,20 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'dart:ui';
 
-import 'package:complex/complex.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_localization/flutter_localization.dart';
-import 'package:flutter_sound/public/flutter_sound_recorder.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:pitch_trainer/sampling/utils/recorder.dart';
-import 'package:pitch_trainer/sampling/utils/sound_processing.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
 import 'package:pitch_trainer/sampling/view/sampling_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../general/utils/languages.dart';
-import '../../settings/view/settings.dart';
 import '../../general/widgets/double_tap_to_exit.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
+import '../../settings/view/settings.dart';
+import '../logic/recorder.dart';
+import '../logic/sound_processing.dart';
 
 class SoundSampling extends StatefulWidget {
   const SoundSampling({super.key});

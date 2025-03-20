@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
-import 'package:pitch_trainer/settings/utils/accuracy_settings.dart';
-import 'package:pitch_trainer/settings/utils/language_setting.dart';
-import 'package:pitch_trainer/settings/utils/rates_settings.dart';
-import 'package:pitch_trainer/settings/utils/sound_wave_settings.dart';
-import 'package:pitch_trainer/settings/utils/theme_settings.dart';
+
 import '../../general/widgets/home_app_bar.dart';
-import '../../sampling/utils/recorder.dart';
-import '../../general/utils/theme_cubit.dart';
-import '../../general/widgets/ui_utils.dart';
+import '../widgets/functional/accuracy_settings.dart';
+import '../widgets/functional/language_setting.dart';
+import '../widgets/functional/rates_settings.dart';
+import '../widgets/functional/sound_wave_settings.dart';
+import '../widgets/functional/theme_settings.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key,});
