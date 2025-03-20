@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:complex/complex.dart';
 import 'package:flutter/material.dart';
@@ -49,10 +50,15 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     _loadPreferences().then((_) {
-      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues, _resetPitchValues);
+      recorder!.startRecording(
+        _setRecordingState,
+        _minFrequency,
+        _maxFrequency,
+        _setPitchValues,
+        _resetPitchValues,
+      );
     });
   }
-
 
   @override
   void dispose() {
@@ -61,15 +67,28 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     super.dispose();
   }
 
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.hidden) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden) {
       //recorder.pauseRecording(_resetPitchValues, _setRecordingState);
-      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues, _resetPitchValues);
+      recorder!.startRecording(
+        _setRecordingState,
+        _minFrequency,
+        _maxFrequency,
+        _setPitchValues,
+        _resetPitchValues,
+      );
     } else if (state == AppLifecycleState.resumed) {
       //recorder.resumeRecording(_setRecordingState);
-      recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues, _resetPitchValues);
+      recorder!.startRecording(
+        _setRecordingState,
+        _minFrequency,
+        _maxFrequency,
+        _setPitchValues,
+        _resetPitchValues,
+      );
     }
   }
 
@@ -80,17 +99,40 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         width: 10,
         height: size.height * 0.0035,
         decoration: BoxDecoration(
-            color: td.colorScheme.onSurface,
-            boxShadow: [
-              BoxShadow(
-                color: td.colorScheme.onSurface,
-                spreadRadius: 1,
-                blurRadius: 15,
-                offset: Offset(0, 1),
-              )
-            ]
+          color: td.colorScheme.onSurface,
+          boxShadow: [
+            BoxShadow(
+              color: td.colorScheme.onSurface,
+              spreadRadius: 1,
+              blurRadius: 15,
+              offset: Offset(0, 1),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Color _getAccuracyColor(double accuracy, ThemeData td) {
+    return Color.lerp(Colors.white, td.colorScheme.primary, accuracy / 100)!;
+  }
+
+  Color _getAccuracyColorReverse(double accuracy, ThemeData td) {
+    return Color.lerp(td.colorScheme.primary, Colors.white, accuracy / 100)!;
+  }
+
+  BoxShadow _getAccuracyShadow(double accuracy, ThemeData td) {
+    double blurRadius = 100;
+    double spreadRadius = accuracy/100*20;
+    Color mixedColor = Color.lerp(td.colorScheme.primary, td.colorScheme.onSurface, 0.7)!;
+
+    Color shadowColor = Color.lerp(Colors.transparent, td.colorScheme.secondary,(accuracy / 100) * 0.4 + 0.6, )!;
+
+    return BoxShadow(
+      color: shadowColor,
+      blurRadius: blurRadius,
+      spreadRadius: spreadRadius,
+      offset: const Offset(0, 1),
     );
   }
 
@@ -109,7 +151,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         "assets/icons/microphone-svgrepo-com.svg",
         height: size.height * 0.04,
         width: size.width * 0.04,
-        colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(
+          td.colorScheme.onSurface,
+          BlendMode.srcIn,
+        ),
       ),
       onPressed: () {
         //recorder.pauseRecording(_resetPitchValues, _setRecordingState);
@@ -124,11 +169,20 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         "assets/icons/microphone-slash-svgrepo-com.svg",
         height: size.height * 0.04,
         width: size.width * 0.04,
-        colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(
+          td.colorScheme.onSurface,
+          BlendMode.srcIn,
+        ),
       ),
       onPressed: () {
         //recorder.resumeRecording(_setRecordingState);
-        recorder!.startRecording(_setRecordingState, _minFrequency, _maxFrequency, _setPitchValues, _resetPitchValues);
+        recorder!.startRecording(
+          _setRecordingState,
+          _minFrequency,
+          _maxFrequency,
+          _setPitchValues,
+          _resetPitchValues,
+        );
       },
     );
   }
@@ -165,13 +219,16 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
   Widget _settings(size, td) {
     return IconButton(
-      icon: Icon(Icons.settings_outlined, color: td.colorScheme.onSurface, size: size.height*0.03,),
+      icon: Icon(
+        Icons.settings_outlined,
+        color: td.colorScheme.onSurface,
+        size: size.height * 0.03,
+      ),
       onPressed: _onPressedSettings,
     );
   }
 
   Widget _loudnessBar(size, ThemeData td) {
-
     int currentStep = normalizeLoudness(_loudness).toInt();
 
     return Container(
@@ -189,13 +246,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Widget _soundWave(size, td) {
-
     return Container(
-      decoration: BoxDecoration(
-        boxShadow: [
-          UiUtils.widgetsShadow(1, 45, td)
-        ],
-      ),
+      decoration: BoxDecoration(boxShadow: [UiUtils.widgetsShadow(1, 45, td)]),
       child: CurvedPolygonWaveform(
         strokeWidth: 0.6,
         style: PaintingStyle.stroke,
@@ -211,30 +263,44 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-  Widget _noteLabel(size, td) {
+  Widget _noteLabel(Size size, ThemeData td) {
     return Center(
-        child: (recorder!=null && recorder!.permissionsAllowed)
-            ? Text(
-          "$_selectedNote$_selectedOctave",
-          style: TextStyle(
-            color: td.colorScheme.onSurface,
-            fontSize: size.width * 0.35,
-            shadows: [
-              UiUtils.widgetsShadow(80, 20, td),
-            ],
+      child: (recorder != null && recorder!.permissionsAllowed)
+          ? Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: size.width*0.5,
+            height: size.height*0.25,
+            decoration: BoxDecoration(
+              boxShadow: [_getAccuracyShadow(_accuracy, td)],
+            ),
           ),
-        )
-            : Text(
+          // Actual Text
+          Text(
+            "$_selectedNote$_selectedOctave",
+            style: TextStyle(
+              color: _getAccuracyColor(_accuracy, td),
+              fontSize: size.width * 0.35,
+              shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy, td))],
+            ),
+          ),
+        ],
+      )
+          : SizedBox(
+        width: size.width * 0.7,
+        child: Text(
           Languages.permissionsWarning.getString(context),
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontSize: size.width * 0.04,
-            shadows: [
-              UiUtils.widgetsShadow(80, 20, td),
-            ],
+            shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
-        ));
+        ),
+      ),
+    );
   }
+
 
   Widget _frequencyBar(size, td) {
     return Row(
@@ -242,39 +308,33 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          (recorder!=null && recorder!.permissionsAllowed)
+          (recorder != null && recorder!.permissionsAllowed)
               ? "${_selectedFrequency.toStringAsFixed(2)} HZ"
               : "",
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontSize: size.width * 0.038,
-            shadows: [
-              UiUtils.widgetsShadow(80, 20, td),
-            ],
+            shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
         ),
         Text(
-          (recorder!=null && recorder!.permissionsAllowed)
+          (recorder != null && recorder!.permissionsAllowed)
               ? "            ${_accuracy.toStringAsFixed(2)}%"
               : "",
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontSize: size.width * 0.038,
-            shadows: [
-              UiUtils.widgetsShadow(80, 20, td),
-            ],
+            shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
         ),
         Text(
-          (recorder!=null && recorder!.permissionsAllowed)
+          (recorder != null && recorder!.permissionsAllowed)
               ? "            ${_loudness.toStringAsFixed(2)} dB"
               : "",
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontSize: size.width * 0.038,
-            shadows: [
-              UiUtils.widgetsShadow(80, 20, td),
-            ],
+            shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
         ),
       ],
@@ -333,12 +393,25 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     });
   }
 
-  void _setPitchValues(String note, double frequency, bool isCleanWave, List<double> rawData, double loudness) {
+  void _setPitchValues(
+    String note,
+    double frequency,
+    bool isCleanWave,
+    List<double> rawData,
+    double loudness,
+  ) {
     setState(() {
       _selectedNote = note;
       _selectedFrequency = frequency;
-      _accuracy = SoundProcessing.getNoteAccuracy(note, frequency, recorder!.accuracyThreshold);
-      _samples = isCleanWave? SoundProcessing.updateSamples(frequency, recorder!.sampleRate) : rawData;
+      _accuracy = SoundProcessing.getNoteAccuracy(
+        note,
+        frequency,
+        recorder!.accuracyThreshold,
+      );
+      _samples =
+          isCleanWave
+              ? SoundProcessing.updateSamples(frequency, recorder!.sampleRate)
+              : rawData;
       _loudness = loudness;
     });
   }
@@ -359,24 +432,25 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     setState(() {
       _minFrequency = prefs.getDouble('minFrequency') ?? 27.50;
       _maxFrequency = prefs.getDouble('maxFrequency') ?? 4186.01;
-      _selectedInstrument = prefs.getString('instrumentIcon') ?? 'assets/icons/piano-instrument-keyboard-svgrepo-com.svg';
+      _selectedInstrument =
+          prefs.getString('instrumentIcon') ??
+          'assets/icons/piano-instrument-keyboard-svgrepo-com.svg';
     });
   }
 
   void _onPressedInstruments() {
     recorder!.stopRecording(_resetPitchValues, _setRecordingState);
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const SamplingType(),
-    ));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const SamplingType()));
   }
 
   void _onPressedSettings() {
     recorder!.stopRecording(_resetPitchValues, _setRecordingState);
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const Settings(),
-    ));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const Settings()));
   }
-
 
   //BUILD
   @override
@@ -391,24 +465,21 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
           title: 'Pitch Trainer',
           isHome: true,
           action1: _startStopRecording(size, td),
-          action2: _isLoading ? UiUtils.loadingStyle(td) : _instruments(size, td),
+          action2:
+              _isLoading ? UiUtils.loadingStyle(td) : _instruments(size, td),
           action3: _settings(size, td),
         ),
         body: Column(
           children: [
-            SizedBox(
-              height: size.height * 0.001,
-            ),
-            _isRecording? _loudnessBar(size, td) : Container(),
+            SizedBox(height: size.height * 0.001),
+            _isRecording ? _loudnessBar(size, td) : Container(),
             Expanded(
               child: Center(
                 child: Container(
                   height: size.height * 0.85,
                   width: size.width * 0.9,
                   decoration: BoxDecoration(
-                    boxShadow: [
-                      UiUtils.widgetsShadow(2, 20, td),
-                    ],
+                    boxShadow: [UiUtils.widgetsShadow(2, 20, td)],
                   ),
                   child: _mainCard(size, td),
                 ),

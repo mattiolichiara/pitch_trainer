@@ -20,6 +20,15 @@ class UiUtils {
     );
   }
 
+  static BoxShadow widgetsShadowColor(double spreadRadius, double blurRadius, Color color) {
+    return BoxShadow(
+      color: color,
+      spreadRadius: spreadRadius,
+      blurRadius: blurRadius,
+      offset: const Offset(0, 1),
+    );
+  }
+
   static Widget handleEmptyTaps(void Function()? onTap, Widget child) {
     return Stack(
       children: [
