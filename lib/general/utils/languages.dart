@@ -38,7 +38,7 @@ mixin Languages {
     savedBitRate: "Bit Rate Saved",
     rawWave: "Raw",
     polishedWave: "Polished",
-    accuracyThreshold: "Accuracy Threshold",
+    accuracyThreshold: "Accuracy Threshold",//TODO
   };
 
   static const Map<String, dynamic> IT = {

@@ -15,13 +15,10 @@ class SoundWaveSettings extends StatefulWidget {
 
 class _SoundWaveSettings extends State<SoundWaveSettings> {
   late SharedPreferences _prefs;
-  late Recorder recorder;
   bool _isCleanWave = true;
 
   @override
   void initState() {
-    recorder = Recorder();
-    recorder.initialize();
     WidgetsFlutterBinding.ensureInitialized();
     _getPreferences();
     super.initState();

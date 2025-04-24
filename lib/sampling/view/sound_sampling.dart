@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:flutter_pitch_detection/flutter_pitch_detection.dart';
+import 'package:flutter_pitch_detection/flutter_pitch_detection_platform_interface.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:pitch_trainer/sampling/view/sampling_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,8 +16,7 @@ import '../../general/widgets/double_tap_to_exit.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
 import '../../settings/view/settings.dart';
-import '../logic/recorder.dart';
-import '../logic/sound_processing.dart';
+import '../utils/constants.dart';
 
 class SoundSampling extends StatefulWidget {
   const SoundSampling({super.key});
@@ -25,17 +27,23 @@ class SoundSampling extends StatefulWidget {
 
 class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   String _selectedNote = "-";
-  String _selectedOctave = "";
   double _selectedFrequency = 0.0;
   List<double> _samples = [];
-  double _accuracy = 0.0;
+  int _accuracy = 0;
   double _minFrequency = 0.0;
   double _maxFrequency = 0.0;
   String _selectedInstrument = "";
-  bool _isRecording = false;
   bool _isLoading = true;
-  Recorder? recorder;
   double _loudness = 0;
+  final _pitchDetector = FlutterPitchDetection();
+  StreamSubscription<Map<String, dynamic>>? _pitchSubscription;
+  late int _sampleRate;
+  late double _tolerance;
+  late double _precision;
+  late int _bufferSize;
+  late bool _isCleanWave;
+  bool _isOnPitch = false;
+  bool _rec = false;
 
   @override
   void initState() {
@@ -43,13 +51,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     _loadPreferences().then((_) {
-      recorder!.startRecording(
-        _setRecordingState,
-        _minFrequency,
-        _maxFrequency,
-        _setPitchValues,
-        _resetPitchValues,
-      );
+      _startRecording();
     });
   }
 
@@ -65,23 +67,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached ||
         state == AppLifecycleState.hidden) {
-      //recorder.pauseRecording(_resetPitchValues, _setRecordingState);
-      recorder!.startRecording(
-        _setRecordingState,
-        _minFrequency,
-        _maxFrequency,
-        _setPitchValues,
-        _resetPitchValues,
-      );
+      _stopRecording();
     } else if (state == AppLifecycleState.resumed) {
-      //recorder.resumeRecording(_setRecordingState);
-      recorder!.startRecording(
-        _setRecordingState,
-        _minFrequency,
-        _maxFrequency,
-        _setPitchValues,
-        _resetPitchValues,
-      );
+      _startRecording();
     }
   }
 
@@ -150,8 +138,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         ),
       ),
       onPressed: () {
-        //recorder.pauseRecording(_resetPitchValues, _setRecordingState);
-        recorder!.stopRecording(_resetPitchValues, _setRecordingState);
+        _stopRecording();
       },
     );
   }
@@ -168,14 +155,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         ),
       ),
       onPressed: () {
-        //recorder.resumeRecording(_setRecordingState);
-        recorder!.startRecording(
-          _setRecordingState,
-          _minFrequency,
-          _maxFrequency,
-          _setPitchValues,
-          _resetPitchValues,
-        );
+        _startRecording();
       },
     );
   }
@@ -222,7 +202,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Widget _loudnessBar(size, ThemeData td) {
-    int currentStep = normalizeLoudness(_loudness).toInt();
+    int currentStep = _loudness.toInt();
 
     return Container(
       decoration: BoxDecoration(
@@ -258,7 +238,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
   Widget _noteLabel(Size size, ThemeData td) {
     return Center(
-      child: (recorder != null && recorder!.permissionsAllowed)
+      child: PermissionStatus.granted.isGranted
           ? Stack(
         alignment: Alignment.center,
         children: [
@@ -266,16 +246,16 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             width: size.width*0.5,
             height: size.height*0.25,
             decoration: BoxDecoration(
-              boxShadow: [_getAccuracyShadow(_accuracy, td)],
+              boxShadow: [_getAccuracyShadow(_accuracy.toDouble(), td)],
             ),
           ),
           // Actual Text
           Text(
-            "$_selectedNote$_selectedOctave",
+            _selectedNote,
             style: TextStyle(
-              color: _getAccuracyColor(_accuracy, td),
+              color: _getAccuracyColor(_accuracy.toDouble(), td),
               fontSize: size.width * 0.35,
-              shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy, td))],
+              shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy.toDouble(), td))],
             ),
           ),
         ],
@@ -294,16 +274,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
     );
   }
 
-
-  Widget _frequencyBar(size, td) {
+  Widget _frequencyBar(Size size, td) {
     return Row(
+      spacing: size.width*0.05,
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          (recorder != null && recorder!.permissionsAllowed)
-              ? "${_selectedFrequency.toStringAsFixed(2)} HZ"
-              : "",
+          _rec ? "${_selectedFrequency.toStringAsFixed(2)}Hz" : "",
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontSize: size.width * 0.038,
@@ -311,25 +289,21 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
           ),
         ),
         Text(
-          (recorder != null && recorder!.permissionsAllowed)
-              ? "            ${_accuracy.toStringAsFixed(2)}%"
-              : "",
+          _rec ? "${_accuracy.toStringAsFixed(2)}%" : "",
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontSize: size.width * 0.038,
             shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
         ),
-        Text(
-          (recorder != null && recorder!.permissionsAllowed)
-              ? "            ${_loudness.toStringAsFixed(2)} dB"
-              : "",
-          style: TextStyle(
-            color: td.colorScheme.onSurface,
-            fontSize: size.width * 0.038,
-            shadows: [UiUtils.widgetsShadow(80, 20, td)],
-          ),
-        ),
+        // Text(
+        //   _rec ? "${_loudness.toStringAsFixed(2)} vol" : "",
+        //   style: TextStyle(
+        //     color: td.colorScheme.onSurface,
+        //     fontSize: size.width * 0.038,
+        //     shadows: [UiUtils.widgetsShadow(80, 20, td)],
+        //   ),
+        // ),
       ],
     );
   }
@@ -337,7 +311,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   Widget _startStopRecording(size, td) {
     Widget action;
 
-    (_isRecording == true)
+    (_rec == true)
         ? action = _enabledRecordingButton(size, td)
         : action = _disabledRecordingButton(size, td);
 
@@ -361,59 +335,31 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   //METHODS
-  double normalizeLoudness(double dbfs) {
-    const double minDb = 0;
-    const double maxDb = 140;
-
-    double normalized = ((dbfs - minDb) / (maxDb - minDb)) * 100;
-    return normalized.clamp(0, 100);
-  }
-
-  void _setRecordingState(bool listening) {
-    setState(() {
-      _isRecording = listening;
-    });
-  }
-
   void _resetPitchValues() {
     setState(() {
       _selectedFrequency = 0.0;
       _selectedNote = "-";
-      _selectedOctave = "";
-      _accuracy = 0.0;
+      _accuracy = 0;
       _loudness = 0;
       _samples = [];
     });
   }
 
-  void _setPitchValues(
-    String note,
-    double frequency,
-    bool isCleanWave,
-    List<double> rawData,
-    double loudness,
-  ) {
+  void _setPitchValues(String note, double frequency, int accuracy, bool isCleanWave, List<double> rawData, double loudness,) {
     setState(() {
       _selectedNote = note;
       _selectedFrequency = frequency;
-      _accuracy = SoundProcessing.getNoteAccuracy(
-        note,
-        frequency,
-        recorder!.accuracyThreshold,
-      );
-      _samples =
-          isCleanWave
-              ? SoundProcessing.updateSamples(frequency, recorder!.sampleRate)
-              : rawData;
+      _accuracy = accuracy;
+      // _samples =
+      //     isCleanWave
+      //         ? SoundProcessing.updateSamples(frequency, recorder!.sampleRate)
+      //         : rawData;
       _loudness = loudness;
     });
   }
 
   Future<void> _loadPreferences() async {
     await _loadFrequencyValues();
-
-    recorder = Recorder();
-    await recorder!.initialize();
 
     setState(() {
       _isLoading = false;
@@ -432,17 +378,98 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   void _onPressedInstruments() {
-    recorder!.stopRecording(_resetPitchValues, _setRecordingState);
+    _stopRecording();
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const SamplingType()));
   }
 
   void _onPressedSettings() {
-    recorder!.stopRecording(_resetPitchValues, _setRecordingState);
+    _stopRecording();
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const Settings()));
+  }
+
+  Future<void> getValues() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _sampleRate = prefs.getInt('sampleRate') ?? Constants.defaultSampleRate;
+    _bufferSize = prefs.getInt('bufferSize') ?? Constants.defaultBufferSize;
+    _precision = prefs.getDouble('precision') ?? Constants.defaultPrecision;
+    _tolerance = prefs.getDouble('tolerance') ?? Constants.defaultTolerance;
+    _isCleanWave = prefs.getBool('isCleanWave') ?? true;
+  }
+
+  Future<void> _startRecording() async {
+    if(!_rec) {
+      try {
+        await _pitchDetector.startDetection();
+        bool rec = await _pitchDetector.isRecording();
+
+        setState(() {
+          _rec = rec;
+        });
+        debugPrint("[START] Is Recording: $_rec");
+        _pitchDetector.setParameters(toleranceCents: 0.15, bufferSize: 8192, sampleRate: 44100, minPrecision: 0.85);
+
+        _pitchSubscription = FlutterPitchDetectionPlatform.instance.onPitchDetected.listen((event) async {
+          debugPrint("Full event: $event");
+          debugPrint("Event keys: ${event.keys.join(', ')}");
+          debugPrint("Event values type: ${event.values.runtimeType}");
+
+          final newNote = await _pitchDetector.getNote();
+          final newFrequency = await _pitchDetector.getFrequency();
+          final newNoteOctave = await _pitchDetector.printNoteOctave();
+          final newOctave = await _pitchDetector.getOctave();
+          final newToleranceCents = await _pitchDetector.getToleranceCents();
+          final newBufferSize = await _pitchDetector.getBufferSize();
+          final newSampleRate = await _pitchDetector.getSampleRate();
+          final newIsRecording = await _pitchDetector.isRecording();
+          final newMinPrecision = await _pitchDetector.getMinPrecision();
+          final newAccuracy = await _pitchDetector.getAccuracy(newToleranceCents);
+          final newIsOnPitch = await _pitchDetector.isOnPitch(newToleranceCents, newMinPrecision);
+          final newVolume = await _pitchDetector.getVolume();
+          final newVolumeFromDbSF = await _pitchDetector.getVolumeFromDbFS();
+
+          if(newFrequency > _minFrequency && newFrequency < _maxFrequency) {
+            setState(() {
+              _selectedNote = newNoteOctave;
+              _selectedFrequency = newFrequency;
+              _sampleRate = newSampleRate;
+              _accuracy = newAccuracy;
+              _isOnPitch = newIsOnPitch;
+              _loudness = newVolumeFromDbSF;
+              _samples = event.values.toList() as List<double>;
+              debugPrint("$_samples");
+            });
+          }
+        });
+
+      } catch (e) {
+        debugPrint("Start Recording Error: $e");
+      }
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    if(_rec) {
+      try {
+        await _pitchDetector.stopDetection();
+        bool rec = await _pitchDetector.isRecording();
+
+        setState(() {
+          _rec = rec;
+        });
+
+        debugPrint("[STOP] Is Recording: $_rec");
+        await _pitchSubscription?.cancel();
+        _pitchSubscription = null;
+        _resetPitchValues();
+
+      } catch(e) {
+        debugPrint("Stop Recording Error: $e");
+      }
+    }
   }
 
   //BUILD
@@ -465,7 +492,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         body: Column(
           children: [
             SizedBox(height: size.height * 0.001),
-            _isRecording ? _loudnessBar(size, td) : Container(),
+            _rec ? _loudnessBar(size, td) : Container(),
             Expanded(
               child: Center(
                 child: Container(

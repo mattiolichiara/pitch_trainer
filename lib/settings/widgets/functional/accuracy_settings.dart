@@ -40,7 +40,7 @@ class _AccuracySettings extends State<AccuracySettings> {
       child: Align(
         alignment: Alignment.center,
         child: Text(
-          Languages.accuracyThreshold.getString(context),
+          Languages.accuracyThreshold.getString(context),//TODO
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontWeight: FontWeight.w500,
@@ -102,7 +102,7 @@ class _AccuracySettings extends State<AccuracySettings> {
 
 
   void _getAccuracyState() async {
-    _selectedAccuracy = (_prefs.getDouble('accuracyThreshold') ?? 1);
+    _selectedAccuracy = (_prefs.getDouble('accuracyThreshold') ?? 1);//todo
 
     setState(() {
       if (_selectedAccuracy == 0.5) {
@@ -116,7 +116,7 @@ class _AccuracySettings extends State<AccuracySettings> {
   }
 
   void _setAccuracyState(double value) async {
-    _prefs.setDouble('accuracyThreshold', value);
+    //_prefs.setDouble('accuracyThreshold', value);TODO
   }
 
   //BUILD

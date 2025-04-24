@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../general/widgets/ui_utils.dart';
 import '../../../sampling/logic/recorder.dart';
+import '../../../sampling/utils/constants.dart';
 
 class RatesSettings extends StatefulWidget {
   const RatesSettings({super.key,});
@@ -17,13 +18,12 @@ class RatesSettings extends StatefulWidget {
 
 class _RatesSettings extends State<RatesSettings> {
   final TextEditingController _sampleRateController = TextEditingController();
-  final TextEditingController _bitRateController = TextEditingController();
+  final TextEditingController _bufferSizeController = TextEditingController();
+  final TextEditingController _toleranceController = TextEditingController();
+  final TextEditingController _precisionController = TextEditingController();
   late SharedPreferences _prefs;
-  late Recorder recorder;
   @override
   void initState() {
-    recorder = Recorder();
-    recorder.initialize();
     WidgetsFlutterBinding.ensureInitialized();
     _getPreferences();
     super.initState();
@@ -31,72 +31,11 @@ class _RatesSettings extends State<RatesSettings> {
 
   void _getPreferences() async {
     _prefs = await SharedPreferences.getInstance();
-    _getBitRate();
     _getSampleRate();
 
     setState(() {
 
     });
-  }
-
-  //BIT RATE
-  //STYLE
-  Widget _bitRateTitle(size, td) {
-    return SizedBox(
-      width: size.width*0.4,
-      child: Align(
-        alignment: Alignment.center,
-        child: Text(
-          "Bit Rate",
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
-        ),
-      ),
-    );
-  }
-
-  Widget _bitRateField(Size size) {
-    return SizedBox(
-      width: size.width*0.4,
-      child: TextFieldCard(
-        controller: _bitRateController,
-        hintText: recorder.defaultBitRate.toString(),
-        isEnabled: true,
-        trailingIcon: Icons.save_outlined,
-        onTrailingIconPressed: () => _setBitRate(_bitRateController.text),
-        onChanged: (value) {
-          _bitRateController.text = value;
-        },
-      ),
-    );
-  }
-
-  Widget _bitRate(Size size, td) {
-    return Column(
-      children: [
-        _bitRateTitle(size, td),
-        SizedBox(height: size.height*0.03,),
-        _bitRateField(size),
-      ],
-    );
-  }
-
-  //METHODS
-  void _getBitRate() async {
-    _bitRateController.text = (_prefs.getInt('bitRate') ?? recorder.defaultBitRate).toString();
-  }
-
-  VoidCallback? _setBitRate(String bitRate) {
-    if(bitRate=="") {
-      setState(() {
-        bitRate = recorder.defaultBitRate.toString();
-      });
-    }
-    setState(() {
-      _bitRateController.text = bitRate;
-    });
-    _prefs.setInt('bitRate', int.parse(bitRate));
-    Fluttertoast.showToast(msg: Languages.savedBitRate.getString(context));
-    return null;
   }
 
   //SAMPLE RATE
@@ -119,7 +58,7 @@ class _RatesSettings extends State<RatesSettings> {
       width: size.width*0.4,
       child: TextFieldCard(
         controller: _sampleRateController,
-        hintText: recorder.defaultSampleRate.toString(),
+        hintText: Constants.defaultSampleRate.toString(),
         isEnabled: true,
         onChanged: (value) {
           _sampleRateController.text = value;
@@ -142,13 +81,25 @@ class _RatesSettings extends State<RatesSettings> {
 
   //METHODS
   void _getSampleRate() async {
-    _sampleRateController.text = (_prefs.getInt('sampleRate') ?? recorder.defaultSampleRate).toString();
+    _sampleRateController.text = (_prefs.getInt('sampleRate') ?? Constants.defaultSampleRate).toString();
+  }
+
+  void _getTolerance() async {
+    _toleranceController.text = (_prefs.getDouble('tolerance') ?? Constants.defaultTolerance).toString();
+  }
+
+  void _getPrecision() async {
+    _precisionController.text = (_prefs.getDouble('precision') ?? Constants.defaultPrecision).toString();
+  }
+
+  void _getBufferSize() async {
+    _bufferSizeController.text = (_prefs.getInt('bufferSize') ?? Constants.defaultBufferSize).toString();
   }
 
   VoidCallback? _setSampleRate(String sampleRate) {
     if(sampleRate=="") {
       setState(() {
-        sampleRate = recorder.defaultSampleRate.toString();
+        sampleRate = Constants.defaultSampleRate.toString();
       });
     }
     setState(() {
@@ -159,7 +110,49 @@ class _RatesSettings extends State<RatesSettings> {
     return null;
   }
 
-  //SAMPLE + BIT RATE
+  VoidCallback? _setPrecision(String precision) {
+    if(precision=="") {
+      setState(() {
+        precision = Constants.defaultSampleRate.toString();
+      });
+    }
+    setState(() {
+      _precisionController.text = precision;
+    });
+    _prefs.setDouble('precision', double.parse(precision));
+    Fluttertoast.showToast(msg: Languages.savedSampleRate.getString(context));//TODO make lang
+    return null;
+  }
+
+  VoidCallback? _setTolerance(String tolerance) {
+    if(tolerance=="") {
+      setState(() {
+        tolerance = Constants.defaultTolerance.toString();
+      });
+    }
+    setState(() {
+      _toleranceController.text = tolerance;
+    });
+    _prefs.setDouble('tolerance', double.parse(tolerance));
+    Fluttertoast.showToast(msg: Languages.savedSampleRate.getString(context));//TODO make lang
+    return null;
+  }
+
+  VoidCallback? _setBufferSize(String bufferSize) {
+    if(bufferSize=="") {
+      setState(() {
+        bufferSize = Constants.defaultBufferSize.toString();
+      });
+    }
+    setState(() {
+      _bufferSizeController.text = bufferSize;
+    });
+    _prefs.setInt('bufferSize', int.parse(bufferSize));
+    Fluttertoast.showToast(msg: Languages.savedSampleRate.getString(context));//TODO make lang
+    return null;
+  }
+
+  //SAMPLE
   Widget _audioOptions(Size size, ThemeData td) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -167,7 +160,6 @@ class _RatesSettings extends State<RatesSettings> {
       children: [
         _sampleRate(size, td),
         SizedBox(width: size.width*0.06,),
-        _bitRate(size, td),
       ],
     );
   }
