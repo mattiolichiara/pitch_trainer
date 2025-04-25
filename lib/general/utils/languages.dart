@@ -46,7 +46,7 @@ mixin Languages {
     languages: "Lingua",
     samplingTypeSubtitle: "Per evitare che vengano rilevate frequenze indesiderate, puo' essere selezionato uno strumento, se necessario puo' essere aggiunto un range di frequenze personalizzato.",
     options: "Opzioni",
-    permissionsWarning: "E' Necessario Attivare i Permessi del Microfono",
+    permissionsWarning: "Attivare i Permessi del Microfono",
     piano : "Pianoforte - 88 Tasti",
     guitar : "Chitarra - 6 Corde",
     bass : "Basso",

@@ -47,6 +47,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   bool _isOnPitch = false;
   bool _rec = false;
   int _midiNote = 0;
+  bool _permissionStatus = false;
+  bool _settingOpened = false;
 
   @override
   void initState() {
@@ -242,7 +244,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
   Widget _noteLabel(Size size, ThemeData td) {
     return Center(
-      child: PermissionStatus.granted.isGranted
+      child: _permissionStatus
           ? Stack(
         alignment: Alignment.center,
         children: [
@@ -266,12 +268,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
       )
           : SizedBox(
         width: size.width * 0.7,
-        child: Text(
-          Languages.permissionsWarning.getString(context),
-          style: TextStyle(
-            color: td.colorScheme.onSurface,
-            fontSize: size.width * 0.04,
-            shadows: [UiUtils.widgetsShadow(80, 20, td)],
+        child: Center(
+          child: Text(
+            Languages.permissionsWarning.getString(context),
+            style: TextStyle(
+              color: td.colorScheme.onSurface,
+              fontSize: size.width * 0.04,
+              shadows: [UiUtils.widgetsShadow(80, 20, td)],
+            ),
           ),
         ),
       ),
@@ -279,37 +283,38 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Widget _frequencyBar(Size size, td) {
-    return Row(
-      spacing: size.width*0.05,
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          _rec ? "${_selectedFrequency.toStringAsFixed(2)}Hz" : "0.0Hz",
-          style: TextStyle(
-            color: td.colorScheme.onSurface,
-            fontSize: size.width * 0.038,
-            shadows: [UiUtils.widgetsShadow(80, 20, td)],
+    return _permissionStatus ?
+      Row(
+        spacing: size.width * 0.05,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            _rec ? "${_selectedFrequency.toStringAsFixed(2)}Hz" : "0.0Hz",
+            style: TextStyle(
+              color: td.colorScheme.onSurface,
+              fontSize: size.width * 0.038,
+              shadows: [UiUtils.widgetsShadow(80, 20, td)],
+            ),
           ),
-        ),
-        Text(
-          _rec ? "${_accuracy.toStringAsFixed(2)}%" : "0%",
-          style: TextStyle(
-            color: td.colorScheme.onSurface,
-            fontSize: size.width * 0.038,
-            shadows: [UiUtils.widgetsShadow(80, 20, td)],
+          Text(
+            _rec ? "${_accuracy.toStringAsFixed(2)}%" : "0%",
+            style: TextStyle(
+              color: td.colorScheme.onSurface,
+              fontSize: size.width * 0.038,
+              shadows: [UiUtils.widgetsShadow(80, 20, td)],
+            ),
           ),
-        ),
-        Text(
-          _rec ? "$_midiNote MIDI" : "0 MIDI",
-          style: TextStyle(
-            color: td.colorScheme.onSurface,
-            fontSize: size.width * 0.038,
-            shadows: [UiUtils.widgetsShadow(80, 20, td)],
+          Text(
+            _rec ? "$_midiNote MIDI" : "0 MIDI",
+            style: TextStyle(
+              color: td.colorScheme.onSurface,
+              fontSize: size.width * 0.038,
+              shadows: [UiUtils.widgetsShadow(80, 20, td)],
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      ) : Container();
   }
 
   Widget _startStopRecording(size, td) {
@@ -371,14 +376,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   void _onPressedInstruments() {
-    _stopRecording();
+    //_stopRecording();
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const SamplingType()));
   }
 
   void _onPressedSettings() {
-    _stopRecording();
+    //_stopRecording();
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const Settings()));
@@ -396,6 +401,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Future<void> _startRecording() async {
+    _getPermissionStatus();
     if(!_rec) {
       try {
         await _pitchDetector.startDetection();
@@ -452,6 +458,18 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         debugPrint("Stop Recording Error: $e");
       }
     }
+  }
+
+  Future<void> _getPermissionStatus() async {
+    PermissionStatus status = await Permission.microphone.status;
+
+
+    _permissionStatus = status.isGranted;
+    if(status.isPermanentlyDenied && !_settingOpened) {
+      openAppSettings();
+      _settingOpened = true;
+    }
+
   }
 
   //BUILD
