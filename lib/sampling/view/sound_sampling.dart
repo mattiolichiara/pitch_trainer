@@ -102,7 +102,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Color _getAccuracyColorReverse(double accuracy, ThemeData td) {
-    return Color.lerp(td.colorScheme.primary, Colors.white, accuracy / 100)!;
+    return Color.lerp(td.colorScheme.primary, Colors.black, accuracy / 100)!;
   }
 
   BoxShadow _getAccuracyShadow(double accuracy, ThemeData td) {
