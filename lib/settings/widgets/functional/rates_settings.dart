@@ -6,7 +6,7 @@ import 'package:pitch_trainer/settings/widgets/text_field_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../general/widgets/ui_utils.dart';
-import '../../../sampling/logic/recorder.dart';
+import '../../../sampling/logic/utils.dart';
 import '../../../sampling/utils/constants.dart';
 
 class RatesSettings extends StatefulWidget {
