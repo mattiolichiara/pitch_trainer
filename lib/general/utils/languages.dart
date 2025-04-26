@@ -18,7 +18,16 @@ mixin Languages {
   static const String savedBitRate = "savedBitRate";
   static const String rawWave = "rawWave";
   static const String polishedWave = "naturalWave";
-  static const String accuracyThreshold = "accuracyThreshold";
+  static const String bufferSize = "bufferSize";
+  static const String sampleRate = "sampleRate";
+  static const String advancedSettings = "advancedSettings";
+  static const String advancedSettingsSubText = "advancedSettingsSubText";
+  static const String resetSettings = "resetSettings";
+  static const String resetSettingsSubText = "resetSettingsSubText";
+  static const String settingsResetToast = "settingsResetToast";
+  static const String other = "other";
+  static const String precision = "precision";
+  static const String tolerance = "tolerance";
 
   static const Map<String, dynamic> EN = {
     selectTheme: "Themes",
@@ -38,7 +47,16 @@ mixin Languages {
     savedBitRate: "Bit Rate Saved",
     rawWave: "Raw",
     polishedWave: "Polished",
-    accuracyThreshold: "Accuracy Threshold",//TODO
+    bufferSize: "Buffer Size",
+    sampleRate: "Sample Rate",
+    advancedSettings: "Advanced Settings",
+    advancedSettingsSubText: "Modify Configuration Settings",
+    resetSettings: "Reset Settings",
+    resetSettingsSubText: "Reset Settings to Default Values",
+    settingsResetToast: "Default Settings Restored",
+    other: "Other",
+    precision: "Precision",
+    tolerance: "Tolerance"
   };
 
   static const Map<String, dynamic> IT = {
@@ -59,6 +77,15 @@ mixin Languages {
     savedBitRate: "Bit Rate Aggiornato",
     rawWave: "Naturale",
     polishedWave: "Elaborata",
-    accuracyThreshold: "Soglia di Precisione",
+    bufferSize: "Dimensione Buffer",
+    sampleRate: "Frequenza di Campionamento",
+    advancedSettings: "Impostazioni Avanzate",
+    advancedSettingsSubText: "Modifiche di Configurazione",
+    resetSettings: "Reset Impostazioni",
+    resetSettingsSubText: "Reimposta le Impostazioni ai Valori di Default",
+    settingsResetToast: "Impostazioni Ripristinate",
+    other: "altro",
+    precision: "Precisione",
+    tolerance: "Tolleranza"
   };
 }

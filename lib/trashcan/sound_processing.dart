@@ -2,7 +2,7 @@
 // import 'dart:math';
 // import 'dart:typed_data';
 //
-// import '../sampling/utils/frequencies.dart';
+// import '../sampling/cubit/frequencies.dart';
 //
 // class SoundProcessing {
 //

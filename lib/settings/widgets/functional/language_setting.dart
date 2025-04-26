@@ -38,7 +38,7 @@ class _LanguageSettings extends State<LanguageSettings> {
     return SizedBox(
       width: size.width * 0.8,
       child: Align(
-        alignment: Alignment.center,
+        alignment: Alignment.centerLeft,
         child: Text(
           Languages.languages.getString(context),
           style: TextStyle(
@@ -75,7 +75,6 @@ class _LanguageSettings extends State<LanguageSettings> {
             _languageTitle(size, td),
             SizedBox(height: size.height * 0.03),
             _languageSelection(td, "", size),
-            SizedBox(height: size.height * 0.04),
           ],
         ),
       ),
@@ -148,11 +147,6 @@ class _LanguageSettings extends State<LanguageSettings> {
     Size size = MediaQuery.of(context).size;
     ThemeData td = Theme.of(context);
 
-    return Column(
-          children: [
-            _languageSection(size, td),
-            SizedBox(height: size.height * 0.05),
-          ],
-    );
+    return _languageSection(size, td);
   }
 }

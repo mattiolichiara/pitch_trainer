@@ -208,7 +208,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
   Widget _loudnessBar(size, ThemeData td) {
     int currentStep = _loudness.toInt();
-    debugPrint("[LOUDNESS] $_loudness");
+    //debugPrint("[LOUDNESS] $_loudness");
 
     return Container(
       decoration: BoxDecoration(
@@ -376,14 +376,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   void _onPressedInstruments() {
-    //_stopRecording();
+    _stopRecording();
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const SamplingType()));
   }
 
   void _onPressedSettings() {
-    //_stopRecording();
+    _stopRecording();
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const Settings()));
@@ -411,7 +411,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
           _rec = rec;
         });
         debugPrint("[START] Is Recording: $_rec");
-        _pitchDetector.setParameters(toleranceCents: 0.4, bufferSize: 8192, sampleRate: 44100, minPrecision: 0.85);
+        _pitchDetector.setParameters(toleranceCents: _tolerance, bufferSize: _bufferSize, sampleRate: _sampleRate, minPrecision: _precision);
+        debugPrint(
+            'PitchDetector Parameters -> '
+                'toleranceCents: $_tolerance, '
+                'bufferSize: $_bufferSize, '
+                'sampleRate: $_sampleRate, '
+                'minPrecision: $_precision'
+        );
 
         _pitchSubscription = FlutterPitchDetectionPlatform.instance.onPitchDetected.listen((data) async {
 
@@ -425,7 +432,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
               _selectedNote = data['note'] ?? "-";
               _midiNote = data['midiNote'] ?? 0;
               _selectedFrequency = currentFrequency;
-              _selectedOctave = octave <= 0 ? "" : octave.toString();
+              _selectedOctave = octave < 0 ? "" : octave.toString();
               _accuracy = data['accuracy'] ?? 0;
               _isOnPitch = data['isOnPitch'] ?? false;
               _loudness = data['volume'] ?? 0;

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../general/cubit/sound_wave_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
 import '../../../sampling/logic/utils.dart';
 
@@ -14,32 +15,20 @@ class SoundWaveSettings extends StatefulWidget {
 }
 
 class _SoundWaveSettings extends State<SoundWaveSettings> {
-  late SharedPreferences _prefs;
-  bool _isCleanWave = true;
 
   @override
   void initState() {
     WidgetsFlutterBinding.ensureInitialized();
-    _getPreferences();
     super.initState();
-  }
-
-  void _getPreferences() async {
-    _prefs = await SharedPreferences.getInstance();
-    _getWaveState();
-
-    setState(() {
-
-    });
   }
 
   //WAVE VIEW
   //STYLE
   Widget _waveTitle(size, td) {
     return SizedBox(
-      width: size.width*0.4,
+      width: size.width*0.8,
       child: Align(
-        alignment: Alignment.center,
+        alignment: Alignment.centerLeft,
         child: Text(
           "Sound Wave",
           style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
@@ -62,7 +51,7 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
 
   Widget _switchWaveWrapper(String rawText, ThemeData td, String polishedText, Size size) {
     return SizedBox(
-      width: size.width*0.8,
+      width: size.width*0.9,
       child: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -94,36 +83,26 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
   }
 
   //WIDGETS
-
-
   Widget _switchWave(Size size, ThemeData td) {
-    return SizedBox(
-      height: size.height*0.04,
-      width: size.width*0.4,
-      child: Switch(
-        value: _isCleanWave,
-        onChanged: (value) {
-          _setWaveState(value);
-        },
-        inactiveTrackColor: td.colorScheme.onSurfaceVariant,
-        inactiveThumbColor: td.colorScheme.primary,
-        activeColor: td.colorScheme.onSurfaceVariant,
-        activeTrackColor: td.colorScheme.primary,
-        trackOutlineColor: WidgetStateProperty.all(td.colorScheme.primary),
-      ),
+    return BlocBuilder<SoundWaveCubit, bool>(
+      builder: (context, isCleanWave) {
+        return SizedBox(
+          height: size.height*0.04,
+          width: size.width*0.4,
+          child: Switch(
+            value: isCleanWave,
+            onChanged: (value) {
+              context.read<SoundWaveCubit>().toggleWaveType(value);
+            },
+            inactiveTrackColor: td.colorScheme.onPrimaryContainer,
+            inactiveThumbColor: td.colorScheme.primary,
+            activeColor: td.colorScheme.onPrimaryContainer,
+            activeTrackColor: td.colorScheme.primary,
+            trackOutlineColor: WidgetStateProperty.all(td.colorScheme.primary),
+          ),
+        );
+      },
     );
-  }
-
-  //METHODS
-  void _getWaveState() async {
-    _isCleanWave = (_prefs.getBool('isCleanWave') ?? true);
-  }
-
-  void _setWaveState(value) async {
-    setState(() {
-      _isCleanWave = !_isCleanWave;
-    });
-    _prefs.setBool('isCleanWave', _isCleanWave);
   }
 
   //BUILD
@@ -133,10 +112,10 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
     ThemeData td = Theme.of(context);
 
     return Column(
-                children: [
-                  _waveSection(size, td),
-                  SizedBox(height: size.height*0.04,),
-                ],
+      children: [
+        _waveSection(size, td),
+        SizedBox(height: size.height * 0.03),
+      ],
     );
   }
 }

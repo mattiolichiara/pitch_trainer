@@ -42,6 +42,7 @@ class _SamplingType extends State<SamplingType> {
     'Piano': 'assets/icons/piano-instrument-keyboard-svgrepo-com.svg',
     'Guitar': 'assets/icons/guitar-svgrepo-com.svg',
     'Bass Guitar': 'assets/icons/bass-svgrepo-com.svg',
+    //'Bass Guitar': 'bass-guitar-svgrepo-com.svg',
     'Violin': 'assets/icons/violin-svgrepo-com.svg',
     'Ukulele': 'assets/icons/ukulele-svgrepo-com (1).svg',
     'Custom': 'assets/icons/sound-0-svgrepo-com.svg',

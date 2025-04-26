@@ -5,18 +5,19 @@ import 'package:pitch_trainer/settings/widgets/button_select.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../general/widgets/ui_utils.dart';
+import '../../../sampling/utils/constants.dart';
 
-class AccuracySettings extends StatefulWidget {
-  const AccuracySettings({super.key});
+class BufferSizeSettings extends StatefulWidget {
+  const BufferSizeSettings({super.key});
 
   @override
-  State<AccuracySettings> createState() => _AccuracySettings();
+  State<BufferSizeSettings> createState() => _BufferSizeSettings();
 }
 
-class _AccuracySettings extends State<AccuracySettings> {
+class _BufferSizeSettings extends State<BufferSizeSettings> {
   late SharedPreferences _prefs;
-  List<bool> _selectionValues = [true, false, false];
-  double _selectedAccuracy = 0.0;
+  List<bool> _selectionValues = [false, true];
+  int _selectedBufferSize = Constants.defaultBufferSize;
 
   @override
   void initState() {
@@ -27,20 +28,20 @@ class _AccuracySettings extends State<AccuracySettings> {
 
   void _getPreferences() async {
     _prefs = await SharedPreferences.getInstance();
-    _getAccuracyState();
+    _getBufferSizeState();
 
     setState(() {});
   }
 
-  //ACCURACY
+  //BUFFER SIZE
   //STYLE
-  Widget _accuracyTitle(size, td) {
+  Widget _bufferSizeTitle(size, td) {
     return SizedBox(
-      width: size.width * 0.4,
+      width: size.width * 0.8,
       child: Align(
-        alignment: Alignment.center,
+        alignment: Alignment.centerLeft,
         child: Text(
-          Languages.accuracyThreshold.getString(context),//TODO
+          Languages.bufferSize.getString(context),
           style: TextStyle(
             color: td.colorScheme.onSurface,
             fontWeight: FontWeight.w500,
@@ -52,16 +53,16 @@ class _AccuracySettings extends State<AccuracySettings> {
     );
   }
 
-  Widget _accuracySection(size, td) {
+  Widget _bufferSizeSection(size, td) {
     return Center(
       child: SizedBox(
         width: size.width * 0.9,
         child: Column(
           children: [
             SizedBox(height: size.height * 0.04),
-            _accuracyTitle(size, td),
+            _bufferSizeTitle(size, td),
             SizedBox(height: size.height * 0.03),
-            _accuracySelectionButton(td),
+            _bufferSizeSelectionButton(td, size),
           ],
         ),
       ),
@@ -69,54 +70,52 @@ class _AccuracySettings extends State<AccuracySettings> {
   }
 
   //WIDGETS
-  Widget _accuracySelectionButton(ThemeData td) {
+  Widget _bufferSizeSelectionButton(ThemeData td, Size size) {
     TextStyle buttonStyle = TextStyle(
       fontSize: 12,
       fontWeight: FontWeight.w500,
       color: td.colorScheme.onSurface,
     );
-    List<Widget> accuracyValues = [
-      Text("0.5 hz", style: buttonStyle),
-      Text("1 hz", style: buttonStyle),
-      Text("1.5 hz", style: buttonStyle),
+    List<Widget> bufferSizeValues = [
+      Text("7056", style: buttonStyle),
+      Text("8192", style: buttonStyle),
     ];
 
     return ButtonSelect(
       selectionValues: _selectionValues,
-      onPressed: _onPressedAccuracy,
-      children: accuracyValues,
+      onPressed: _onPressedBufferSize,
+      minWidth: size.width * 0.415,
+      children: bufferSizeValues,
     );
   }
 
   //METHODS
-  void _onPressedAccuracy(int index) {
-    List<double> values = [0.5, 1, 1.5];
+  void _onPressedBufferSize(int index) {
+    List<int> values = [7056, 8192];
 
     setState(() {
       for (int i = 0; i < _selectionValues.length; i++) {
         _selectionValues[i] = i == index;
       }
-      _setAccuracyState(values[index]);
+      _setBufferSizeState(values[index]);
     });
   }
 
 
-  void _getAccuracyState() async {
-    _selectedAccuracy = (_prefs.getDouble('accuracyThreshold') ?? 1);//todo
+  void _getBufferSizeState() async {
+    _selectedBufferSize = (_prefs.getInt('bufferSize') ?? Constants.defaultBufferSize);
 
     setState(() {
-      if (_selectedAccuracy == 0.5) {
-        _selectionValues = [true, false, false];
-      } else if (_selectedAccuracy == 1) {
-        _selectionValues = [false, true, false];
-      } else if (_selectedAccuracy == 1.5) {
-        _selectionValues = [false, false, true];
+      if (_selectedBufferSize == 7056) {
+        _selectionValues = [true, false];
+      } else if (_selectedBufferSize == 8192) {
+        _selectionValues = [false, true];
       }
     });
   }
 
-  void _setAccuracyState(double value) async {
-    //_prefs.setDouble('accuracyThreshold', value);TODO
+  void _setBufferSizeState(int value) async {
+    _prefs.setInt('bufferSize', value);
   }
 
   //BUILD
@@ -127,7 +126,7 @@ class _AccuracySettings extends State<AccuracySettings> {
 
     return Column(
         children: [
-          _accuracySection(size, td),
+          _bufferSizeSection(size, td),
           SizedBox(height: size.height * 0.05),
         ],
     );

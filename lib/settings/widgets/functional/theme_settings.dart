@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 
-import '../../../general/utils/theme_cubit.dart';
+import '../../../general/cubit/theme_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
 
 class ThemeSettings extends StatefulWidget {
@@ -27,7 +27,7 @@ class _ThemeSettings extends State<ThemeSettings> {
     return SizedBox(
       width: size.width*0.8,
       child: Align(
-        alignment: Alignment.center,
+        alignment: Alignment.centerLeft,
         child: Text(
           Languages.selectTheme.getString(context),
           style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
@@ -65,7 +65,6 @@ class _ThemeSettings extends State<ThemeSettings> {
             _themeTitle(size, td),
             SizedBox(height: size.height*0.03,),
             _wrapTheWrap(size, context, td),
-            SizedBox(height: size.height*0.04,),
           ],
         ),
       ),
@@ -101,6 +100,7 @@ class _ThemeSettings extends State<ThemeSettings> {
         onTap: () {
           setState(() {
             themeCubit.changeTheme(theme.key);
+            debugPrint("Theme: ${theme.key}");
           });
 
         },
@@ -120,7 +120,6 @@ class _ThemeSettings extends State<ThemeSettings> {
               child: Column(
                 children: [
                   _themeSection(size, td),
-                  SizedBox(height: size.height*0.04,),
                 ],
               ),
     );
