@@ -122,7 +122,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   Color _getAccuracyColor(double accuracy, ThemeData td) {
-    if(_isOnPitch) return Color.lerp(Colors.white, td.colorScheme.primary, 100)!;
+    if(_isOnPitch) return td.colorScheme.primary;
     return Color.lerp(Colors.white, td.colorScheme.primary, accuracy / 100)!;
   }
 
@@ -279,7 +279,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   Widget _noteLabel(Size size, ThemeData td) {
-    String octave = (_selectedOctave == "" || int.parse(_selectedOctave) < 0) ? _selectedOctave = "" : _selectedOctave;
     return Center(
       child: _permissionStatus
           ? Stack(
@@ -295,7 +294,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           //
           _rec ?
           Text(
-            "$_selectedNote$octave",
+            "$_selectedNote$_selectedOctave",
             style: TextStyle(
               color: _getAccuracyColor(_accuracy.toDouble(), td),
               fontSize: size.width * 0.35,
@@ -506,7 +505,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
               _selectedNote = data['note'] ?? "-";
               _midiNote = data['midiNote'] ?? 0;
               _selectedFrequency = currentFrequency;
-              _selectedOctave = octave < 0 ? "" : octave.toString();
+              _selectedOctave = (octave?.clamp(0, 8).toString()) ?? "";
               _accuracy = data['accuracy'] ?? 0;
               _isOnPitch = data['isOnPitch'] ?? false;
             });
@@ -526,13 +525,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
             setState(() {
               _samples = _isCleanWave ? Utils.updateSamples(currentFrequency, sr) : streamData;
             });
-          } else {
-            setState(() {
-              _selectedNote = "-";
-              _selectedFrequency = 0.0;
-              _accuracy = 0;
-              _samples = [];
-            });
+          // } else {
+          //   setState(() {
+          //     _selectedOctave = "";
+          //     _selectedNote = "-";
+          //     _selectedFrequency = 0.0;
+          //     _accuracy = 0;
+          //     _samples = [];
+          //   });
           }
         });
 

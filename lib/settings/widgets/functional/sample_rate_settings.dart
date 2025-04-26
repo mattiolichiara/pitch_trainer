@@ -101,7 +101,9 @@ class _SampleRateSettings extends State<SampleRateSettings> {
       _setSampleRateState(values[index]);
     });
   }
+
   void _showDialog(int index) {
+    index == 0 ?
     showDialog(
       context: context,
       builder: (context) => WarningDialog(
@@ -115,7 +117,8 @@ class _SampleRateSettings extends State<SampleRateSettings> {
           Navigator.pop(context);
         },
       ),
-    );
+    ) :
+    _onPressedSampleRate(index);
   }
 
   void _getSampleRateState() async {
