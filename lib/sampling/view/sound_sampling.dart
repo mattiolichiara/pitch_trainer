@@ -26,7 +26,7 @@ class SoundSampling extends StatefulWidget {
   State<SoundSampling> createState() => _SoundSampling();
 }
 
-class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
+class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, TickerProviderStateMixin {
   String _selectedNote = "-";
   String _selectedOctave = "";
   double _selectedFrequency = 0.0;
@@ -49,11 +49,32 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   int _midiNote = 0;
   bool _permissionStatus = false;
   bool _settingOpened = false;
+  late AnimationController _animationController;
+  late Animation<double> _loudnessAnimation;
+  double _animatedLoudness = 0;
+  Timer? _silenceTimer;
+  final Duration _silenceTimeout = Duration(milliseconds: 500);
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+
+    _loudnessAnimation = Tween<double>(begin: 0, end: _loudness).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.elasticInOut,
+      ),
+    )..addListener(() {
+      setState(() {
+        _animatedLoudness = _loudnessAnimation.value;
+      });
+    });
 
     _loadPreferences().then((_) {
       _startRecording();
@@ -63,7 +84,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-
+    _animationController.dispose();
+    _silenceTimer?.cancel();
     super.dispose();
   }
 
@@ -100,6 +122,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Color _getAccuracyColor(double accuracy, ThemeData td) {
+    if(_isOnPitch) return Color.lerp(Colors.white, td.colorScheme.primary, 100)!;
     return Color.lerp(Colors.white, td.colorScheme.primary, accuracy / 100)!;
   }
 
@@ -220,7 +243,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Widget _loudnessBar(size, ThemeData td) {
-    int currentStep = _loudness.toInt();
+    int currentStep = _animatedLoudness.toInt();
     //debugPrint("[LOUDNESS] $_loudness");
 
     return Container(
@@ -256,6 +279,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   }
 
   Widget _noteLabel(Size size, ThemeData td) {
+    String octave = (_selectedOctave == "" || int.parse(_selectedOctave) < 0) ? _selectedOctave = "" : _selectedOctave;
     return Center(
       child: _permissionStatus
           ? Stack(
@@ -271,7 +295,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
           //
           _rec ?
           Text(
-            "$_selectedNote$_selectedOctave",
+            "$_selectedNote$octave",
             style: TextStyle(
               color: _getAccuracyColor(_accuracy.toDouble(), td),
               fontSize: size.width * 0.35,
@@ -436,11 +460,46 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
         );
 
         _pitchSubscription = FlutterPitchDetectionPlatform.instance.onPitchDetected.listen((data) async {
-
+          _silenceTimer?.cancel();
           final streamData = await _pitchDetector.getRawDataFromStream();
           final currentFrequency = data['frequency'] ?? 0;
           final octave = data['octave'] ?? 0;
           final sr = data['sampleRate'] ?? 0;
+          final currentVolume = data['volume'] ?? 0;
+
+          _animationController.stop();
+          _loudnessAnimation = Tween<double>(
+            begin: _animatedLoudness,
+            end: currentVolume,
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController,
+              curve: Curves.elasticInOut,
+            ),
+          )..addListener(() {
+            setState(() {
+              _animatedLoudness = _loudnessAnimation.value;
+            });
+          });
+          _animationController.forward(from: 0);
+
+          _silenceTimer = Timer(_silenceTimeout, () {
+            _animationController.stop();
+            _loudnessAnimation = Tween<double>(
+              begin: _animatedLoudness,
+              end: 0,
+            ).animate(
+              CurvedAnimation(
+                parent: _animationController,
+                curve: Curves.easeOut,
+              ),
+            )..addListener(() {
+              setState(() {
+                _animatedLoudness = _loudnessAnimation.value;
+              });
+            });
+            _animationController.forward(from: 0);
+          });
 
           if(currentFrequency > _minFrequency && currentFrequency < _maxFrequency) {
             setState(() {
@@ -450,8 +509,29 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
               _selectedOctave = octave < 0 ? "" : octave.toString();
               _accuracy = data['accuracy'] ?? 0;
               _isOnPitch = data['isOnPitch'] ?? false;
-              _loudness = data['volume'] ?? 0;
+            });
+
+            _animationController.stop();
+            _loudnessAnimation = Tween<double>(
+              begin: _animatedLoudness,
+              end: data['volume'] ?? 0,
+            ).animate(
+              CurvedAnimation(
+                parent: _animationController,
+                curve: Curves.easeOut,
+              ),
+            );
+            _animationController.forward(from: 0);
+
+            setState(() {
               _samples = _isCleanWave ? Utils.updateSamples(currentFrequency, sr) : streamData;
+            });
+          } else {
+            setState(() {
+              _selectedNote = "-";
+              _selectedFrequency = 0.0;
+              _accuracy = 0;
+              _samples = [];
             });
           }
         });
@@ -465,6 +545,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   Future<void> _stopRecording() async {
     if(_rec) {
       try {
+        _silenceTimer?.cancel();
         await _pitchSubscription?.cancel();
         _pitchSubscription = null;
 
