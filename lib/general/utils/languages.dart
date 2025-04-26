@@ -84,7 +84,7 @@ mixin Languages {
     resetSettings: "Reset Impostazioni",
     resetSettingsSubText: "Reimposta le Impostazioni ai Valori di Default",
     settingsResetToast: "Impostazioni Ripristinate",
-    other: "altro",
+    other: "Altro",
     precision: "Precisione",
     tolerance: "Tolleranza"
   };

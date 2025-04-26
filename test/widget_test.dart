@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pitch_trainer/app.dart';
+import 'package:pitch_trainer/general/cubit/theme_cubit.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
-import 'package:pitch_trainer/general/utils/theme_cubit.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
