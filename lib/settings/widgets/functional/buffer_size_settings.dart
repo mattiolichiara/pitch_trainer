@@ -72,9 +72,9 @@ class _BufferSizeSettings extends State<BufferSizeSettings> {
   //WIDGETS
   Widget _bufferSizeSelectionButton(ThemeData td, Size size) {
     TextStyle buttonStyle = TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      color: td.colorScheme.onSurface,
+      color: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
+      fontWeight: FontWeight.w800,
+      fontSize: 18,
     );
     List<Widget> bufferSizeValues = [
       Text("7056", style: buttonStyle),

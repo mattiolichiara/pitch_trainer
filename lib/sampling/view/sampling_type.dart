@@ -39,13 +39,12 @@ class _SamplingType extends State<SamplingType> {
 
   //STYLING
   final Map<String, String> _instrumentIcons = {
-    'Piano': 'assets/icons/piano-instrument-keyboard-svgrepo-com.svg',
+    'Piano': 'assets/icons/piano-svgrepo-com4.svg',
     'Guitar': 'assets/icons/guitar-svgrepo-com.svg',
     'Bass Guitar': 'assets/icons/bass-svgrepo-com.svg',
-    //'Bass Guitar': 'bass-guitar-svgrepo-com.svg',
     'Violin': 'assets/icons/violin-svgrepo-com.svg',
     'Ukulele': 'assets/icons/ukulele-svgrepo-com (1).svg',
-    'Custom': 'assets/icons/sound-0-svgrepo-com.svg',
+    'Custom': 'assets/icons/audio-wave-svgrepo-com.svg',
   };
 
   TextStyle textStyling(size, fontSize, td) {
@@ -220,16 +219,18 @@ class _SamplingType extends State<SamplingType> {
               subText: "A0 (27.50) - C8 (4186.01)",
               isActive: !(_minFrequency == 27.50 && _maxFrequency == 4186.01 && _isNotCustom),
               leadingIcon: _instrumentIcons["Piano"]!,
+              iconSize: size.width*0.040,
               onPressed: () {
                 _saveFrequencyValues(27.50, 4186.01, true, _instrumentIcons["Piano"]);
               },
             ),
             SizedBox(height: size.height * 0.006),
             InstrumentCard(
-              text: "${Languages.guitar.getString(context)}",
+              text: Languages.guitar.getString(context),
               subText: "E2 (82.41) - E4 (329.63)",
               isActive: !(_minFrequency == 82.41 && _maxFrequency == 329.63 && _isNotCustom),
               leadingIcon: _instrumentIcons["Guitar"]!,
+              iconSize: size.width*0.06,
               onPressed: () {
                 _saveFrequencyValues(82.41, 329.63, true, _instrumentIcons["Guitar"]);
               },
@@ -240,6 +241,7 @@ class _SamplingType extends State<SamplingType> {
               subText: "E1 (41.20) - G2 (98.00)",
               isActive: !(_minFrequency == 41.20 && _maxFrequency == 98.00 && _isNotCustom),
               leadingIcon: _instrumentIcons["Bass Guitar"]!,
+              iconSize: size.width*0.05,
               onPressed: () {
                 _saveFrequencyValues(41.20, 98.00, true, _instrumentIcons["Bass Guitar"]);
               },
@@ -260,6 +262,7 @@ class _SamplingType extends State<SamplingType> {
               subText: "G4 (392.00) - A6 (1760.00)",
               isActive: !(_minFrequency == 392.00 && _maxFrequency == 1760.00 && _isNotCustom),
               leadingIcon: _instrumentIcons["Ukulele"]!,
+              iconSize: size.width*0.045,
               onPressed: () {
                 _saveFrequencyValues(392.00, 1760.00, true, _instrumentIcons["Ukulele"]);
               },
@@ -273,6 +276,7 @@ class _SamplingType extends State<SamplingType> {
               isExpanded: _isExpanded,
               onTap: _onPressedCustomCard,
               canOpen: true,
+              iconSize: size.width*0.065,
               children: [
                 _wheelsLayout(td),
                 _maxFrequenciesList(size, _minFrequenciesList(size, td), td),

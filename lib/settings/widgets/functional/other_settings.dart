@@ -4,6 +4,7 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pitch_trainer/general/cubit/tolerance_cubit.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
+import 'package:pitch_trainer/general/utils/warning_dialog.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,7 +66,25 @@ class _OtherSettings extends State<OtherSettings> {
     Fluttertoast.showToast(msg: Languages.settingsResetToast.getString(context));
   }
 
+  void _showDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => WarningDialog(
+        title: Languages.resetWarning.getString(context),
+        subtitle: Languages.resetWarningSubText.getString(context),
+        onYesPressed: () {
+          Navigator.pop(context);
+          _onPressedResetSettings();
+        },
+        onNoPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
   void _onPressedResetSettings() async {
+
     ThemeCubit themeCubit = BlocProvider.of<ThemeCubit>(context);
     SharedPreferences sp = await SharedPreferences.getInstance();
 
@@ -93,7 +112,7 @@ class _OtherSettings extends State<OtherSettings> {
         children: [
           SizedBox(height: size.height*0.03,),
           InstrumentCard(
-              onPressed: _onPressedResetSettings,
+              onPressed: _showDialog,
               text: Languages.resetSettings.getString(context),
               leadingIcon: "assets/icons/reset-alt-svgrepo-com.svg",
               subText: Languages.resetSettingsSubText.getString(context)),

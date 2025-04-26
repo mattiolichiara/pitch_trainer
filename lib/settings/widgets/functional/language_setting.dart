@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 
@@ -54,7 +55,12 @@ class _LanguageSettings extends State<LanguageSettings> {
 
   Widget _languageSelection(td, subtext, size) {
     return InstrumentExpansionTile(
-      leadingIcon: Icon(Icons.language, color: Colors.white70, size: 20),
+      leadingIcon: SvgPicture.asset(
+        "assets/icons/globe-2-svgrepo-com.svg",
+        height: size.height * 0.025,
+        width: size.width * 0.025,
+        colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
+      ),
       isExpanded: _isExpanded,
       text: Languages.languages.getString(context),
       onTap: _onPressedLanguageCard,

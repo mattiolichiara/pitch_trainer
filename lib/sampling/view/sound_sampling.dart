@@ -125,8 +125,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   Widget _instrumentIcon(size, td) {
     return SvgPicture.asset(
       _selectedInstrument,
-      height: size.height * 0.03,
-      width: size.width * 0.03,
+      height: size.height * 0.026,
+      width: size.width * 0.026,
       colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
     );
   }
@@ -134,9 +134,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   Widget _enabledRecordingButton(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
-        "assets/icons/microphone-svgrepo-com.svg",
-        height: size.height * 0.04,
-        width: size.width * 0.04,
+        "assets/icons/microphone-2-svgrepo-com.svg",
+        height: size.height * 0.027,
+        width: size.width * 0.027,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -151,9 +151,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
   Widget _disabledRecordingButton(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
-        "assets/icons/microphone-slash-svgrepo-com.svg",
-        height: size.height * 0.04,
-        width: size.width * 0.04,
+        "assets/icons/microphone-2-svgrepo-com (1).svg",
+        height: size.height * 0.027,
+        width: size.width * 0.027,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -197,10 +197,23 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
 
   Widget _settings(size, td) {
     return IconButton(
-      icon: Icon(
-        Icons.settings_outlined,
-        color: td.colorScheme.onSurface,
-        size: size.height * 0.03,
+      icon: SvgPicture.asset(
+        "assets/icons/icons8-settings (1).svg",
+        height: size.height * 0.04,
+        width: size.width * 0.04,
+        colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
+      ),
+      onPressed: _onPressedSettings,
+    );
+  }
+
+  Widget _micOffDisplay(size, td) {
+    return IconButton(
+      icon: SvgPicture.asset(
+        "assets/icons/vinyl-svgrepo-com.svg",
+        height: size.height * 0.2,
+        width: size.width * 0.2,
+        colorFilter: ColorFilter.mode(td.colorScheme.primary, BlendMode.srcIn),
       ),
       onPressed: _onPressedSettings,
     );
@@ -252,10 +265,11 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
             width: size.width*0.5,
             height: size.height*0.25,
             decoration: BoxDecoration(
-              boxShadow: [_getAccuracyShadow(_accuracy.toDouble(), td)],
+              boxShadow: [_rec ? _getAccuracyShadow(_accuracy.toDouble(), td) : UiUtils.widgetsShadow(1, 120, td)],
             ),
           ),
-          // Actual Text
+          //
+          _rec ?
           Text(
             "$_selectedNote$_selectedOctave",
             style: TextStyle(
@@ -263,7 +277,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver {
               fontSize: size.width * 0.35,
               shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy.toDouble(), td))],
             ),
-          ),
+          ) :
+             _micOffDisplay(size, td),
         ],
       )
           : SizedBox(

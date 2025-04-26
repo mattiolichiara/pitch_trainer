@@ -28,6 +28,12 @@ mixin Languages {
   static const String other = "other";
   static const String precision = "precision";
   static const String tolerance = "tolerance";
+  static const String resetWarning = "resetWarning";
+  static const String resetWarningSubText = "resetWarningSubText";
+  static const String sampleRateWarning = "sampleRateWarning";
+  static const String sampleRateWarningSubText = "sampleRateWarningSubText";
+  static const String yes = "yes";
+  static const String no = "no";
 
   static const Map<String, dynamic> EN = {
     selectTheme: "Themes",
@@ -56,7 +62,13 @@ mixin Languages {
     settingsResetToast: "Default Settings Restored",
     other: "Other",
     precision: "Precision",
-    tolerance: "Tolerance"
+    tolerance: "Tolerance",
+    resetWarning: "Reset Settings?",
+    resetWarningSubText: "This action will reset all settings to their default values.",
+    sampleRateWarning: "Low Sample Rate Selected",
+    sampleRateWarningSubText: "22.05 kHz may not accurately capture higher frequencies.",
+    yes: "Yes",
+    no: "No",
   };
 
   static const Map<String, dynamic> IT = {
@@ -86,6 +98,12 @@ mixin Languages {
     settingsResetToast: "Impostazioni Ripristinate",
     other: "Altro",
     precision: "Precisione",
-    tolerance: "Tolleranza"
+    tolerance: "Tolleranza",
+    resetWarning: "Ripristinare le impostazioni?",
+    resetWarningSubText: "Questa azione ripristinerà tutte le impostazioni ai valori predefiniti.",
+    sampleRateWarning: "Campionamento basso selezionato",
+    sampleRateWarningSubText: "22,05 kHz potrebbe non catturare accuratamente le frequenze più alte.",
+    yes: "Si",
+    no: "No",
   };
 }

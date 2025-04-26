@@ -11,7 +11,8 @@ class InstrumentExpansionTile extends StatefulWidget {
         this.canOpen = false,
         required this.children,
         required this.isExpanded,
-        required this.onTap});
+        required this.onTap,
+        this.iconSize = 20});
 
   final String text;
   final Object leadingIcon;
@@ -21,6 +22,7 @@ class InstrumentExpansionTile extends StatefulWidget {
   final List<Widget> children;
   final bool isExpanded;
   final void Function()? onTap;
+  final double iconSize;
 
   @override
   State<InstrumentExpansionTile> createState() =>
@@ -77,8 +79,8 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
 
     return SvgPicture.asset(
       leadingIcon,
-      width: 20,
-      height: 20,
+      width: widget.iconSize,
+      height: widget.iconSize,
       colorFilter: ColorFilter.mode(
         widget.isActive == true ? Colors.white70 : Colors.white38,
         BlendMode.srcIn,

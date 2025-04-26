@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
+import '../../sampling/view/sound_sampling.dart';
 import '../widgets/ValueSlider.dart';
 import '../widgets/functional/buffer_size_settings.dart';
 import '../widgets/functional/language_setting.dart';
@@ -41,7 +42,14 @@ class _Settings extends State<Settings> {
     Size size = MediaQuery.of(context).size;
     return PopScope(
       canPop: true,
-      onPopInvoked: (pop) async {},
+      onPopInvoked: (pop) async {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const SoundSampling()),
+                (Route<dynamic> route) => false,
+          );
+        });
+      },
       child: Scaffold(
         appBar: HomeAppBar(
           title: 'Pitch Trainer - ${Languages.settings.getString(context)}',

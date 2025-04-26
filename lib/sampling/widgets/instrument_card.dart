@@ -10,6 +10,7 @@ class InstrumentCard extends StatefulWidget {
     this.isActive = true,
     required this.subText,
     this.canOpen = false,
+    this.iconSize = 20,
   });
 
   final Function()? onPressed;
@@ -18,6 +19,7 @@ class InstrumentCard extends StatefulWidget {
   final bool isActive;
   final String subText;
   final bool canOpen;
+  final double iconSize;
 
   @override
   State<InstrumentCard> createState() => _InstrumentCardState();
@@ -57,8 +59,8 @@ class _InstrumentCardState extends State<InstrumentCard> {
       tileColor: td.colorScheme.onPrimaryContainer,
       leading: SvgPicture.asset(
         widget.leadingIcon,
-        width: 20,
-        height: 20,
+        width: widget.iconSize,
+        height: widget.iconSize,
         colorFilter: ColorFilter.mode(_getIconColor(td), BlendMode.srcIn),
       ),
       subtitle: Text(

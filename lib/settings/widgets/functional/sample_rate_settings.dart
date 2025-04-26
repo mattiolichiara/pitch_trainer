@@ -4,6 +4,7 @@ import 'package:pitch_trainer/general/utils/languages.dart';
 import 'package:pitch_trainer/settings/widgets/button_select.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../general/utils/warning_dialog.dart';
 import '../../../general/widgets/ui_utils.dart';
 import '../../../sampling/utils/constants.dart';
 
@@ -72,9 +73,9 @@ class _SampleRateSettings extends State<SampleRateSettings> {
   //WIDGETS
   Widget _sampleRateSelectionButton(ThemeData td) {
     TextStyle buttonStyle = TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-      color: td.colorScheme.onSurface,
+      color: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
+      fontWeight: FontWeight.w800,
+      fontSize: 18,
     );
     List<Widget> sampleRateValues = [
       Text("22.05kHz", style: buttonStyle),
@@ -84,7 +85,7 @@ class _SampleRateSettings extends State<SampleRateSettings> {
 
     return ButtonSelect(
       selectionValues: _selectionValues,
-      onPressed: _onPressedSampleRate,
+      onPressed: _showDialog,
       children: sampleRateValues,
     );
   }
@@ -100,7 +101,22 @@ class _SampleRateSettings extends State<SampleRateSettings> {
       _setSampleRateState(values[index]);
     });
   }
-
+  void _showDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => WarningDialog(
+        title: Languages.sampleRateWarning.getString(context),
+        subtitle: Languages.sampleRateWarningSubText.getString(context),
+        onYesPressed: () {
+          Navigator.pop(context);
+          _onPressedSampleRate(index);
+        },
+        onNoPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
 
   void _getSampleRateState() async {
     _selectedSampleRate = (_prefs.getInt('sampleRate') ?? Constants.defaultSampleRate);

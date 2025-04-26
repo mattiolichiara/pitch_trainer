@@ -31,7 +31,11 @@ class _ButtonSelectState extends State<ButtonSelect> {
   Widget build(BuildContext context) {
     ThemeData td = Theme.of(context);
     Size size = MediaQuery.of(context).size;
-    //TextStyle stringStyle = TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: td.colorScheme.onSurface);
+    // TextStyle stringStyle = TextStyle(
+    //   color: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
+    //   fontWeight: FontWeight.w800,
+    //   fontSize: 18,
+    // );
 
     return Container(
       color: td.colorScheme.onPrimaryContainer,
