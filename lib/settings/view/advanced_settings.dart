@@ -32,7 +32,7 @@ class _AdvancedSettings extends State<AdvancedSettings> {
       onPopInvoked: (pop) async {},
       child: Scaffold(
           appBar: HomeAppBar(
-            title: 'Pitch Trainer - ${Languages.advancedSettings.getString(context)}',
+            title: /*Pitch Trainer - */'${Languages.advancedSettings.getString(context)}',
             action1: Container(),
             action2: Container(),
             action3: Container(),

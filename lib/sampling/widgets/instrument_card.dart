@@ -29,14 +29,6 @@ class InstrumentCard extends StatefulWidget {
 class _InstrumentCardState extends State<InstrumentCard> {
 
   //STYLE
-  TextStyle _getSubTextStyle(ThemeData td) {
-    return GoogleFonts.rubik(
-      color: widget.isActive ? td.colorScheme.onSurface : Colors.white38,
-      fontWeight: FontWeight.w100,
-      fontSize: 12
-    );
-  }
-
   Color _getTextColor(td) {
     return widget.isActive ? td.colorScheme.onSurface : Colors.white38;
   }
@@ -74,12 +66,16 @@ class _InstrumentCardState extends State<InstrumentCard> {
       ),
       subtitle: Text(
         widget.subText,
-        style: _getSubTextStyle(td),
+        style: TextStyle(
+          fontWeight: FontWeight.w100,
+          fontSize: 12,
+          color: _getTextColor(td),
+        ),
       ),
       title: Text(
         widget.text,
         style: TextStyle(
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w700,
           fontSize: 14,
           color: _getTextColor(td),
         ),

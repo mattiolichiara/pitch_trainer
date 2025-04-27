@@ -45,7 +45,7 @@ class _SampleRateSettings extends State<SampleRateSettings> {
           Languages.sampleRate.getString(context),
           style: TextStyle(
             color: td.colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w800,
             fontSize: 18,
             shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
@@ -74,8 +74,8 @@ class _SampleRateSettings extends State<SampleRateSettings> {
   Widget _sampleRateSelectionButton(ThemeData td) {
     TextStyle buttonStyle = TextStyle(
       color: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
-      fontWeight: FontWeight.w800,
-      fontSize: 18,
+      fontWeight: FontWeight.w900,
+      fontSize: 19,
     );
     List<Widget> sampleRateValues = [
       Text("22.05kHz", style: buttonStyle),

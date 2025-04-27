@@ -23,23 +23,23 @@ class HomeAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _HomeAppBar extends State<HomeAppBar> {
 
   //FUNCTIONAL WIDGETS
-  Widget titleText(td) {
+  Widget titleText(td, fontStyle) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(
         widget.title,
-        style: TextStyle(
-            fontSize: 18,
-            color: td.colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
-            shadows: [
-              BoxShadow(
-                color: td.colorScheme.primary,
-                spreadRadius: 1,
-                blurRadius: 30,
-                offset: const Offset(0, 1),
-              )
-            ]
+        style: fontStyle.copyWith(
+          fontSize: 18.0,
+          color: td.colorScheme.onSurface,
+          fontWeight: FontWeight.w800,
+          shadows: [
+            BoxShadow(
+              color: td.colorScheme.primary,
+              spreadRadius: 1,
+              blurRadius: 30,
+              offset: const Offset(0, 1),
+            )
+          ],
         ),
       ),
     );
@@ -86,11 +86,12 @@ class _HomeAppBar extends State<HomeAppBar> {
   @override
   Widget build(BuildContext context) {
     ThemeData td = Theme.of(context);
+    final fontStyle = Theme.of(context).textTheme.titleLarge!;
 
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: const Color(0xFF252525),
-      title: titleText(td),
+      title: titleText(td, fontStyle),
       leading: _homeButton(td),
       actions: [
         widget.action1,

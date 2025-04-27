@@ -52,7 +52,7 @@ class _Settings extends State<Settings> {
       },
       child: Scaffold(
         appBar: HomeAppBar(
-          title: 'Pitch Trainer - ${Languages.settings.getString(context)}',
+          title: /*Pitch Trainer - */'${Languages.settings.getString(context)}',
           action1: Container(),
           action2: Container(),
           action3: Container(),

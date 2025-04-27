@@ -31,7 +31,7 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
         alignment: Alignment.centerLeft,
         child: Text(
           "Sound Wave",
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w800, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
         ),
       ),
     );
@@ -44,7 +44,7 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
         color: Colors.white,
         fontSize: 13,
         shadows: [UiUtils.widgetsShadow(80, 20, td),],
-        fontWeight: FontWeight.w300,
+        fontWeight: FontWeight.w100,
       ),
     );
   }

@@ -126,7 +126,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
             title: Text(
               text,
               style: TextStyle(
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w700,
                 fontSize: 14,
                 color: selectColor(td),
               ),

@@ -25,7 +25,7 @@ class _PrecisionSettings extends State<PrecisionSettings> {
         alignment: Alignment.centerLeft,
         child: Text(
           Languages.precision.getString(context),
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w800, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
         ),
       ),
     );
@@ -48,7 +48,7 @@ class _PrecisionSettings extends State<PrecisionSettings> {
             boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
             boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w900,
             textColor: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
             ticksHeight: size.height*0.06,
             ticksWidth: size.width*0.01,

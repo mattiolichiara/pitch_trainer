@@ -69,13 +69,13 @@ class _SamplingType extends State<SamplingType> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        Text("Min", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500, shadows: [BoxShadow(
+        Text("Min", style: TextStyle(color: Colors.white70, fontSize: 17, fontWeight: FontWeight.w500, shadows: [BoxShadow(
           color: td.colorScheme.primary,
           spreadRadius: 1,
           blurRadius: 20,
           offset: const Offset(0, 1),
         )]),),
-        Text("Max", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500, shadows: [BoxShadow(
+        Text("Max", style: TextStyle(color: Colors.white70, fontSize: 17, fontWeight: FontWeight.w500, shadows: [BoxShadow(
           color: td.colorScheme.primary,
           spreadRadius: 1,
           blurRadius: 20,
@@ -300,7 +300,7 @@ class _SamplingType extends State<SamplingType> {
           width: size.width*0.85,
           child: Text(Languages.samplingTypeSubtitle.getString(context),
             style: const TextStyle(
-              fontWeight: FontWeight.w300,
+              fontWeight: FontWeight.w100,
               fontSize: 12,
               color: Colors.white,
             ),
@@ -399,7 +399,7 @@ class _SamplingType extends State<SamplingType> {
       },
       child: Scaffold(
         appBar: HomeAppBar(
-          title: 'Pitch Trainer - ${Languages.options.getString(context)}',
+          title: /*Pitch Trainer - */'${Languages.options.getString(context)}',
           action1: Container(),
           action2: Container(),
           action3: Container(),

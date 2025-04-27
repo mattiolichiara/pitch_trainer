@@ -33,7 +33,7 @@ class _OtherSettings extends State<OtherSettings> {
         alignment: Alignment.centerLeft,
         child: Text(
           Languages.other.getString(context),
-          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w500, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
+          style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w800, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
         ),
       ),
     );

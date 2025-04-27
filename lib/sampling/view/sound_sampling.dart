@@ -311,15 +311,19 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   Widget _noteLabel(Size size, ThemeData td) {
+    final fontStyle = Theme.of(context).textTheme.titleLarge!;
     return Text(
       "$_selectedNote$_selectedOctave",
-      style: TextStyle(
-        color: _getAccuracyColor(_accuracy.toDouble(), td),
-        fontSize: size.width * 0.35,
-        shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy.toDouble(), td))],
-      ),
+      style: fontStyle.copyWith(
+            color: _getAccuracyColor(_accuracy.toDouble(), td),
+            fontSize: size.width * 0.35,
+            fontWeight: FontWeight.w900,
+            shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy.toDouble(), td))],
+          ),
     );
   }
+
+
 
   Widget _permissionsLabel(Size size, ThemeData td) {
     return SizedBox(

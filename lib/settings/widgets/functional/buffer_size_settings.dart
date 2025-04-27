@@ -44,7 +44,7 @@ class _BufferSizeSettings extends State<BufferSizeSettings> {
           Languages.bufferSize.getString(context),
           style: TextStyle(
             color: td.colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w800,
             fontSize: 18,
             shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
@@ -73,8 +73,8 @@ class _BufferSizeSettings extends State<BufferSizeSettings> {
   Widget _bufferSizeSelectionButton(ThemeData td, Size size) {
     TextStyle buttonStyle = TextStyle(
       color: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
-      fontWeight: FontWeight.w800,
-      fontSize: 18,
+      fontWeight: FontWeight.w900,
+      fontSize: 19,
     );
     List<Widget> bufferSizeValues = [
       Text("7056", style: buttonStyle),

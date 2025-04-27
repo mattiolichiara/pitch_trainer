@@ -18,9 +18,9 @@ class ThemeCubit extends Cubit<ThemeData> {
 
   static final Map<AppThemeMode, ThemeData> _themes = {
     AppThemeMode.purple: ThemeData(
-      // textTheme: GoogleFonts.rubikTextTheme(
-      //   ThemeData(brightness: Brightness.dark).textTheme,
-      // ),
+      textTheme: GoogleFonts.urbanistTextTheme(
+          ThemeData(brightness: Brightness.dark).textTheme,
+        ),
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: purple,
@@ -31,6 +31,9 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.green: ThemeData(
+      textTheme: GoogleFonts.urbanistTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ),
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: green,
@@ -41,6 +44,9 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.blue: ThemeData(
+      textTheme: GoogleFonts.urbanistTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ),
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: blue,
@@ -51,6 +57,9 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.pink: ThemeData(
+      textTheme: GoogleFonts.urbanistTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ),
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: pink,
@@ -61,6 +70,9 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.yellow: ThemeData(
+      textTheme: GoogleFonts.urbanistTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ),
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: yellow,
@@ -71,6 +83,9 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.red: ThemeData(
+      textTheme: GoogleFonts.urbanistTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ),
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: red,
@@ -81,6 +96,9 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.orange: ThemeData(
+      textTheme: GoogleFonts.urbanistTextTheme(
+        ThemeData(brightness: Brightness.dark).textTheme,
+      ),
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: orange,
@@ -106,13 +124,5 @@ class ThemeCubit extends Cubit<ThemeData> {
   }
 
   Map<AppThemeMode, ThemeData> get availableThemes => _themes;
-}
-
-TextTheme buildRubikTextTheme(TextTheme base) {
-  return GoogleFonts.rubikTextTheme(base).copyWith(
-    titleLarge: GoogleFonts.rubik(fontWeight: FontWeight.w800),
-    titleMedium: GoogleFonts.rubik(fontWeight: FontWeight.w500),
-    titleSmall: GoogleFonts.rubik(fontWeight: FontWeight.w300),
-  );
 }
 

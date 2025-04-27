@@ -44,7 +44,7 @@ class _LanguageSettings extends State<LanguageSettings> {
           Languages.languages.getString(context),
           style: TextStyle(
             color: td.colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w800,
             fontSize: 18,
             shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
