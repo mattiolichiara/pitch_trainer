@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 
+import '../../../general/cubit/can_scroll_precision_cubit.dart';
 import '../../../general/cubit/precision_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
 import '../../../sampling/utils/constants.dart';
@@ -54,9 +55,8 @@ class _PrecisionSettings extends State<PrecisionSettings> {
             ticksMargin: size.width*0.012,
             boxBorderColor: td.colorScheme.primary,
             onChanged: (newValue) {
-              setState(() {
-                context.read<PrecisionCubit>().updatePrecision(newValue/100);
-              });
+                if(context.read<CanScrollCubit>().state) context.read<PrecisionCubit>().updatePrecision(newValue/100);
+                debugPrint(newValue.toString());
             },
           ),
         );

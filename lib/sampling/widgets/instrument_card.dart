@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class InstrumentCard extends StatefulWidget {
   const InstrumentCard({
@@ -28,6 +29,14 @@ class InstrumentCard extends StatefulWidget {
 class _InstrumentCardState extends State<InstrumentCard> {
 
   //STYLE
+  TextStyle _getSubTextStyle(ThemeData td) {
+    return GoogleFonts.rubik(
+      color: widget.isActive ? td.colorScheme.onSurface : Colors.white38,
+      fontWeight: FontWeight.w100,
+      fontSize: 12
+    );
+  }
+
   Color _getTextColor(td) {
     return widget.isActive ? td.colorScheme.onSurface : Colors.white38;
   }
@@ -65,11 +74,7 @@ class _InstrumentCardState extends State<InstrumentCard> {
       ),
       subtitle: Text(
         widget.subText,
-        style: TextStyle(
-          fontWeight: FontWeight.w300,
-          fontSize: 12,
-          color: _getTextColor(td),
-        ),
+        style: _getSubTextStyle(td),
       ),
       title: Text(
         widget.text,

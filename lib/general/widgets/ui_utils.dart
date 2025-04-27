@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class UiUtils {
 
@@ -42,7 +43,6 @@ class UiUtils {
     );
   }
 
-
   static Widget handleUnfocusedTaps(void Function() onTap, PreferredSizeWidget? appBar, FocusNode focusNode, Widget scaffoldBody) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -54,6 +54,14 @@ class UiUtils {
           child: scaffoldBody,
         ),
       )
+    );
+  }
+
+  static TextStyle getSubTextStyle(ThemeData td) {
+    return GoogleFonts.rubik(
+        color: td.colorScheme.onSurface,
+        fontWeight: FontWeight.w100,
+        fontSize: 12
     );
   }
 

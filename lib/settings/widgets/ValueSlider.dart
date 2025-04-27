@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pitch_trainer/general/cubit/can_scroll_precision_cubit.dart';
 
 class ValueSlider extends StatefulWidget {
   const ValueSlider({super.key, required this.activeColor, required this.inactiveColor, required this.boxWidth, required this.boxHeight,
@@ -36,7 +38,7 @@ class _ValueSliderState extends State<ValueSlider> {
   late int _selectedValue;
   final ScrollController _scrollController = ScrollController();
   late double _fullTickSize;
-  bool _isFirstScroll = false;
+  bool _initialScrollDone = false;
 
   @override
   void initState() {
@@ -47,7 +49,7 @@ class _ValueSliderState extends State<ValueSlider> {
     _scrollController.addListener(_handleScrollUpdate);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToIndex(_selectedValue);
+      _performInitialScroll();
     });
   }
 
@@ -63,23 +65,27 @@ class _ValueSliderState extends State<ValueSlider> {
     super.dispose();
   }
 
-  void _scrollToIndex(int index) {
-    if (!_scrollController.hasClients) return;
+  Future<void> _performInitialScroll() async {
+    await _scrollToIndex(_selectedValue);
 
-    _isFirstScroll = true;
+    setState(() {
+      _initialScrollDone = true;
+    });
+  }
+
+  Future<void> _scrollToIndex(int index) async {
+    if (!_scrollController.hasClients) return;
 
     final double tickSizeWithMargin = widget.ticksWidth + (widget.ticksMargin * 2);
     final double targetOffset = index * tickSizeWithMargin -
         (MediaQuery.of(context).size.width * (0.435)) +
         (tickSizeWithMargin / 2);
 
-    _scrollController.animateTo(
+    await _scrollController.animateTo(
       targetOffset.clamp(0, _scrollController.position.maxScrollExtent),
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
-    ).then((_) {
-      _isFirstScroll = false;
-    });
+    );
   }
 
 
@@ -104,7 +110,9 @@ class _ValueSliderState extends State<ValueSlider> {
   }
 
   void _handleScrollUpdate() {
-    if (_isFirstScroll) return;
+    if (!_initialScrollDone || _scrollController.position.userScrollDirection == ScrollDirection.idle) {
+      return;
+    }
 
     final newIndex = _getCenterIndex();
     if (newIndex != _selectedValue) {
@@ -115,16 +123,28 @@ class _ValueSliderState extends State<ValueSlider> {
     }
   }
 
+  @override
+  void didUpdateWidget(ValueSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedValue != oldWidget.selectedValue && !_initialScrollDone) {
+      _scrollToIndex(widget.selectedValue);
+    }
+  }
+
   Widget _scrollBar(Size size) {
-    return SizedBox(
-      height: max(widget.ticksHeight + 10, widget.boxHeight),
-      child: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: size.width*0.435),
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        shrinkWrap: true,
-        children: _generateTicks(),
+    return GestureDetector(
+      onHorizontalDragStart: (drag) {context.read<CanScrollCubit>().updateScroll(true);},
+      onHorizontalDragEnd: (drag) {context.read<CanScrollCubit>().updateScroll(false);},
+      child: SizedBox(
+        height: max(widget.ticksHeight + 10, widget.boxHeight),
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: size.width * 0.435),
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          shrinkWrap: true,
+          children: _generateTicks(),
+        ),
       ),
     );
   }

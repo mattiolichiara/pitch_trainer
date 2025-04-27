@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../general/utils/languages.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
+import '../utils/constants.dart';
 import '../utils/frequencies.dart';
 
 class SamplingType extends StatefulWidget {
@@ -44,7 +45,7 @@ class _SamplingType extends State<SamplingType> {
     'Bass Guitar': 'assets/icons/bass-svgrepo-com.svg',
     'Violin': 'assets/icons/violin-svgrepo-com.svg',
     'Ukulele': 'assets/icons/ukelele-svgrepo-com.svg',
-    'Custom': 'assets/icons/audio-wave-svgrepo-com.svg',
+    'Custom': 'assets/icons/wave-pulse-1-svgrepo-com.svg',
   };
 
   TextStyle textStyling(size, fontSize, td) {
@@ -317,7 +318,6 @@ class _SamplingType extends State<SamplingType> {
   //METHODS
   Future<void> _loadPreferences() async {
     await _loadFrequencyValues();
-    //debugPrint("Min: $_minFrequency - Max: $_maxFrequency");
 
     setState(() {
       _isLoading = false;
@@ -327,10 +327,10 @@ class _SamplingType extends State<SamplingType> {
   Future<void> _loadFrequencyValues() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _minFrequency = prefs.getDouble('minFrequency') ?? 27.50;
-      _maxFrequency = prefs.getDouble('maxFrequency') ?? 4186.01;
-      _isNotCustom = prefs.getBool('isNotCustom') ?? true;
-      _selectedInstrument = prefs.getString('instrumentIcon') ?? 'assets/icons/piano-instrument-keyboard-svgrepo-com.svg';
+      _minFrequency = prefs.getDouble('minFrequency') ?? Constants.defaultMinFrequency;
+      _maxFrequency = prefs.getDouble('maxFrequency') ?? Constants.defaultMaxFrequency;
+      _isNotCustom = prefs.getBool('isNotCustom') ?? Constants.defaultIsNotCustom;
+      _selectedInstrument = prefs.getString('instrumentIcon') ?? Constants.defaultInstrumentIcon;
     });
   }
 

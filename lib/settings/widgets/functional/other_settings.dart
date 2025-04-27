@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:pitch_trainer/general/cubit/can_scroll_precision_cubit.dart';
 import 'package:pitch_trainer/general/cubit/tolerance_cubit.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 import 'package:pitch_trainer/general/utils/warning_dialog.dart';
@@ -59,11 +60,22 @@ class _OtherSettings extends State<OtherSettings> {
     );
   }
 
-  void _triggerToast() {
+  Future<void> _triggerToast() async {
+    BlocProvider.of<CanScrollCubit>(context).updateScroll(true);
+
+    await Future.delayed(Duration.zero);
+
     BlocProvider.of<SoundWaveCubit>(context).toggleWaveType(true);
-    BlocProvider.of<PrecisionCubit>(context).updatePrecision(Constants.defaultPrecision/100);
-    BlocProvider.of<ToleranceCubit>(context).updateTolerance(Constants.defaultTolerance/100);
+    BlocProvider.of<PrecisionCubit>(context).updatePrecision(Constants.defaultPrecision);
+    BlocProvider.of<ToleranceCubit>(context).updateTolerance(Constants.defaultTolerance);
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
     Fluttertoast.showToast(msg: Languages.settingsResetToast.getString(context));
+
+    if (mounted) {
+      BlocProvider.of<CanScrollCubit>(context).updateScroll(false);
+    }
   }
 
   void _showDialog() {
@@ -88,6 +100,11 @@ class _OtherSettings extends State<OtherSettings> {
     ThemeCubit themeCubit = BlocProvider.of<ThemeCubit>(context);
     SharedPreferences sp = await SharedPreferences.getInstance();
 
+    sp.setDouble('minFrequency', Constants.defaultMinFrequency);
+    sp.setDouble('maxFrequency', Constants.defaultMaxFrequency);
+    sp.setBool('isNotCustom', Constants.defaultIsNotCustom);
+    sp.setString('instrumentIcon', Constants.defaultInstrumentIcon);
+
     await sp.setInt('theme', 0);
     themeCubit.changeTheme(AppThemeMode.purple);
     debugPrint("Theme: ${sp.getInt('theme')}");
@@ -97,7 +114,7 @@ class _OtherSettings extends State<OtherSettings> {
 
     await sp.setInt('bufferSize', Constants.defaultBufferSize);
     debugPrint("bufferSize: ${sp.getInt('bufferSize')}");
-;
+
     debugPrint("precision: ${sp.getDouble('precision')}");
     debugPrint("tolerance: ${sp.getDouble('tolerance')}");
     debugPrint("isCleanWave: ${sp.getBool('isCleanWave')}");

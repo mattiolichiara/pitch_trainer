@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppThemeMode {purple, green, blue, red, pink, yellow, orange}
@@ -17,6 +18,9 @@ class ThemeCubit extends Cubit<ThemeData> {
 
   static final Map<AppThemeMode, ThemeData> _themes = {
     AppThemeMode.purple: ThemeData(
+      // textTheme: GoogleFonts.rubikTextTheme(
+      //   ThemeData(brightness: Brightness.dark).textTheme,
+      // ),
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: purple,
@@ -103,3 +107,12 @@ class ThemeCubit extends Cubit<ThemeData> {
 
   Map<AppThemeMode, ThemeData> get availableThemes => _themes;
 }
+
+TextTheme buildRubikTextTheme(TextTheme base) {
+  return GoogleFonts.rubikTextTheme(base).copyWith(
+    titleLarge: GoogleFonts.rubik(fontWeight: FontWeight.w800),
+    titleMedium: GoogleFonts.rubik(fontWeight: FontWeight.w500),
+    titleSmall: GoogleFonts.rubik(fontWeight: FontWeight.w300),
+  );
+}
+

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:pitch_trainer/general/cubit/can_scroll_precision_cubit.dart';
 import 'package:pitch_trainer/general/cubit/tolerance_cubit.dart';
 
 import 'general/cubit/precision_cubit.dart';
@@ -39,6 +40,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => SoundWaveCubit()),
         BlocProvider(create: (context) => PrecisionCubit()),
         BlocProvider(create: (context) => ToleranceCubit()),
+        BlocProvider(create: (context) => CanScrollCubit()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeData>(
         builder: (context, theme) {

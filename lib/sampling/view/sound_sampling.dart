@@ -6,10 +6,12 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_pitch_detection/flutter_pitch_detection.dart';
 import 'package:flutter_pitch_detection/flutter_pitch_detection_platform_interface.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:jumping_dot/jumping_dot.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pitch_trainer/sampling/view/sampling_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../general/utils/languages.dart';
 import '../../general/widgets/double_tap_to_exit.dart';
@@ -27,7 +29,7 @@ class SoundSampling extends StatefulWidget {
 }
 
 class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, TickerProviderStateMixin {
-  String _selectedNote = "-";
+  String _selectedNote = "";
   String _selectedOctave = "";
   double _selectedFrequency = 0.0;
   List<double> _samples = [];
@@ -158,8 +160,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     return IconButton(
       icon: SvgPicture.asset(
         "assets/icons/microphone-2-svgrepo-com.svg",
-        height: size.height * 0.027,
-        width: size.width * 0.027,
+        height: size.height * 0.034,
+        width: size.width * 0.034,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -175,8 +177,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     return IconButton(
       icon: SvgPicture.asset(
         "assets/icons/microphone-2-svgrepo-com (1).svg",
-        height: size.height * 0.027,
-        width: size.width * 0.027,
+        height: size.height * 0.034,
+        width: size.width * 0.034,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -201,7 +203,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _noteLabel(size, td),
+              _noteSection(size, td),
               _frequencyBar(size, td),
               _soundWave(size, td),
             ],
@@ -225,18 +227,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
         height: size.height * 0.04,
         width: size.width * 0.04,
         colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
-      ),
-      onPressed: _onPressedSettings,
-    );
-  }
-
-  Widget _micOffDisplay(size, td) {
-    return IconButton(
-      icon: SvgPicture.asset(
-        "assets/icons/vinyl-svgrepo-com.svg",
-        height: size.height * 0.2,
-        width: size.width * 0.2,
-        colorFilter: ColorFilter.mode(td.colorScheme.primary, BlendMode.srcIn),
       ),
       onPressed: _onPressedSettings,
     );
@@ -278,7 +268,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     );
   }
 
-  Widget _noteLabel(Size size, ThemeData td) {
+  Widget _noteSection(size, td) {
     return Center(
       child: _permissionStatus
           ? Stack(
@@ -288,32 +278,59 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
             width: size.width*0.5,
             height: size.height*0.25,
             decoration: BoxDecoration(
-              boxShadow: [_rec ? _getAccuracyShadow(_accuracy.toDouble(), td) : UiUtils.widgetsShadow(1, 120, td)],
+              boxShadow: [(_rec && _selectedNote != "") ? _getAccuracyShadow(_accuracy.toDouble(), td) : UiUtils.widgetsShadow(1, 120, td)],
             ),
           ),
           //
-          _rec ?
-          Text(
-            "$_selectedNote$_selectedOctave",
-            style: TextStyle(
-              color: _getAccuracyColor(_accuracy.toDouble(), td),
-              fontSize: size.width * 0.35,
-              shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy.toDouble(), td))],
-            ),
-          ) :
-             _micOffDisplay(size, td),
+          _rec ? (_selectedNote == "" ? _noDetectionLabel(size, td) : _noteLabel(size, td)) : _micOffLabel(size, td),
         ],
       )
-          : SizedBox(
-        width: size.width * 0.7,
-        child: Center(
-          child: Text(
-            Languages.permissionsWarning.getString(context),
-            style: TextStyle(
-              color: td.colorScheme.onSurface,
-              fontSize: size.width * 0.04,
-              shadows: [UiUtils.widgetsShadow(80, 20, td)],
-            ),
+          : _permissionsLabel(size, td),
+    );
+  }
+
+  Widget _noDetectionLabel(Size size, ThemeData td) {
+    return JumpingDots(
+      color: td.colorScheme.onSurface,
+      numberOfDots: 3,
+      radius: size.width*0.02,
+      innerPadding: size.width*0.05,
+    );
+  }
+
+  Widget _micOffLabel(size, td) {
+    return IconButton(
+      icon: SvgPicture.asset(
+        "assets/icons/vinyl-svgrepo-com.svg",
+        height: size.height * 0.2,
+        width: size.width * 0.2,
+        colorFilter: ColorFilter.mode(td.colorScheme.primary, BlendMode.srcIn),
+      ),
+      onPressed: _onPressedSettings,
+    );
+  }
+
+  Widget _noteLabel(Size size, ThemeData td) {
+    return Text(
+      "$_selectedNote$_selectedOctave",
+      style: TextStyle(
+        color: _getAccuracyColor(_accuracy.toDouble(), td),
+        fontSize: size.width * 0.35,
+        shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy.toDouble(), td))],
+      ),
+    );
+  }
+
+  Widget _permissionsLabel(Size size, ThemeData td) {
+    return SizedBox(
+      width: size.width * 0.7,
+      child: Center(
+        child: Text(
+          Languages.permissionsWarning.getString(context),
+          style: TextStyle(
+            color: td.colorScheme.onSurface,
+            fontSize: size.width * 0.04,
+            shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
         ),
       ),
@@ -385,7 +402,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   void _resetPitchValues() {
     setState(() {
       _selectedFrequency = 0.0;
-      _selectedNote = "-";
+      _selectedNote = "";
       _selectedOctave = "";
       _accuracy = 0;
       _loudness = 0;
@@ -405,11 +422,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   Future<void> _loadFrequencyValues() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _minFrequency = prefs.getDouble('minFrequency') ?? 27.50;
-      _maxFrequency = prefs.getDouble('maxFrequency') ?? 4186.01;
-      _selectedInstrument =
-          prefs.getString('instrumentIcon') ??
-          'assets/icons/piano-instrument-keyboard-svgrepo-com.svg';
+      _minFrequency = prefs.getDouble('minFrequency') ?? Constants.defaultMinFrequency;
+      _maxFrequency = prefs.getDouble('maxFrequency') ?? Constants.defaultMaxFrequency;
+      _selectedInstrument = prefs.getString('instrumentIcon') ?? Constants.defaultInstrumentIcon;
     });
   }
 
@@ -439,6 +454,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   Future<void> _startRecording() async {
+    WakelockPlus.enable();
     _getPermissionStatus();
     if(!_rec) {
       try {
@@ -466,31 +482,15 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           final sr = data['sampleRate'] ?? 0;
           final currentVolume = data['volume'] ?? 0;
 
-          _animationController.stop();
-          _loudnessAnimation = Tween<double>(
-            begin: _animatedLoudness,
-            end: currentVolume,
-          ).animate(
-            CurvedAnimation(
-              parent: _animationController,
-              curve: Curves.elasticInOut,
-            ),
-          )..addListener(() {
-            setState(() {
-              _animatedLoudness = _loudnessAnimation.value;
-            });
-          });
-          _animationController.forward(from: 0);
-
-          _silenceTimer = Timer(_silenceTimeout, () {
+          if (_selectedNote != "") {
             _animationController.stop();
             _loudnessAnimation = Tween<double>(
               begin: _animatedLoudness,
-              end: 0,
+              end: currentVolume,
             ).animate(
               CurvedAnimation(
                 parent: _animationController,
-                curve: Curves.easeOut,
+                curve: Curves.elasticInOut,
               ),
             )..addListener(() {
               setState(() {
@@ -498,41 +498,63 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
               });
             });
             _animationController.forward(from: 0);
+          }
+
+          _silenceTimer = Timer(_silenceTimeout, () {
+            if (_selectedNote != "") {
+              _animationController.stop();
+              _loudnessAnimation = Tween<double>(
+                begin: _animatedLoudness,
+                end: 0,
+              ).animate(
+                CurvedAnimation(
+                  parent: _animationController,
+                  curve: Curves.easeOut,
+                ),
+              )..addListener(() {
+                setState(() {
+                  _animatedLoudness = _loudnessAnimation.value;
+                });
+              });
+              _animationController.forward(from: 0);
+
+              _resetPitchValues();
+            }
           });
 
-          if(currentFrequency > _minFrequency && currentFrequency < _maxFrequency) {
-            setState(() {
-              _selectedNote = data['note'] ?? "-";
-              _midiNote = data['midiNote'] ?? 0;
-              _selectedFrequency = currentFrequency;
-              _selectedOctave = (octave?.clamp(0, 8).toString()) ?? "";
-              _accuracy = data['accuracy'] ?? 0;
-              _isOnPitch = data['isOnPitch'] ?? false;
-            });
+          if (currentFrequency > _minFrequency && currentFrequency < _maxFrequency) {
+            final newNote = data['note'] ?? "";
 
-            _animationController.stop();
-            _loudnessAnimation = Tween<double>(
-              begin: _animatedLoudness,
-              end: data['volume'] ?? 0,
-            ).animate(
-              CurvedAnimation(
-                parent: _animationController,
-                curve: Curves.easeOut,
-              ),
-            );
-            _animationController.forward(from: 0);
+            if (newNote.isNotEmpty && newNote != _selectedNote) {
+              setState(() {
+                _selectedNote = newNote;
+                _midiNote = data['midiNote'] ?? 0;
+                _selectedFrequency = currentFrequency;
+                _selectedOctave = (octave?.clamp(0, 8).toString()) ?? "";
+                _accuracy = data['accuracy'] ?? 0;
+                _isOnPitch = data['isOnPitch'] ?? false;
+              });
 
-            setState(() {
-              _samples = _isCleanWave ? Utils.updateSamples(currentFrequency, sr) : streamData;
-            });
-          // } else {
-          //   setState(() {
-          //     _selectedOctave = "";
-          //     _selectedNote = "-";
-          //     _selectedFrequency = 0.0;
-          //     _accuracy = 0;
-          //     _samples = [];
-          //   });
+              _animationController.stop();
+              _loudnessAnimation = Tween<double>(
+                begin: _animatedLoudness,
+                end: data['volume'] ?? 0,
+              ).animate(
+                CurvedAnimation(
+                  parent: _animationController,
+                  curve: Curves.easeOut,
+                ),
+              );
+              _animationController.forward(from: 0);
+
+              setState(() {
+                _samples = _isCleanWave ? Utils.updateSamples(currentFrequency, sr) : streamData;
+              });
+            }
+          } else {
+            if (_selectedNote.isNotEmpty) {
+              _resetPitchValues();
+            }
           }
         });
 
@@ -543,6 +565,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   Future<void> _stopRecording() async {
+    WakelockPlus.disable();
     if(_rec) {
       try {
         _silenceTimer?.cancel();

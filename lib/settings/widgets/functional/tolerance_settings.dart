@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 
+import '../../../general/cubit/can_scroll_precision_cubit.dart';
+import '../../../general/cubit/precision_cubit.dart';
 import '../../../general/cubit/tolerance_cubit.dart';
 import '../../../general/utils/languages.dart';
 import '../../../general/widgets/ui_utils.dart';
@@ -54,9 +56,7 @@ class _ToleranceSettings extends State<ToleranceSettings> {
             ticksMargin: size.width*0.012,
             boxBorderColor: td.colorScheme.primary,
             onChanged: (newValue) {
-              setState(() {
-                context.read<ToleranceCubit>().updateTolerance(newValue/100);
-              });
+              if(context.read<CanScrollCubit>().state) context.read<ToleranceCubit>().updateTolerance(newValue/100);
             },
           ),
         );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class InstrumentExpansionTile extends StatefulWidget {
   const InstrumentExpansionTile(
@@ -32,6 +33,14 @@ class InstrumentExpansionTile extends StatefulWidget {
 class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
 
   //STYLE
+  TextStyle _getSubTextStyle(ThemeData td) {
+    return GoogleFonts.rubik(
+        color: widget.isActive ? td.colorScheme.onSurface : Colors.white38,
+        fontWeight: FontWeight.w100,
+        fontSize: 12
+    );
+  }
+  
   Color selectColor(td) {
     return widget.isActive == true ? td.colorScheme.onSurface : Colors.white38;
   }
@@ -112,11 +121,7 @@ class _InstrumentExpansionTileState extends State<InstrumentExpansionTile> {
             leading: _leadingIcon(leadingIcon),
             subtitle: Text(
               widget.subText,
-              style: TextStyle(
-                fontWeight: FontWeight.w300,
-                fontSize: 12,
-                color: selectColor(td),
-              ),
+              style: _getSubTextStyle(td),
             ),
             title: Text(
               text,
