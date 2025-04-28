@@ -479,7 +479,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
                 'minPrecision: $_precision'
         );
 
-        _pitchSubscription = FlutterPitchDetectionPlatform.instance.onPitchDetected.listen((data) async {
+        _pitchSubscription = _pitchDetector.onPitchDetected.listen((data) async {
           _silenceTimer?.cancel();
           final streamData = await _pitchDetector.getRawDataFromStream();
           final currentFrequency = data['frequency'] ?? 0;
