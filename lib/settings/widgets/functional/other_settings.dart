@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:pitch_trainer/general/cubit/can_scroll_precision_cubit.dart';
+import 'package:pitch_trainer/general/cubit/scrollPositionPrecision.dart';
 import 'package:pitch_trainer/general/cubit/tolerance_cubit.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 import 'package:pitch_trainer/general/utils/warning_dialog.dart';
@@ -10,6 +10,7 @@ import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../general/cubit/precision_cubit.dart';
+import '../../../general/cubit/scrollPositionTolerance.dart';
 import '../../../general/cubit/sound_wave_cubit.dart';
 import '../../../general/cubit/theme_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
@@ -61,21 +62,15 @@ class _OtherSettings extends State<OtherSettings> {
   }
 
   Future<void> _triggerToast() async {
-    BlocProvider.of<CanScrollCubit>(context).updateScroll(true);
-
-    await Future.delayed(Duration.zero);
-
-    BlocProvider.of<SoundWaveCubit>(context).toggleWaveType(true);
     BlocProvider.of<PrecisionCubit>(context).updatePrecision(Constants.defaultPrecision);
     BlocProvider.of<ToleranceCubit>(context).updateTolerance(Constants.defaultTolerance);
-
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    Fluttertoast.showToast(msg: Languages.settingsResetToast.getString(context));
-
     if (mounted) {
-      BlocProvider.of<CanScrollCubit>(context).updateScroll(false);
+      BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(Constants.defaultScrollPositionPrecision);
+      BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(Constants.defaultScrollPositionTolerance);
     }
+    Fluttertoast.showToast(msg: Languages.settingsResetToast.getString(context));
+    BlocProvider.of<SoundWaveCubit>(context).toggleWaveType(true);
+
   }
 
   void _showDialog() {

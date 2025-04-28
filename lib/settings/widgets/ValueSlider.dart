@@ -2,14 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pitch_trainer/general/cubit/can_scroll_precision_cubit.dart';
 
 class ValueSlider extends StatefulWidget {
   const ValueSlider({super.key, required this.activeColor, required this.inactiveColor, required this.boxWidth, required this.boxHeight,
     required this.min, required this.max, required this.selectedValue, required this.onChanged, required this.boxColor, required this.boxShadow,
     required this.textColor, this.fontFamily, required this.fontSize, required this.fontWeight, required this.ticksHeight, required this.ticksWidth, required this.ticksMargin,
-    required this.boxBorderColor,});
+    required this.boxBorderColor, required this.initialPosition, required this.onScrollPositionChanged,});
 
   final Color activeColor;
   final Color inactiveColor;
@@ -29,6 +27,8 @@ class ValueSlider extends StatefulWidget {
   final double ticksWidth;
   final double ticksMargin;
   final Color boxBorderColor;
+  final double initialPosition;
+  final ValueChanged<double> onScrollPositionChanged;
 
   @override
   State<ValueSlider> createState() => _ValueSliderState();
@@ -37,49 +37,55 @@ class ValueSlider extends StatefulWidget {
 class _ValueSliderState extends State<ValueSlider> {
   late int _selectedValue;
   final ScrollController _scrollController = ScrollController();
-  late double _fullTickSize;
   bool _initialScrollDone = false;
 
   @override
   void initState() {
     super.initState();
     _selectedValue = widget.selectedValue;
-    _fullTickSize = widget.ticksWidth*(widget.max-widget.min) + widget.ticksMargin*2;
 
     _scrollController.addListener(_handleScrollUpdate);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _performInitialScroll();
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(widget.initialPosition);
+      }
+      setState(() => _initialScrollDone = true);
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void _handleScrollUpdate() {
+    if (!_initialScrollDone) return;
+
+    widget.onScrollPositionChanged(_scrollController.offset);
+
+    final double tickSizeWithMargin = widget.ticksWidth + (widget.ticksMargin * 2);
+    final int newIndex = (_scrollController.offset / tickSizeWithMargin).round().clamp(widget.min, widget.max);
+
+    if (newIndex != _selectedValue) {
+      setState(() => _selectedValue = newIndex);
+      widget.onChanged(newIndex);
+    }
   }
 
   @override
-  void dispose() {
-    _scrollController.removeListener(_handleScrollUpdate);
-    _scrollController.dispose();
-    super.dispose();
-  }
+  void didUpdateWidget(ValueSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-  Future<void> _performInitialScroll() async {
-    await _scrollToIndex(_selectedValue);
+    if (widget.initialPosition != oldWidget.initialPosition && _initialScrollDone) {
+      _scrollController.jumpTo(widget.initialPosition);
+    }
 
-    setState(() {
-      _initialScrollDone = true;
-    });
+    if (widget.selectedValue != oldWidget.selectedValue) {
+      _scrollToIndex(widget.selectedValue);
+    }
   }
 
   Future<void> _scrollToIndex(int index) async {
     if (!_scrollController.hasClients) return;
 
     final double tickSizeWithMargin = widget.ticksWidth + (widget.ticksMargin * 2);
-    final double targetOffset = index * tickSizeWithMargin -
-        (MediaQuery.of(context).size.width * (0.435)) +
-        (tickSizeWithMargin / 2);
+    final double targetOffset = index * tickSizeWithMargin;
 
     await _scrollController.animateTo(
       targetOffset.clamp(0, _scrollController.position.maxScrollExtent),
@@ -88,53 +94,8 @@ class _ValueSliderState extends State<ValueSlider> {
     );
   }
 
-
-  int _getCenterIndex() {
-    if (!_scrollController.hasClients) return _selectedValue;
-
-    final double scrollOffset = _scrollController.offset;
-    final double viewportWidth = _scrollController.position.viewportDimension;
-    final double centerX = scrollOffset + (viewportWidth / 2);
-
-    final double tickSizeWithMargin = widget.ticksWidth + (widget.ticksMargin * 2);
-    final double totalTicksWidth = tickSizeWithMargin * (widget.max - widget.min + 1);
-    final double totalWidth = totalTicksWidth + viewportWidth;
-
-    final double listViewPadding = (totalWidth - totalTicksWidth) / 2;
-
-
-    final double adjustedCenterX = centerX - listViewPadding;
-    final int centerIndex = (adjustedCenterX / tickSizeWithMargin).round();
-
-    return (widget.min + centerIndex).clamp(widget.min, widget.max);
-  }
-
-  void _handleScrollUpdate() {
-    if (!_initialScrollDone || _scrollController.position.userScrollDirection == ScrollDirection.idle) {
-      return;
-    }
-
-    final newIndex = _getCenterIndex();
-    if (newIndex != _selectedValue) {
-      setState(() {
-        _selectedValue = newIndex;
-      });
-      widget.onChanged(newIndex);
-    }
-  }
-
-  @override
-  void didUpdateWidget(ValueSlider oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedValue != oldWidget.selectedValue && !_initialScrollDone) {
-      _scrollToIndex(widget.selectedValue);
-    }
-  }
-
   Widget _scrollBar(Size size) {
     return GestureDetector(
-      onHorizontalDragStart: (drag) {context.read<CanScrollCubit>().updateScroll(true);},
-      onHorizontalDragEnd: (drag) {context.read<CanScrollCubit>().updateScroll(false);},
       child: SizedBox(
         height: max(widget.ticksHeight + 10, widget.boxHeight),
         child: ListView(
@@ -217,18 +178,37 @@ class _ValueSliderState extends State<ValueSlider> {
       );
   }
 
+  Widget _shadowEffetct(ThemeData td, Size size) {
+    double blurRadius = 100;
+    double spreadRadius = 40;
+    double offset = 0.9;
+
+    return IgnorePointer(
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(color: td.colorScheme.surface, blurRadius: blurRadius, spreadRadius: spreadRadius, offset: Offset(size.width*offset, 0),),
+            BoxShadow(color: td.colorScheme.surface, blurRadius: blurRadius, spreadRadius: spreadRadius, offset: Offset(size.width*-offset, 0))],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    ThemeData td = Theme.of(context);
+
     return SizedBox(
       height: max(widget.ticksHeight+10, widget.boxHeight),
         child: Stack(
-          alignment: Alignment.center,
-          children: [
-            _scrollBar(size),
-            _valueBox(),
-          ],
-        ),
+            alignment: Alignment.center,
+            children: [
+              _scrollBar(size),
+              _valueBox(),
+              //_shadowEffetct(td, size),
+            ],
+          ),
     );
   }
 }
