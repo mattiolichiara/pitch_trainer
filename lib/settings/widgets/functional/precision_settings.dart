@@ -56,11 +56,11 @@ class _PrecisionSettings extends State<PrecisionSettings> {
             boxBorderColor: td.colorScheme.primary,
             onChanged: (newValue) {
                 BlocProvider.of<PrecisionCubit>(context).updatePrecision(newValue/100);
-                debugPrint("Current Index: ${(context.read<PrecisionCubit>().state*100).toInt()}");
+                debugPrint("Current Index PRECISION: ${(context.read<PrecisionCubit>().state*100).toInt()}");
             },
             initialPosition: context.read<ScrollPositionPrecision>().state,
             onScrollPositionChanged: (double value) {
-              debugPrint("Current Pos: $value, Current Index: ${(context.read<PrecisionCubit>().state*100).toInt()}");
+              debugPrint("Current Pos PRECISION: $value, Current Index: ${(context.read<PrecisionCubit>().state*100).toInt()}");
               BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(value);
             },
           ),

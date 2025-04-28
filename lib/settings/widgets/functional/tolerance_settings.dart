@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 
-import '../../../general/cubit/scrollPositionPrecision.dart';
 import '../../../general/cubit/scrollPositionTolerance.dart';
 import '../../../general/cubit/tolerance_cubit.dart';
 import '../../../general/utils/languages.dart';
@@ -56,11 +55,11 @@ class _ToleranceSettings extends State<ToleranceSettings> {
             boxBorderColor: td.colorScheme.primary,
             onChanged: (newValue) {
               BlocProvider.of<ToleranceCubit>(context).updateTolerance(newValue/100);
-              debugPrint("Current Index: ${(context.read<ToleranceCubit>().state*100).toInt()}");
+              debugPrint("Current Index TOLERANCE: ${(context.read<ToleranceCubit>().state*100).toInt()}");
             },
-            initialPosition: context.read<ScrollPositionPrecision>().state,
+            initialPosition: context.read<ScrollPositionTolerance>().state,
             onScrollPositionChanged: (double value) {
-              debugPrint("Current Pos: $value, Current Index: ${(context.read<ToleranceCubit>().state*100).toInt()}");
+              debugPrint("Current Pos TOLERANCE: $value, Current Index: ${(context.read<ToleranceCubit>().state*100).toInt()}");
               BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(value);
             },
           ),
@@ -84,3 +83,4 @@ class _ToleranceSettings extends State<ToleranceSettings> {
     );
   }
 }
+
