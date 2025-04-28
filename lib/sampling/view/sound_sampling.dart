@@ -408,6 +408,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _selectedFrequency = 0.0;
       _selectedNote = "";
       _selectedOctave = "";
+      _midiNote = 0;
       _accuracy = 0;
       _loudness = 0;
       _samples = [];
