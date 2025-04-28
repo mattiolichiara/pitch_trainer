@@ -34,39 +34,40 @@ class _PrecisionSettings extends State<PrecisionSettings> {
   Widget _precisionSlider(Size size, ThemeData td) {
     return BlocBuilder<PrecisionCubit, double>(
       builder: (context, precision) {
-        final sliderValue = (precision * 100).toInt();
-        return SizedBox(
-          width: size.width * 0.9,
-          child: ValueSlider(
-            selectedValue: sliderValue,
-            boxWidth: size.width * 0.15,
-            boxHeight: size.height * 0.04,
-            activeColor: td.colorScheme.secondary,
-            inactiveColor: Colors.white30,
-            max: 100,
-            min:  0,
-            boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
-            boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            textColor: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
-            ticksHeight: size.height*0.06,
-            ticksWidth: size.width*0.01,
-            ticksMargin: size.width*0.012,
-            boxBorderColor: td.colorScheme.primary,
-            onChanged: (newValue) {
+        return BlocBuilder<ScrollPositionPrecision, double>(
+          builder: (context, scrollPosition) {
+          return SizedBox(
+            width: size.width * 0.9,
+            child: ValueSlider(
+              selectedValue: (context.read<PrecisionCubit>().state*100).toInt(),
+              boxWidth: size.width * 0.15,
+              boxHeight: size.height * 0.04,
+              activeColor: td.colorScheme.secondary,
+              inactiveColor: Colors.white30,
+              max: 100,
+              min: 0,
+              boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
+              boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              textColor: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
+              ticksHeight: size.height*0.06,
+              ticksWidth: size.width*0.01,
+              ticksMargin: size.width*0.012,
+              boxBorderColor: td.colorScheme.primary,
+              onChanged: (newValue) {
                 BlocProvider.of<PrecisionCubit>(context).updatePrecision(newValue/100);
-                debugPrint("Current Index PRECISION: ${(context.read<PrecisionCubit>().state*100).toInt()}");
-            },
-            initialPosition: context.read<ScrollPositionPrecision>().state,
-            onScrollPositionChanged: (double value) {
-              debugPrint("Current Pos PRECISION: $value, Current Index: ${(context.read<PrecisionCubit>().state*100).toInt()}");
-              BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(value);
-            },
-          ),
-        );
-      },
-    );
+                debugPrint("Current Value PRECISION: ${(context.read<PrecisionCubit>().state*100).toInt()}");
+              },
+              initialPosition: context.read<ScrollPositionPrecision>().state,
+              onScrollPositionChanged: (double value) {
+                debugPrint("Current Pos PRECISION: $value, Current Value: ${(context.read<PrecisionCubit>().state*100).toInt()}");
+                BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(value);
+              },
+            ),
+          );
+        });
+      });
   }
 
   //BUILD

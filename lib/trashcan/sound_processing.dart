@@ -163,3 +163,23 @@
 //
 //
 //
+
+
+
+
+// List<Widget> _generateTicks() {
+//   return List.generate(widget.max - widget.min + 1, (index) {
+//     final currentValue = widget.min + index;
+//     final isSelected = currentValue == _selectedValue;
+//
+//     return Container(
+//         margin: EdgeInsets.symmetric(horizontal: widget.ticksMargin),
+//         width: widget.ticksWidth,
+//         height: isSelected ? widget.ticksHeight+10 : widget.ticksHeight,
+//         decoration: BoxDecoration(
+//           color: isSelected ? widget.activeColor : widget.inactiveColor,
+//           borderRadius: BorderRadius.circular(2),
+//         ),
+//       );
+//   });
+// }

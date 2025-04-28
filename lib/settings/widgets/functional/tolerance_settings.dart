@@ -33,11 +33,10 @@ class _ToleranceSettings extends State<ToleranceSettings> {
   Widget _toleranceSlider(Size size, ThemeData td) {
     return BlocBuilder<ToleranceCubit, double>(
       builder: (context, tolerance) {
-        final sliderValue = (tolerance * 100).toInt();
         return SizedBox(
           width: size.width * 0.9,
           child: ValueSlider(
-            selectedValue: sliderValue,
+            selectedValue: (context.read<ToleranceCubit>().state*100).toInt(),
             boxWidth: size.width * 0.15,
             boxHeight: size.height * 0.04,
             activeColor: td.colorScheme.secondary,
@@ -55,11 +54,11 @@ class _ToleranceSettings extends State<ToleranceSettings> {
             boxBorderColor: td.colorScheme.primary,
             onChanged: (newValue) {
               BlocProvider.of<ToleranceCubit>(context).updateTolerance(newValue/100);
-              debugPrint("Current Index TOLERANCE: ${(context.read<ToleranceCubit>().state*100).toInt()}");
+              debugPrint("Current Value TOLERANCE: ${(context.read<ToleranceCubit>().state*100).toInt()}");
             },
             initialPosition: context.read<ScrollPositionTolerance>().state,
             onScrollPositionChanged: (double value) {
-              debugPrint("Current Pos TOLERANCE: $value, Current Index: ${(context.read<ToleranceCubit>().state*100).toInt()}");
+              debugPrint("Current Pos TOLERANCE: $value, Current Value: ${(context.read<ToleranceCubit>().state*100).toInt()}");
               BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(value);
             },
           ),

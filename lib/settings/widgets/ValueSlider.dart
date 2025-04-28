@@ -54,6 +54,9 @@ class _ValueSliderState extends State<ValueSlider> {
     });
   }
 
+  int _indexToValue(int index) => widget.min + index;
+  int _valueToIndex(int value) => (value - widget.min).clamp(0, widget.max - widget.min);
+
   void _handleScrollUpdate() {
     if (!_initialScrollDone) return;
 
@@ -68,18 +71,18 @@ class _ValueSliderState extends State<ValueSlider> {
     }
   }
 
-  @override
-  void didUpdateWidget(ValueSlider oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.initialPosition != oldWidget.initialPosition && _initialScrollDone) {
-      _scrollController.jumpTo(widget.initialPosition);
-    }
-
-    if (widget.selectedValue != oldWidget.selectedValue) {
-      _scrollToIndex(widget.selectedValue);
-    }
-  }
+  // @override
+  // void didUpdateWidget(ValueSlider oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //
+  //   if (widget.initialPosition != oldWidget.initialPosition && _initialScrollDone) {
+  //     _scrollController.jumpTo(widget.initialPosition);
+  //   }
+  //
+  //   if (widget.selectedValue != oldWidget.selectedValue) {
+  //     _scrollToIndex(widget.selectedValue);
+  //   }
+  // }
 
   Future<void> _scrollToIndex(int index) async {
     if (!_scrollController.hasClients) return;
@@ -124,23 +127,6 @@ class _ValueSliderState extends State<ValueSlider> {
     });
   }
 
-  // List<Widget> _generateTicks() {
-  //   return List.generate(widget.max - widget.min + 1, (index) {
-  //     final currentValue = widget.min + index;
-  //     final isSelected = currentValue == _selectedValue;
-  //
-  //     return Container(
-  //         margin: EdgeInsets.symmetric(horizontal: widget.ticksMargin),
-  //         width: widget.ticksWidth,
-  //         height: isSelected ? widget.ticksHeight+10 : widget.ticksHeight,
-  //         decoration: BoxDecoration(
-  //           color: isSelected ? widget.activeColor : widget.inactiveColor,
-  //           borderRadius: BorderRadius.circular(2),
-  //         ),
-  //       );
-  //   });
-  // }
-
   Widget _valueBox() {
       return Stack(
         alignment: Alignment.center,
@@ -164,7 +150,7 @@ class _ValueSliderState extends State<ValueSlider> {
             ),
             child: Center(
               child: Text(
-                _selectedValue.toString(),
+                _indexToValue(_selectedValue).toString(),
                 style: TextStyle(
                   color: widget.textColor,
                   fontWeight: widget.fontWeight,
