@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_localization/flutter_localization.dart';
-import 'package:flutter_pitch_detection/flutter_pitch_detection.dart';
 import 'package:flutter_pitch_detection/flutter_pitch_detection_platform_interface.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:jumping_dot/jumping_dot.dart';
@@ -478,7 +477,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
                 'minPrecision: $_precision'
         );
 
-        _pitchSubscription = FlutterPitchDetectionPlatform.instance.onPitchDetected.listen((data) async {
+        _pitchSubscription = _pitchDetector.onPitchDetected.listen((data) async {
           _silenceTimer?.cancel();
           final streamData = await _pitchDetector.getRawDataFromStream();
           final currentFrequency = data['frequency'] ?? 0;
