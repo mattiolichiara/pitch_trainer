@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 
-import '../../../general/cubit/scrollPositionTolerance.dart';
+import '../../../general/cubit/can_reset_cubit.dart';
+import '../../../general/cubit/scroll_position_tolerance.dart';
 import '../../../general/cubit/tolerance_cubit.dart';
 import '../../../general/utils/languages.dart';
 import '../../../general/widgets/ui_utils.dart';
@@ -31,12 +32,12 @@ class _ToleranceSettings extends State<ToleranceSettings> {
   }
 
   Widget _toleranceSlider(Size size, ThemeData td) {
-    return BlocBuilder<ToleranceCubit, double>(
+    return BlocBuilder<ToleranceCubit, int>(
       builder: (context, tolerance) {
         return SizedBox(
           width: size.width * 0.9,
           child: ValueSlider(
-            selectedValue: (context.read<ToleranceCubit>().state*100).toInt(),
+            selectedValue: (context.read<ToleranceCubit>().state),
             boxWidth: size.width * 0.15,
             boxHeight: size.height * 0.04,
             activeColor: td.colorScheme.secondary,
@@ -52,13 +53,14 @@ class _ToleranceSettings extends State<ToleranceSettings> {
             ticksWidth: size.width*0.01,
             ticksMargin: size.width*0.012,
             boxBorderColor: td.colorScheme.primary,
+            canReset: BlocProvider.of<CanResetCubit>(context).state,
             onChanged: (newValue) {
-              BlocProvider.of<ToleranceCubit>(context).updateTolerance(newValue/100);
-              debugPrint("Current Value TOLERANCE: ${(context.read<ToleranceCubit>().state*100).toInt()}");
+              BlocProvider.of<ToleranceCubit>(context).updateTolerance(newValue);
+              debugPrint("Current Value TOLERANCE: ${(context.read<ToleranceCubit>().state)}");
             },
             initialPosition: context.read<ScrollPositionTolerance>().state,
             onScrollPositionChanged: (double value) {
-              debugPrint("Current Pos TOLERANCE: $value, Current Value: ${(context.read<ToleranceCubit>().state*100).toInt()}");
+              debugPrint("Current Pos TOLERANCE: $value, Current Value: ${(context.read<ToleranceCubit>().state)}");
               BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(value);
             },
           ),

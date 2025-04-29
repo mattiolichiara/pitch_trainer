@@ -1,7 +1,7 @@
 class Constants {
   static const defaultSampleRate = 44100;
-  static const defaultTolerance = 0.4; //10 a 50
-  static const defaultPrecision = 0.85; //70 a 100
+  static const int defaultTolerance = 40; //10 a 50
+  static const int defaultPrecision = 85; //70 a 100
   static const defaultBufferSize = 8196;
   static const defaultInstrumentIcon = 'assets/icons/piano-svgrepo-com4.svg';
   static const defaultMinFrequency = 27.50;

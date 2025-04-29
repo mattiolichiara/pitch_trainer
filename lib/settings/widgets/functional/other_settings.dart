@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:pitch_trainer/general/cubit/scrollPositionPrecision.dart';
+import 'package:pitch_trainer/general/cubit/can_reset_cubit.dart';
+import 'package:pitch_trainer/general/cubit/scroll_position_precision.dart';
 import 'package:pitch_trainer/general/cubit/tolerance_cubit.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 import 'package:pitch_trainer/general/utils/warning_dialog.dart';
@@ -10,7 +13,7 @@ import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../general/cubit/precision_cubit.dart';
-import '../../../general/cubit/scrollPositionTolerance.dart';
+import '../../../general/cubit/scroll_position_tolerance.dart';
 import '../../../general/cubit/sound_wave_cubit.dart';
 import '../../../general/cubit/theme_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
@@ -61,18 +64,6 @@ class _OtherSettings extends State<OtherSettings> {
     );
   }
 
-  Future<void> _triggerToast() async {
-    BlocProvider.of<PrecisionCubit>(context).updatePrecision(Constants.defaultPrecision);
-    BlocProvider.of<ToleranceCubit>(context).updateTolerance(Constants.defaultTolerance);
-    if (mounted) {
-      BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(Constants.defaultScrollPositionPrecision);
-      BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(Constants.defaultScrollPositionTolerance);
-    }
-    Fluttertoast.showToast(msg: Languages.settingsResetToast.getString(context));
-    BlocProvider.of<SoundWaveCubit>(context).toggleWaveType(true);
-
-  }
-
   void _showDialog() {
     showDialog(
       context: context,
@@ -90,10 +81,41 @@ class _OtherSettings extends State<OtherSettings> {
     );
   }
 
+  void _triggerToast() {
+    Fluttertoast.showToast(msg: Languages.settingsResetToast.getString(context));
+  }
+
+  void _setToleranceState() async {
+    if(mounted) {
+      BlocProvider.of<CanResetCubit>(context).toggleReset(true);
+      BlocProvider.of<ToleranceCubit>(context).updateTolerance(Constants.defaultTolerance);
+      BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(Constants.defaultScrollPositionTolerance);
+      //Future.delayed(Duration(milliseconds: 1000), () {});
+      BlocProvider.of<CanResetCubit>(context).toggleReset(false);
+    }
+  }
+
+  void _setPrecisionState() async {
+    if(mounted) {
+      BlocProvider.of<CanResetCubit>(context).toggleReset(true);
+      BlocProvider.of<PrecisionCubit>(context).updatePrecision(Constants.defaultPrecision);
+      BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(Constants.defaultScrollPositionPrecision);
+      //Future.delayed(Duration(milliseconds: 1000), () {});
+      BlocProvider.of<CanResetCubit>(context).toggleReset(false);
+    }
+  }
+
+  void _setGeneralSettingsState() async {
+    BlocProvider.of<SoundWaveCubit>(context).toggleWaveType(true);
+  }
+
   void _onPressedResetSettings() async {
 
     ThemeCubit themeCubit = BlocProvider.of<ThemeCubit>(context);
     SharedPreferences sp = await SharedPreferences.getInstance();
+    _setToleranceState();
+    _setGeneralSettingsState();
+    _setPrecisionState();
 
     sp.setDouble('minFrequency', Constants.defaultMinFrequency);
     sp.setDouble('maxFrequency', Constants.defaultMaxFrequency);
@@ -110,8 +132,8 @@ class _OtherSettings extends State<OtherSettings> {
     await sp.setInt('bufferSize', Constants.defaultBufferSize);
     debugPrint("bufferSize: ${sp.getInt('bufferSize')}");
 
-    debugPrint("precision: ${sp.getDouble('precision')}");
-    debugPrint("tolerance: ${sp.getDouble('tolerance')}");
+    debugPrint("precision: ${sp.getInt('precision')}");
+    debugPrint("tolerance: ${sp.getInt('tolerance')}");
     debugPrint("isCleanWave: ${sp.getBool('isCleanWave')}");
 
     _triggerToast();

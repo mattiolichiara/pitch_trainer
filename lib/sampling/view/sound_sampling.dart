@@ -87,7 +87,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _animationController.dispose();
-    _silenceTimer?.cancel();
+    if(_silenceTimer!=null) _silenceTimer?.cancel();
     super.dispose();
   }
 
@@ -452,8 +452,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     setState(() {
       _sampleRate = prefs.getInt('sampleRate') ?? Constants.defaultSampleRate;
       _bufferSize = prefs.getInt('bufferSize') ?? Constants.defaultBufferSize;
-      _precision = prefs.getDouble('precision') ?? Constants.defaultPrecision;
-      _tolerance = prefs.getDouble('tolerance') ?? Constants.defaultTolerance;
+      _precision = (prefs.getInt('precision') ?? Constants.defaultPrecision)/100;
+      _tolerance = (prefs.getInt('tolerance') ?? Constants.defaultTolerance)/100;
       _isCleanWave = prefs.getBool('isCleanWave') ?? true;
     });
   }
@@ -574,6 +574,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     if(_rec) {
       try {
         _silenceTimer?.cancel();
+        _silenceTimer = null;
         await _pitchSubscription?.cancel();
         _pitchSubscription = null;
 
