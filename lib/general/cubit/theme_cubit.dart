@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppThemeMode {purple, green, blue, red, pink, yellow, orange}
@@ -18,9 +17,10 @@ class ThemeCubit extends Cubit<ThemeData> {
 
   static final Map<AppThemeMode, ThemeData> _themes = {
     AppThemeMode.purple: ThemeData(
-      textTheme: GoogleFonts.urbanistTextTheme(
-          ThemeData(brightness: Brightness.dark).textTheme,
-        ),
+      // textTheme: ThemeData.dark().textTheme.apply(
+      //     fontFamily: 'Urbanist'
+      // ),
+      fontFamily: 'Urbanist',
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: purple,
@@ -31,9 +31,7 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.green: ThemeData(
-      textTheme: GoogleFonts.urbanistTextTheme(
-        ThemeData(brightness: Brightness.dark).textTheme,
-      ),
+      fontFamily: 'Urbanist',
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: green,
@@ -44,9 +42,7 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.blue: ThemeData(
-      textTheme: GoogleFonts.urbanistTextTheme(
-        ThemeData(brightness: Brightness.dark).textTheme,
-      ),
+      fontFamily: 'Urbanist',
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: blue,
@@ -57,9 +53,7 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.pink: ThemeData(
-      textTheme: GoogleFonts.urbanistTextTheme(
-        ThemeData(brightness: Brightness.dark).textTheme,
-      ),
+      fontFamily: 'Urbanist',
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: pink,
@@ -70,9 +64,7 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.yellow: ThemeData(
-      textTheme: GoogleFonts.urbanistTextTheme(
-        ThemeData(brightness: Brightness.dark).textTheme,
-      ),
+      fontFamily: 'Urbanist',
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: yellow,
@@ -83,9 +75,7 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.red: ThemeData(
-      textTheme: GoogleFonts.urbanistTextTheme(
-        ThemeData(brightness: Brightness.dark).textTheme,
-      ),
+      fontFamily: 'Urbanist',
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: red,
@@ -96,9 +86,7 @@ class ThemeCubit extends Cubit<ThemeData> {
       ),
     ),
     AppThemeMode.orange: ThemeData(
-      textTheme: GoogleFonts.urbanistTextTheme(
-        ThemeData(brightness: Brightness.dark).textTheme,
-      ),
+      fontFamily: 'Urbanist',
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: orange,

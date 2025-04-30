@@ -90,6 +90,9 @@ class _ValueSliderState extends State<ValueSlider> {
       if (widget.selectedValue != oldWidget.selectedValue) {
         _scrollToIndex(widget.selectedValue);
       }
+      setState(() {
+
+      });
     }
   }
 

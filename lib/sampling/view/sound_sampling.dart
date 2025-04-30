@@ -159,9 +159,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   Widget _enabledRecordingButton(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
-        "assets/icons/microphone-2-svgrepo-com.svg",
-        height: size.height * 0.034,
-        width: size.width * 0.034,
+        "assets/icons/microphone-svgrepo-com-.svg",
+        height: size.height * 0.030,
+        width: size.width * 0.030,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -176,9 +176,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   Widget _disabledRecordingButton(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
-        "assets/icons/microphone-2-svgrepo-com (1).svg",
-        height: size.height * 0.034,
-        width: size.width * 0.034,
+        "assets/icons/microphone-svgrepo-com-disabled.svg",
+        height: size.height * 0.030,
+        width: size.width * 0.030,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
