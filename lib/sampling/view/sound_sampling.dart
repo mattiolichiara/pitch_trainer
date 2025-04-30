@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
@@ -39,6 +40,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   String _selectedInstrument = "";
   bool _isLoading = true;
   double _loudness = 0;
+  int _pitchDeviation = 0;
   final _pitchDetector = FlutterPitchDetection();
   StreamSubscription<Map<String, dynamic>>? _pitchSubscription;
   late int _sampleRate;
@@ -56,6 +58,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   double _animatedLoudness = 0;
   Timer? _silenceTimer;
   final Duration _silenceTimeout = Duration(milliseconds: 500);
+  AnimationController? _pitchDeviationController;
+  Animation<double>? _pitchDeviationAnimation;
 
   @override
   void initState() {
@@ -63,6 +67,11 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     WidgetsBinding.instance.addObserver(this);
 
     _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+
+    _pitchDeviationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
@@ -89,6 +98,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     if(_animationController!=null) {
       _animationController!.dispose();
       _animationController = null;
+    }
+    if(_pitchDeviationController!=null) {
+      _pitchDeviationController!.dispose();
+      _pitchDeviationController = null;
     }
     if(_silenceTimer!=null) _silenceTimer?.cancel();
     super.dispose();
@@ -207,6 +220,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _noteSection(size, td),
+              _pitchDeviationSection(size, td),
               _frequencyBar(size, td),
               _soundWave(size, td),
             ],
@@ -272,6 +286,20 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     ) : Container();
   }
 
+  Widget _pitchDeviationSection(Size size, ThemeData td,) {
+    return Column(
+      children: [
+        SizedBox(
+          height: size.height*0.02,
+        ),
+        _rec ? (_selectedNote == "" ? _pitchDeviationLinearBar(size, _pitchDeviation, td) : _pitchDeviationLinearBar(size, 0, td)) : Container(),
+        SizedBox(
+          height: size.height*0.02,
+        ),
+      ],
+    );
+  }
+
   Widget _noteSection(Size size, ThemeData td) {
     return Center(
       child: _permissionStatus
@@ -326,8 +354,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           ),
     );
   }
-
-
 
   Widget _permissionsLabel(Size size, ThemeData td) {
     return SizedBox(
@@ -406,6 +432,87 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     );
   }
 
+  Widget _pitchDeviationLinearBar(Size size, int currentValue, ThemeData td) {
+    final animatedValue = _pitchDeviationAnimation?.value ?? currentValue.toDouble();
+    final clampedValue = animatedValue.clamp(-50, 50);
+    final positiveProgress = clampedValue > 0 ? clampedValue.abs() : 0;
+    final negativeProgress = clampedValue < 0 ? clampedValue.abs() : 0;
+    final style = TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w100, fontSize: 12);
+    final accuracyTick = Container(
+      width: 1,
+      height: size.height * 0.007,
+      color: td.colorScheme.primary,
+    );
+
+    Widget bar = SizedBox(
+      width: size.width*0.45,
+      child: Row(
+        children: [
+          accuracyTick,
+          Expanded(
+            child: Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.rotationY(math.pi),
+              child: LinearProgressBar(
+                maxSteps: 50,
+                progressType: LinearProgressBar.progressTypeLinear,
+                currentStep: negativeProgress.toInt(),
+                progressColor: td.colorScheme.primary,
+                backgroundColor: td.colorScheme.onSurfaceVariant,
+                valueColor: AlwaysStoppedAnimation<Color>(td.colorScheme.primary),
+                minHeight: size.height * 0.004,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  bottomLeft: Radius.circular(10),
+                ),
+              ),
+            ),
+          ),
+          accuracyTick,
+          Expanded(
+            child: LinearProgressBar(
+              maxSteps: 50,
+              progressType: LinearProgressBar.progressTypeLinear,
+              currentStep: positiveProgress.toInt(),
+              progressColor: td.colorScheme.primary,
+              backgroundColor: td.colorScheme.onSurfaceVariant,
+              valueColor: AlwaysStoppedAnimation<Color>(td.colorScheme.primary),
+              minHeight: size.height * 0.004,
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(10),
+                bottomRight: Radius.circular(10),
+              ),
+            ),
+          ),
+          accuracyTick,
+        ],
+      ),
+    );
+
+    return Column(
+      children: [
+        bar,
+        SizedBox(
+          width: size.width*0.60,
+          child: Row(
+            children: [
+              SizedBox(width: size.width*0.055,),
+              Column(
+                children: [
+                  Text("-50", style: style,),
+                ],
+              ),
+              SizedBox(width: size.width*0.195,),
+              Text("0", style: style,),
+              SizedBox(width: size.width*0.19,),
+              Text("+50", style: style,),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   //METHODS
   void _resetPitchValues() {
     setState(() {
@@ -415,6 +522,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _midiNote = 0;
       _accuracy = 0;
       _loudness = 0;
+      _pitchDeviation = 0;
       _samples = [];
     });
   }
@@ -490,6 +598,25 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           final octave = data['octave'] ?? 0;
           final sr = data['sampleRate'] ?? 0;
           final currentVolume = data['volume'] ?? 0;
+          final pitchDeviation = data['pitchDeviation'] ?? 0;
+
+          if (_pitchDeviationController != null) {
+            _pitchDeviationController!.stop();
+            _pitchDeviationAnimation = Tween<double>(
+              begin: _pitchDeviation.toDouble(),
+              end: pitchDeviation.toDouble(),
+            ).animate(_pitchDeviationController!)
+              ..addListener(() {
+                setState(() {
+                  _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
+                });
+              });
+            _pitchDeviationController!.forward(from: 0);
+          } else {
+            setState(() {
+              _pitchDeviation = pitchDeviation.toInt();
+            });
+          }
 
           if (_selectedNote != "") {
             if(_animationController!=null) _animationController!.stop();
@@ -541,6 +668,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
                 _selectedFrequency = currentFrequency;
                 _selectedOctave = (octave?.clamp(0, 8).toString()) ?? "";
                 _accuracy = data['accuracy'] ?? 0;
+                _pitchDeviation = _pitchDeviation.clamp(-50, 50).toInt() ?? 0;
                 _isOnPitch = data['isOnPitch'] ?? false;
               });
 
