@@ -21,6 +21,7 @@ import '../../general/widgets/ui_utils.dart';
 import '../../settings/view/settings.dart';
 import '../logic/utils.dart';
 import '../utils/constants.dart';
+import '../widgets/pitch_deviation_bar.dart';
 
 class SoundSampling extends StatefulWidget {
   const SoundSampling({super.key});
@@ -73,7 +74,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
 
     _pitchDeviationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 300),
     );
 
     _loudnessAnimation = Tween<double>(begin: 0, end: _loudness).animate(
@@ -103,8 +104,11 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _pitchDeviationController!.dispose();
       _pitchDeviationController = null;
     }
-    if(_silenceTimer!=null) _silenceTimer?.cancel();
-    super.dispose();
+    if(_silenceTimer!=null) {
+      _silenceTimer?.cancel();
+      _silenceTimer = null;
+    }
+      super.dispose();
   }
 
   @override
@@ -268,22 +272,27 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   Widget _soundWave(size, td) {
-    return _rec ?
-    Container(
-      decoration: BoxDecoration(boxShadow: [UiUtils.widgetsShadow(1, 45, td)]),
-      child: CurvedPolygonWaveform(
-        strokeWidth: 0.6,
-        style: PaintingStyle.stroke,
-        activeColor: td.colorScheme.secondary,
-        inactiveColor: const Color(0xFF252428),
-        samples: _samples,
+    return SizedBox(
         height: size.height * 0.035,
         width: size.width * 0.85,
-        showActiveWaveform: true,
-        elapsedDuration: Durations.short1,
-        maxDuration: Durations.short1,
-      ),
-    ) : Container();
+        child: _rec && _samples.isNotEmpty ?
+        Container(
+          decoration: BoxDecoration(
+              boxShadow: [UiUtils.widgetsShadow(1, 45, td)]),
+          child: CurvedPolygonWaveform(
+            strokeWidth: 0.6,
+            style: PaintingStyle.stroke,
+            activeColor: td.colorScheme.secondary,
+            inactiveColor: const Color(0xFF252428),
+            samples: _samples,
+            height: size.height * 0.035,
+            width: size.width * 0.85,
+            showActiveWaveform: true,
+            elapsedDuration: Durations.short1,
+            maxDuration: Durations.short1,
+          ),
+        ) : Container(),
+    );
   }
 
   Widget _pitchDeviationSection(Size size, ThemeData td,) {
@@ -292,7 +301,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
         SizedBox(
           height: size.height*0.02,
         ),
-        _rec ? (_selectedNote == "" ? _pitchDeviationLinearBar(size, _pitchDeviation, td) : _pitchDeviationLinearBar(size, 0, td)) : Container(),
+        _rec ? (_selectedNote == "" ? PitchDeviationBar(pitchDeviationAnimation: _pitchDeviationAnimation, currentValue: _pitchDeviation,) : PitchDeviationBar(pitchDeviationAnimation: _pitchDeviationAnimation, currentValue: 0,)) : Container(),
         SizedBox(
           height: size.height*0.02,
         ),
@@ -432,87 +441,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     );
   }
 
-  Widget _pitchDeviationLinearBar(Size size, int currentValue, ThemeData td) {
-    final animatedValue = _pitchDeviationAnimation?.value ?? currentValue.toDouble();
-    final clampedValue = animatedValue.clamp(-50, 50);
-    final positiveProgress = clampedValue > 0 ? clampedValue.abs() : 0;
-    final negativeProgress = clampedValue < 0 ? clampedValue.abs() : 0;
-    final style = TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w100, fontSize: 12);
-    final accuracyTick = Container(
-      width: 1,
-      height: size.height * 0.007,
-      color: td.colorScheme.primary,
-    );
-
-    Widget bar = SizedBox(
-      width: size.width*0.45,
-      child: Row(
-        children: [
-          accuracyTick,
-          Expanded(
-            child: Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.rotationY(math.pi),
-              child: LinearProgressBar(
-                maxSteps: 50,
-                progressType: LinearProgressBar.progressTypeLinear,
-                currentStep: negativeProgress.toInt(),
-                progressColor: td.colorScheme.primary,
-                backgroundColor: td.colorScheme.onSurfaceVariant,
-                valueColor: AlwaysStoppedAnimation<Color>(td.colorScheme.primary),
-                minHeight: size.height * 0.004,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                ),
-              ),
-            ),
-          ),
-          accuracyTick,
-          Expanded(
-            child: LinearProgressBar(
-              maxSteps: 50,
-              progressType: LinearProgressBar.progressTypeLinear,
-              currentStep: positiveProgress.toInt(),
-              progressColor: td.colorScheme.primary,
-              backgroundColor: td.colorScheme.onSurfaceVariant,
-              valueColor: AlwaysStoppedAnimation<Color>(td.colorScheme.primary),
-              minHeight: size.height * 0.004,
-              borderRadius: BorderRadius.only(
-                topRight: Radius.circular(10),
-                bottomRight: Radius.circular(10),
-              ),
-            ),
-          ),
-          accuracyTick,
-        ],
-      ),
-    );
-
-    return Column(
-      children: [
-        bar,
-        SizedBox(
-          width: size.width*0.60,
-          child: Row(
-            children: [
-              SizedBox(width: size.width*0.055,),
-              Column(
-                children: [
-                  Text("-50", style: style,),
-                ],
-              ),
-              SizedBox(width: size.width*0.195,),
-              Text("0", style: style,),
-              SizedBox(width: size.width*0.19,),
-              Text("+50", style: style,),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   //METHODS
   void _resetPitchValues() {
     setState(() {
@@ -600,26 +528,25 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           final currentVolume = data['volume'] ?? 0;
           final pitchDeviation = data['pitchDeviation'] ?? 0;
 
-          if (_pitchDeviationController != null) {
-            _pitchDeviationController!.stop();
-            _pitchDeviationAnimation = Tween<double>(
-              begin: _pitchDeviation.toDouble(),
-              end: pitchDeviation.toDouble(),
-            ).animate(_pitchDeviationController!)
-              ..addListener(() {
+          if (_selectedNote != "") {
+            if (_pitchDeviationController != null) {
+              _pitchDeviationController!.stop();
+              _pitchDeviationAnimation = Tween<double>(
+                begin: _pitchDeviation.toDouble(),
+                end: pitchDeviation.toDouble(),
+              ).animate(_pitchDeviationController!)..addListener(() {
                 setState(() {
                   _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
                 });
               });
-            _pitchDeviationController!.forward(from: 0);
-          } else {
-            setState(() {
-              _pitchDeviation = pitchDeviation.toInt();
-            });
-          }
+              _pitchDeviationController!.forward(from: 0);
+            } else {
+              setState(() {
+                _pitchDeviation = pitchDeviation.toInt();
+              });
+            }
 
-          if (_selectedNote != "") {
-            if(_animationController!=null) _animationController!.stop();
+            if (_animationController != null) _animationController!.stop();
             _loudnessAnimation = Tween<double>(
               begin: _animatedLoudness,
               end: currentVolume,
@@ -653,6 +580,24 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
                 });
               });
               _animationController!.forward(from: 0);
+
+              if(_pitchDeviationController != null) {
+                _pitchDeviationController!.stop();
+                _pitchDeviationAnimation = Tween<double>(
+                  begin: _pitchDeviation.toDouble(),
+                  end: 0,
+                ).animate(
+                  CurvedAnimation(
+                    parent: _pitchDeviationController!,
+                    curve: Curves.easeOut,
+                  ),
+                )..addListener(() {
+                  setState(() {
+                    _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
+                  });
+                });
+                _pitchDeviationController!.forward(from: 0);
+              }
 
               _resetPitchValues();
             }
