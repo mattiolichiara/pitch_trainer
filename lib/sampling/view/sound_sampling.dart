@@ -494,7 +494,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _bufferSize = prefs.getInt('bufferSize') ?? Constants.defaultBufferSize;
       _precision = (prefs.getInt('precision') ?? Constants.defaultPrecision)/100;
       _tolerance = (prefs.getInt('tolerance') ?? Constants.defaultTolerance)/100;
-      _isRawWave = prefs.getBool('isRawWave') ?? false;
+      _isRawWave = prefs.getBool('isRawWave') ?? true;
     });
   }
 
