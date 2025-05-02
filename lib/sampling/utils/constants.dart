@@ -7,6 +7,6 @@ class Constants {
   static const defaultMinFrequency = 27.50;
   static const defaultMaxFrequency = 4186.01;
   static const defaultIsNotCustom = true;
-  static const double defaultScrollPositionTolerance = 560.9730077870054;
-  static const double defaultScrollPositionPrecision = 1190.7656811328106;
+  static const double defaultScrollPositionTolerance = 420.5677187065884;
+  static const double defaultScrollPositionPrecision = 210.78273809523878;
   }

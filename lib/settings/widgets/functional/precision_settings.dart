@@ -33,6 +33,11 @@ class _PrecisionSettings extends State<PrecisionSettings> {
   }
 
   Widget _precisionSlider(Size size, ThemeData td) {
+    int min = 70;
+    int selectedValue = context.read<PrecisionCubit>().state;
+    bool canReset = context.read<CanResetCubit>().state;
+    double position = context.read<ScrollPositionPrecision>().state;
+
     return BlocBuilder<PrecisionCubit, int>(
       builder: (context, precision) {
         return BlocBuilder<ScrollPositionPrecision, double>(
@@ -40,13 +45,13 @@ class _PrecisionSettings extends State<PrecisionSettings> {
           return SizedBox(
             width: size.width * 0.9,
             child: ValueSlider(
-              selectedValue: (context.read<PrecisionCubit>().state),
+              selectedValue: selectedValue,
               boxWidth: size.width * 0.15,
               boxHeight: size.height * 0.04,
               activeColor: td.colorScheme.secondary,
               inactiveColor: Colors.white30,
               max: 100,
-              min: 0,
+              min: min,
               boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
               boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
               fontSize: 18,
@@ -56,14 +61,15 @@ class _PrecisionSettings extends State<PrecisionSettings> {
               ticksWidth: size.width*0.01,
               ticksMargin: size.width*0.012,
               boxBorderColor: td.colorScheme.primary,
-              canReset: BlocProvider.of<CanResetCubit>(context).state,
+              canReset: canReset,
               onChanged: (newValue) {
-                BlocProvider.of<PrecisionCubit>(context).updatePrecision(newValue);
-                debugPrint("Current Value PRECISION: ${(context.read<PrecisionCubit>().state)}");
+                selectedValue = newValue;
+                //debugPrint("newValue: $newValue");
+                BlocProvider.of<PrecisionCubit>(context).updatePrecision(selectedValue);
               },
-              initialPosition: context.read<ScrollPositionPrecision>().state,
+              initialPosition: position,
               onScrollPositionChanged: (double value) {
-                debugPrint("Current Pos PRECISION: $value, Current Value: ${(context.read<PrecisionCubit>().state)}");
+                debugPrint("Current Pos PRECISION: $value, Current Value: ${(context.read<PrecisionCubit>().state)}, INDEX: $selectedValue}");
                 BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(value);
               },
             ),

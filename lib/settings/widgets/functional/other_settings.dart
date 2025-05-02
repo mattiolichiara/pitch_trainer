@@ -134,7 +134,7 @@ class _OtherSettings extends State<OtherSettings> {
 
     debugPrint("precision: ${sp.getInt('precision')}");
     debugPrint("tolerance: ${sp.getInt('tolerance')}");
-    debugPrint("isCleanWave: ${sp.getBool('isCleanWave')}");
+    debugPrint("isRawWave: ${sp.getBool('isRawWave')}");
 
     _triggerToast();
   }

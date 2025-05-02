@@ -43,7 +43,7 @@ class _ValueSliderState extends State<ValueSlider> {
   @override
   void initState() {
     super.initState();
-    _selectedValue = widget.selectedValue;
+    _selectedValue = _valueToIndex(widget.selectedValue);
 
     _scrollController.addListener(_handleScrollUpdate);
 
@@ -54,9 +54,14 @@ class _ValueSliderState extends State<ValueSlider> {
       setState(() => _initialScrollDone = true);
     });
   }
+  
+  int _valueToIndex(int selectedValue) {
+    return selectedValue-widget.min;
+  }
 
-  int _indexToValue(int index) => widget.min + index;
-  int _valueToIndex(int value) => (value - widget.min).clamp(0, widget.max - widget.min);
+  int _indexToValue(int selectedIndex) {
+    return selectedIndex+widget.min;
+  }
 
   void _handleScrollUpdate() {
     if (!_initialScrollDone) return;
@@ -64,11 +69,11 @@ class _ValueSliderState extends State<ValueSlider> {
     widget.onScrollPositionChanged(_scrollController.offset);
 
     final double tickSizeWithMargin = widget.ticksWidth + (widget.ticksMargin * 2);
-    final int newIndex = (_scrollController.offset / tickSizeWithMargin).round().clamp(widget.min, widget.max);
+    final int newIndex = (_scrollController.offset / tickSizeWithMargin).round().clamp(widget.min-widget.min, widget.max-widget.min);
 
     if (newIndex != _selectedValue) {
       setState(() => _selectedValue = newIndex);
-      widget.onChanged(newIndex);
+      widget.onChanged(_indexToValue(newIndex));
     }
   }
 
@@ -140,6 +145,8 @@ class _ValueSliderState extends State<ValueSlider> {
   }
 
   Widget _valueBox() {
+    int displayValue = _indexToValue(_selectedValue);
+
       return Stack(
         alignment: Alignment.center,
         children: [
@@ -162,7 +169,7 @@ class _ValueSliderState extends State<ValueSlider> {
             ),
             child: Center(
               child: Text(
-                _indexToValue(_selectedValue).toString(),
+                displayValue.toString(),
                 style: TextStyle(
                   color: widget.textColor,
                   fontWeight: widget.fontWeight,

@@ -32,18 +32,23 @@ class _ToleranceSettings extends State<ToleranceSettings> {
   }
 
   Widget _toleranceSlider(Size size, ThemeData td) {
+    int min = 10;
+    int selectedValue = context.read<ToleranceCubit>().state;
+    bool canReset = context.read<CanResetCubit>().state;
+    double position = context.read<ScrollPositionTolerance>().state;
+
     return BlocBuilder<ToleranceCubit, int>(
       builder: (context, tolerance) {
         return SizedBox(
           width: size.width * 0.9,
           child: ValueSlider(
-            selectedValue: (context.read<ToleranceCubit>().state),
+            selectedValue: selectedValue,
             boxWidth: size.width * 0.15,
             boxHeight: size.height * 0.04,
             activeColor: td.colorScheme.secondary,
             inactiveColor: Colors.white30,
-            max: 100,
-            min: 0,
+            max: 50,
+            min: min,
             boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
             boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
             fontSize: 18,
@@ -53,14 +58,15 @@ class _ToleranceSettings extends State<ToleranceSettings> {
             ticksWidth: size.width*0.01,
             ticksMargin: size.width*0.012,
             boxBorderColor: td.colorScheme.primary,
-            canReset: BlocProvider.of<CanResetCubit>(context).state,
+            canReset: canReset,
             onChanged: (newValue) {
-              BlocProvider.of<ToleranceCubit>(context).updateTolerance(newValue);
-              debugPrint("Current Value TOLERANCE: ${(context.read<ToleranceCubit>().state)}");
+              selectedValue = newValue;
+              //debugPrint("newValue: $newValue");
+              BlocProvider.of<ToleranceCubit>(context).updateTolerance(selectedValue);
             },
-            initialPosition: context.read<ScrollPositionTolerance>().state,
+            initialPosition: position,
             onScrollPositionChanged: (double value) {
-              debugPrint("Current Pos TOLERANCE: $value, Current Value: ${(context.read<ToleranceCubit>().state)}");
+              debugPrint("Current Pos TOLERANCE: $value, Current Value: ${(context.read<ToleranceCubit>().state)}, INDEX: $selectedValue}");
               BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(value);
             },
           ),

@@ -48,7 +48,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   late double _tolerance;
   late double _precision;
   late int _bufferSize;
-  late bool _isCleanWave;
+  late bool _isRawWave;
   bool _isOnPitch = false;
   bool _rec = false;
   int _midiNote = 0;
@@ -494,7 +494,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _bufferSize = prefs.getInt('bufferSize') ?? Constants.defaultBufferSize;
       _precision = (prefs.getInt('precision') ?? Constants.defaultPrecision)/100;
       _tolerance = (prefs.getInt('tolerance') ?? Constants.defaultTolerance)/100;
-      _isCleanWave = prefs.getBool('isCleanWave') ?? true;
+      _isRawWave = prefs.getBool('isRawWave') ?? false;
     });
   }
 
@@ -630,7 +630,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
               _animationController!.forward(from: 0);
 
               setState(() {
-                _samples = _isCleanWave ? Utils.updateSamples(currentFrequency, sr) : streamData;
+                _samples = _isRawWave ? streamData : Utils.updateSamples(currentFrequency, sr);
               });
             }
           } else {
