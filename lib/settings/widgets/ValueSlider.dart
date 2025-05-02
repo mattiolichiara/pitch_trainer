@@ -2,12 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../general/cubit/can_reset_cubit.dart';
 
 class ValueSlider extends StatefulWidget {
   const ValueSlider({super.key, required this.activeColor, required this.inactiveColor, required this.boxWidth, required this.boxHeight,
     required this.min, required this.max, required this.selectedValue, required this.onChanged, required this.boxColor, required this.boxShadow,
     required this.textColor, this.fontFamily, required this.fontSize, required this.fontWeight, required this.ticksHeight, required this.ticksWidth, required this.ticksMargin,
-    required this.boxBorderColor, required this.initialPosition, required this.onScrollPositionChanged, required this.canReset});
+    required this.boxBorderColor, required this.initialPosition, required this.onScrollPositionChanged});
 
   final Color activeColor;
   final Color inactiveColor;
@@ -29,7 +32,6 @@ class ValueSlider extends StatefulWidget {
   final Color boxBorderColor;
   final double initialPosition;
   final ValueChanged<double> onScrollPositionChanged;
-  final bool canReset;
 
   @override
   State<ValueSlider> createState() => _ValueSliderState();
@@ -81,9 +83,9 @@ class _ValueSliderState extends State<ValueSlider> {
   void didUpdateWidget(ValueSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    debugPrint("[Can Reset]: ${widget.canReset}");
+    //debugPrint("[Can Reset]: ${widget.canReset}");
 
-    if(widget.canReset) {
+    if(context.read<CanResetCubit>().state) {
       if (widget.initialPosition != oldWidget.initialPosition && _initialScrollDone) {
         _scrollController.animateTo(
           widget.initialPosition,

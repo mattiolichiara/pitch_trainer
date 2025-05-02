@@ -35,7 +35,6 @@ class _PrecisionSettings extends State<PrecisionSettings> {
   Widget _precisionSlider(Size size, ThemeData td) {
     int min = 70;
     int selectedValue = context.read<PrecisionCubit>().state;
-    bool canReset = context.read<CanResetCubit>().state;
     double position = context.read<ScrollPositionPrecision>().state;
 
     return BlocBuilder<PrecisionCubit, int>(
@@ -61,7 +60,6 @@ class _PrecisionSettings extends State<PrecisionSettings> {
               ticksWidth: size.width*0.01,
               ticksMargin: size.width*0.012,
               boxBorderColor: td.colorScheme.primary,
-              canReset: canReset,
               onChanged: (newValue) {
                 selectedValue = newValue;
                 //debugPrint("newValue: $newValue");

@@ -34,7 +34,6 @@ class _ToleranceSettings extends State<ToleranceSettings> {
   Widget _toleranceSlider(Size size, ThemeData td) {
     int min = 10;
     int selectedValue = context.read<ToleranceCubit>().state;
-    bool canReset = context.read<CanResetCubit>().state;
     double position = context.read<ScrollPositionTolerance>().state;
 
     return BlocBuilder<ToleranceCubit, int>(
@@ -58,7 +57,6 @@ class _ToleranceSettings extends State<ToleranceSettings> {
             ticksWidth: size.width*0.01,
             ticksMargin: size.width*0.012,
             boxBorderColor: td.colorScheme.primary,
-            canReset: canReset,
             onChanged: (newValue) {
               selectedValue = newValue;
               //debugPrint("newValue: $newValue");
