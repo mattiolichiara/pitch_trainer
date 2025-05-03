@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_localization/flutter_localization.dart';
-import 'package:flutter_pitch_detection/flutter_pitch_detection_platform_interface.dart';
+import 'package:flutter_pitch_detection/flutter_pitch_detection.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:jumping_dot/jumping_dot.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
