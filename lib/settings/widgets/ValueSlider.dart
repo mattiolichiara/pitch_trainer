@@ -3,13 +3,33 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pitch_trainer/general/cubit/can_scroll_precision_cubit.dart';
+
+import '../../general/cubit/reset_cubit.dart';
 
 class ValueSlider extends StatefulWidget {
-  const ValueSlider({super.key, required this.activeColor, required this.inactiveColor, required this.boxWidth, required this.boxHeight,
-    required this.min, required this.max, required this.selectedValue, required this.onChanged, required this.boxColor, required this.boxShadow,
-    required this.textColor, this.fontFamily, required this.fontSize, required this.fontWeight, required this.ticksHeight, required this.ticksWidth, required this.ticksMargin,
-    required this.boxBorderColor,});
+  const ValueSlider({
+    super.key,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.boxWidth,
+    required this.boxHeight,
+    required this.min,
+    required this.max,
+    required this.selectedValue,
+    required this.onChanged,
+    required this.boxColor,
+    required this.boxShadow,
+    required this.textColor,
+    this.fontFamily,
+    required this.fontSize,
+    required this.fontWeight,
+    required this.ticksHeight,
+    required this.ticksWidth,
+    required this.ticksMargin,
+    required this.boxBorderColor,
+    required this.initialPosition,
+    required this.onScrollPositionChanged,
+  });
 
   final Color activeColor;
   final Color inactiveColor;
@@ -29,6 +49,8 @@ class ValueSlider extends StatefulWidget {
   final double ticksWidth;
   final double ticksMargin;
   final Color boxBorderColor;
+  final double initialPosition;
+  final ValueChanged<double> onScrollPositionChanged;
 
   @override
   State<ValueSlider> createState() => _ValueSliderState();
@@ -37,49 +59,89 @@ class ValueSlider extends StatefulWidget {
 class _ValueSliderState extends State<ValueSlider> {
   late int _selectedValue;
   final ScrollController _scrollController = ScrollController();
-  late double _fullTickSize;
   bool _initialScrollDone = false;
+  bool _shouldPerformReset = false;
 
   @override
   void initState() {
     super.initState();
-    _selectedValue = widget.selectedValue;
-    _fullTickSize = widget.ticksWidth*(widget.max-widget.min) + widget.ticksMargin*2;
+    _initialScrollDone = false;
+    _selectedValue = _valueToIndex(widget.selectedValue);
 
     _scrollController.addListener(_handleScrollUpdate);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _performInitialScroll();
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(widget.initialPosition);
+      }
+      setState(() => _initialScrollDone = true);
     });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final resetState = context.watch<ResetCubit>().state;
+
+    if (resetState.shouldReset) {
+      _shouldPerformReset = true;
+    }
   }
 
   @override
-  void dispose() {
-    _scrollController.removeListener(_handleScrollUpdate);
-    _scrollController.dispose();
-    super.dispose();
+  void didUpdateWidget(covariant ValueSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if(_shouldPerformReset) {
+      if (widget.selectedValue != oldWidget.selectedValue) {
+        setState(() {
+          _selectedValue = widget.selectedValue-widget.min;
+          //debugPrint("[NEW SELECTED INDEX]: $_selectedValue");
+        });
+      }
+
+      if (widget.initialPosition != oldWidget.initialPosition) {
+        setState(() {
+          _scrollToIndex(_selectedValue);
+        });
+      }
+    }
+    BlocProvider.of<ResetCubit>(context).denyRebuild();
+    _shouldPerformReset = false;
+
   }
 
-  Future<void> _performInitialScroll() async {
-    await _scrollToIndex(_selectedValue);
+  int _valueToIndex(int selectedValue) {
+    return selectedValue - widget.min;
+  }
 
-    setState(() {
-      _initialScrollDone = true;
-    });
+  int _indexToValue(int selectedIndex) {
+    return selectedIndex + widget.min;
+  }
+
+  void _handleScrollUpdate() {
+    if (!_initialScrollDone) return;
+
+    widget.onScrollPositionChanged(_scrollController.offset);
+
+    final double tickSizeWithMargin =
+        widget.ticksWidth + (widget.ticksMargin * 2);
+    final int newIndex = (_scrollController.offset / tickSizeWithMargin)
+        .round()
+        .clamp(widget.min - widget.min, widget.max - widget.min);
+
+    if (newIndex != _selectedValue) {
+      setState(() => _selectedValue = newIndex);
+      widget.onChanged(_indexToValue(newIndex));
+    }
   }
 
   Future<void> _scrollToIndex(int index) async {
     if (!_scrollController.hasClients) return;
 
-    final double tickSizeWithMargin = widget.ticksWidth + (widget.ticksMargin * 2);
-    final double targetOffset = index * tickSizeWithMargin -
-        (MediaQuery.of(context).size.width * (0.435)) +
-        (tickSizeWithMargin / 2);
+    final double tickSizeWithMargin =
+        widget.ticksWidth + (widget.ticksMargin * 2);
+    final double targetOffset = index * tickSizeWithMargin;
 
     await _scrollController.animateTo(
       targetOffset.clamp(0, _scrollController.position.maxScrollExtent),
@@ -88,56 +150,12 @@ class _ValueSliderState extends State<ValueSlider> {
     );
   }
 
-
-  int _getCenterIndex() {
-    if (!_scrollController.hasClients) return _selectedValue;
-
-    final double scrollOffset = _scrollController.offset;
-    final double viewportWidth = _scrollController.position.viewportDimension;
-    final double centerX = scrollOffset + (viewportWidth / 2);
-
-    final double tickSizeWithMargin = widget.ticksWidth + (widget.ticksMargin * 2);
-    final double totalTicksWidth = tickSizeWithMargin * (widget.max - widget.min + 1);
-    final double totalWidth = totalTicksWidth + viewportWidth;
-
-    final double listViewPadding = (totalWidth - totalTicksWidth) / 2;
-
-
-    final double adjustedCenterX = centerX - listViewPadding;
-    final int centerIndex = (adjustedCenterX / tickSizeWithMargin).round();
-
-    return (widget.min + centerIndex).clamp(widget.min, widget.max);
-  }
-
-  void _handleScrollUpdate() {
-    if (!_initialScrollDone || _scrollController.position.userScrollDirection == ScrollDirection.idle) {
-      return;
-    }
-
-    final newIndex = _getCenterIndex();
-    if (newIndex != _selectedValue) {
-      setState(() {
-        _selectedValue = newIndex;
-      });
-      widget.onChanged(newIndex);
-    }
-  }
-
-  @override
-  void didUpdateWidget(ValueSlider oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedValue != oldWidget.selectedValue && !_initialScrollDone) {
-      _scrollToIndex(widget.selectedValue);
-    }
-  }
-
-  Widget _scrollBar(Size size) {
+  Widget _scrollBar(Size size, key) {
     return GestureDetector(
-      onHorizontalDragStart: (drag) {context.read<CanScrollCubit>().updateScroll(true);},
-      onHorizontalDragEnd: (drag) {context.read<CanScrollCubit>().updateScroll(false);},
       child: SizedBox(
         height: max(widget.ticksHeight + 10, widget.boxHeight),
         child: ListView(
+          key: key,
           physics: const BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(horizontal: size.width * 0.435),
           controller: _scrollController,
@@ -152,83 +170,98 @@ class _ValueSliderState extends State<ValueSlider> {
   List<Widget> _generateTicks() {
     return List.generate(widget.max - widget.min + 1, (index) {
       return Container(
-          margin: EdgeInsets.symmetric(horizontal: widget.ticksMargin),
-          width: widget.ticksWidth,
-          height: widget.ticksHeight,
-          decoration: BoxDecoration(
-            color: widget.inactiveColor,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        );
+        margin: EdgeInsets.symmetric(horizontal: widget.ticksMargin),
+        width: widget.ticksWidth,
+        height: widget.ticksHeight,
+        decoration: BoxDecoration(
+          color: widget.inactiveColor,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      );
     });
   }
 
-  // List<Widget> _generateTicks() {
-  //   return List.generate(widget.max - widget.min + 1, (index) {
-  //     final currentValue = widget.min + index;
-  //     final isSelected = currentValue == _selectedValue;
-  //
-  //     return Container(
-  //         margin: EdgeInsets.symmetric(horizontal: widget.ticksMargin),
-  //         width: widget.ticksWidth,
-  //         height: isSelected ? widget.ticksHeight+10 : widget.ticksHeight,
-  //         decoration: BoxDecoration(
-  //           color: isSelected ? widget.activeColor : widget.inactiveColor,
-  //           borderRadius: BorderRadius.circular(2),
-  //         ),
-  //       );
-  //   });
-  // }
-
   Widget _valueBox() {
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: widget.ticksWidth,
-            height: widget.ticksHeight+10,
-            decoration: BoxDecoration(
-              color: widget.activeColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
+    int displayValue = _indexToValue(_selectedValue);
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: widget.ticksWidth,
+          height: widget.ticksHeight + 10,
+          decoration: BoxDecoration(
+            color: widget.activeColor,
+            borderRadius: BorderRadius.circular(2),
           ),
-          Container(
-            width: widget.boxWidth,
-            height: widget.boxHeight,
-            decoration: BoxDecoration(
-              color: widget.boxColor,
-              borderRadius: BorderRadius.circular(5),
-              boxShadow: widget.boxShadow,
-              border: Border.all(color: widget.boxColor, width: 1.5),
-            ),
-            child: Center(
-              child: Text(
-                _selectedValue.toString(),
-                style: TextStyle(
-                  color: widget.textColor,
-                  fontWeight: widget.fontWeight,
-                  fontSize: widget.fontSize,
-                  fontFamily: widget.fontFamily,
-                ),
+        ),
+        Container(
+          width: widget.boxWidth,
+          height: widget.boxHeight,
+          decoration: BoxDecoration(
+            color: widget.boxColor,
+            borderRadius: BorderRadius.circular(5),
+            boxShadow: widget.boxShadow,
+            border: Border.all(color: widget.boxColor, width: 1.5),
+          ),
+          child: Center(
+            child: Text(
+              displayValue.toString(),
+              style: TextStyle(
+                color: widget.textColor,
+                fontWeight: widget.fontWeight,
+                fontSize: widget.fontSize,
+                fontFamily: widget.fontFamily,
               ),
             ),
           ),
-        ]
-      );
+        ),
+      ],
+    );
+  }
+
+  Widget _shadowEffect(ThemeData td, Size size) {
+    double blurRadius = 100;
+    double spreadRadius = 40;
+    double offset = 0.9;
+
+    return IgnorePointer(
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: td.colorScheme.surface,
+              blurRadius: blurRadius,
+              spreadRadius: spreadRadius,
+              offset: Offset(size.width * offset, 0),
+            ),
+            BoxShadow(
+              color: td.colorScheme.surface,
+              blurRadius: blurRadius,
+              spreadRadius: spreadRadius,
+              offset: Offset(size.width * -offset, 0),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return SizedBox(
-      height: max(widget.ticksHeight+10, widget.boxHeight),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            _scrollBar(size),
-            _valueBox(),
-          ],
-        ),
-    );
+    ThemeData td = Theme.of(context);
+
+    return BlocBuilder<ResetCubit, ResetState>(
+        builder: (context, key) {
+          return SizedBox(
+            height: max(widget.ticksHeight + 10, widget.boxHeight),
+            child: Stack(
+              key: key.key,
+              alignment: Alignment.center,
+              children: [_scrollBar(size, key.key), _valueBox()],
+            ),
+          );
+        });
   }
 }

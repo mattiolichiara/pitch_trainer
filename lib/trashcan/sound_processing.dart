@@ -163,3 +163,49 @@
 //
 //
 //
+
+
+
+
+// List<Widget> _generateTicks() {
+//   return List.generate(widget.max - widget.min + 1, (index) {
+//     final currentValue = widget.min + index;
+//     final isSelected = currentValue == _selectedValue;
+//
+//     return Container(
+//         margin: EdgeInsets.symmetric(horizontal: widget.ticksMargin),
+//         width: widget.ticksWidth,
+//         height: isSelected ? widget.ticksHeight+10 : widget.ticksHeight,
+//         decoration: BoxDecoration(
+//           color: isSelected ? widget.activeColor : widget.inactiveColor,
+//           borderRadius: BorderRadius.circular(2),
+//         ),
+//       );
+//   });
+// }
+
+
+
+// @override
+// void didUpdateWidget(ValueSlider oldWidget) {
+//   super.didUpdateWidget(oldWidget);
+//
+//   //debugPrint("[Can Reset]: ${widget.canReset}");
+//
+//   if(context.read<CanResetCubit>().state) {
+//     if (widget.initialPosition != oldWidget.initialPosition && _initialScrollDone) {
+//       _scrollController.animateTo(
+//         widget.initialPosition,
+//         duration: const Duration(milliseconds: 500),
+//         curve: Curves.easeInOut,
+//       );
+//     }
+//
+//     if (widget.selectedValue != oldWidget.selectedValue) {
+//       _scrollToIndex(widget.selectedValue);
+//     }
+//     setState(() {
+//
+//     });
+//   }
+// }

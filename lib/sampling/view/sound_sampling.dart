@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
@@ -19,6 +20,7 @@ import '../../general/widgets/ui_utils.dart';
 import '../../settings/view/settings.dart';
 import '../logic/utils.dart';
 import '../utils/constants.dart';
+import '../widgets/pitch_deviation_bar.dart';
 
 class SoundSampling extends StatefulWidget {
   const SoundSampling({super.key});
@@ -38,23 +40,26 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   String _selectedInstrument = "";
   bool _isLoading = true;
   double _loudness = 0;
+  int _pitchDeviation = 0;
   final _pitchDetector = FlutterPitchDetection();
   StreamSubscription<Map<String, dynamic>>? _pitchSubscription;
   late int _sampleRate;
   late double _tolerance;
   late double _precision;
   late int _bufferSize;
-  late bool _isCleanWave;
+  late bool _isRawWave;
   bool _isOnPitch = false;
   bool _rec = false;
   int _midiNote = 0;
   bool _permissionStatus = false;
   bool _settingOpened = false;
-  late AnimationController _animationController;
+  AnimationController? _animationController;
   late Animation<double> _loudnessAnimation;
   double _animatedLoudness = 0;
   Timer? _silenceTimer;
   final Duration _silenceTimeout = Duration(milliseconds: 500);
+  AnimationController? _pitchDeviationController;
+  Animation<double>? _pitchDeviationAnimation;
 
   @override
   void initState() {
@@ -66,9 +71,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       duration: const Duration(milliseconds: 200),
     );
 
+    _pitchDeviationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
     _loudnessAnimation = Tween<double>(begin: 0, end: _loudness).animate(
       CurvedAnimation(
-        parent: _animationController,
+        parent: _animationController!,
         curve: Curves.elasticInOut,
       ),
     )..addListener(() {
@@ -85,9 +95,19 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _animationController.dispose();
-    _silenceTimer?.cancel();
-    super.dispose();
+    if(_animationController!=null) {
+      _animationController!.dispose();
+      _animationController = null;
+    }
+    if(_pitchDeviationController!=null) {
+      _pitchDeviationController!.dispose();
+      _pitchDeviationController = null;
+    }
+    if(_silenceTimer!=null) {
+      _silenceTimer?.cancel();
+      _silenceTimer = null;
+    }
+      super.dispose();
   }
 
   @override
@@ -158,9 +178,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   Widget _enabledRecordingButton(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
-        "assets/icons/microphone-2-svgrepo-com.svg",
-        height: size.height * 0.034,
-        width: size.width * 0.034,
+        "assets/icons/microphone-svgrepo-com-.svg",
+        height: size.height * 0.030,
+        width: size.width * 0.030,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -175,9 +195,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   Widget _disabledRecordingButton(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
-        "assets/icons/microphone-2-svgrepo-com (1).svg",
-        height: size.height * 0.034,
-        width: size.width * 0.034,
+        "assets/icons/microphone-svgrepo-com-disabled.svg",
+        height: size.height * 0.030,
+        width: size.width * 0.030,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -203,6 +223,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _noteSection(size, td),
+              _pitchDeviationSection(size, td),
               _frequencyBar(size, td),
               _soundWave(size, td),
             ],
@@ -250,24 +271,44 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   Widget _soundWave(size, td) {
-    return Container(
-      decoration: BoxDecoration(boxShadow: [UiUtils.widgetsShadow(1, 45, td)]),
-      child: CurvedPolygonWaveform(
-        strokeWidth: 0.6,
-        style: PaintingStyle.stroke,
-        activeColor: td.colorScheme.secondary,
-        inactiveColor: const Color(0xFF252428),
-        samples: _samples,
+    return SizedBox(
         height: size.height * 0.035,
         width: size.width * 0.85,
-        showActiveWaveform: true,
-        elapsedDuration: Durations.short1,
-        maxDuration: Durations.short1,
-      ),
+        child: _rec && _samples.isNotEmpty ?
+        Container(
+          decoration: BoxDecoration(
+              boxShadow: [UiUtils.widgetsShadow(1, 45, td)]),
+          child: CurvedPolygonWaveform(
+            strokeWidth: 0.6,
+            style: PaintingStyle.stroke,
+            activeColor: td.colorScheme.secondary,
+            inactiveColor: const Color(0xFF252428),
+            samples: _samples,
+            height: size.height * 0.035,
+            width: size.width * 0.85,
+            showActiveWaveform: true,
+            elapsedDuration: Durations.short1,
+            maxDuration: Durations.short1,
+          ),
+        ) : Container(),
     );
   }
 
-  Widget _noteSection(size, td) {
+  Widget _pitchDeviationSection(Size size, ThemeData td,) {
+    return Column(
+      children: [
+        SizedBox(
+          height: size.height*0.02,
+        ),
+        _rec ? (_selectedNote == "" ? PitchDeviationBar(pitchDeviationAnimation: _pitchDeviationAnimation, currentValue: _pitchDeviation,) : PitchDeviationBar(pitchDeviationAnimation: _pitchDeviationAnimation, currentValue: 0,)) : Container(),
+        SizedBox(
+          height: size.height*0.02,
+        ),
+      ],
+    );
+  }
+
+  Widget _noteSection(Size size, ThemeData td) {
     return Center(
       child: _permissionStatus
           ? Stack(
@@ -277,7 +318,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
             width: size.width*0.5,
             height: size.height*0.25,
             decoration: BoxDecoration(
-              boxShadow: [(_rec && _selectedNote != "") ? _getAccuracyShadow(_accuracy.toDouble(), td) : UiUtils.widgetsShadow(1, 120, td)],
+              boxShadow: [(_rec && _selectedNote != "") ? _getAccuracyShadow(_accuracy.toDouble(), td) : UiUtils.widgetsShadow(size.width*0.06, size.width*0.30, td)],
             ),
           ),
           //
@@ -305,7 +346,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
         width: size.width * 0.2,
         colorFilter: ColorFilter.mode(td.colorScheme.primary, BlendMode.srcIn),
       ),
-      onPressed: _onPressedSettings,
+      onPressed: _onPressedInstruments,
     );
   }
 
@@ -321,8 +362,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           ),
     );
   }
-
-
 
   Widget _permissionsLabel(Size size, ThemeData td) {
     return SizedBox(
@@ -407,8 +446,10 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _selectedFrequency = 0.0;
       _selectedNote = "";
       _selectedOctave = "";
+      _midiNote = 0;
       _accuracy = 0;
       _loudness = 0;
+      _pitchDeviation = 0;
       _samples = [];
     });
   }
@@ -450,9 +491,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     setState(() {
       _sampleRate = prefs.getInt('sampleRate') ?? Constants.defaultSampleRate;
       _bufferSize = prefs.getInt('bufferSize') ?? Constants.defaultBufferSize;
-      _precision = prefs.getDouble('precision') ?? Constants.defaultPrecision;
-      _tolerance = prefs.getDouble('tolerance') ?? Constants.defaultTolerance;
-      _isCleanWave = prefs.getBool('isCleanWave') ?? true;
+      _precision = (prefs.getInt('precision') ?? Constants.defaultPrecision)/100;
+      _tolerance = (prefs.getInt('tolerance') ?? Constants.defaultTolerance)/100;
+      _isRawWave = prefs.getBool('isRawWave') ?? true;
     });
   }
 
@@ -484,15 +525,33 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           final octave = data['octave'] ?? 0;
           final sr = data['sampleRate'] ?? 0;
           final currentVolume = data['volume'] ?? 0;
+          final pitchDeviation = data['pitchDeviation'] ?? 0;
 
           if (_selectedNote != "") {
-            _animationController.stop();
+            if (_pitchDeviationController != null) {
+              _pitchDeviationController!.stop();
+              _pitchDeviationAnimation = Tween<double>(
+                begin: _pitchDeviation.toDouble(),
+                end: pitchDeviation.toDouble(),
+              ).animate(_pitchDeviationController!)..addListener(() {
+                setState(() {
+                  _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
+                });
+              });
+              _pitchDeviationController!.forward(from: 0);
+            } else {
+              setState(() {
+                _pitchDeviation = pitchDeviation.toInt();
+              });
+            }
+
+            if (_animationController != null) _animationController!.stop();
             _loudnessAnimation = Tween<double>(
               begin: _animatedLoudness,
               end: currentVolume,
             ).animate(
               CurvedAnimation(
-                parent: _animationController,
+                parent: _animationController!,
                 curve: Curves.elasticInOut,
               ),
             )..addListener(() {
@@ -500,18 +559,18 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
                 _animatedLoudness = _loudnessAnimation.value;
               });
             });
-            _animationController.forward(from: 0);
+            _animationController!.forward(from: 0);
           }
 
           _silenceTimer = Timer(_silenceTimeout, () {
             if (_selectedNote != "") {
-              _animationController.stop();
+              if(_animationController!=null) _animationController!.stop();
               _loudnessAnimation = Tween<double>(
                 begin: _animatedLoudness,
                 end: 0,
               ).animate(
                 CurvedAnimation(
-                  parent: _animationController,
+                  parent: _animationController!,
                   curve: Curves.easeOut,
                 ),
               )..addListener(() {
@@ -519,7 +578,25 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
                   _animatedLoudness = _loudnessAnimation.value;
                 });
               });
-              _animationController.forward(from: 0);
+              _animationController!.forward(from: 0);
+
+              if(_pitchDeviationController != null) {
+                _pitchDeviationController!.stop();
+                _pitchDeviationAnimation = Tween<double>(
+                  begin: _pitchDeviation.toDouble(),
+                  end: 0,
+                ).animate(
+                  CurvedAnimation(
+                    parent: _pitchDeviationController!,
+                    curve: Curves.easeOut,
+                  ),
+                )..addListener(() {
+                  setState(() {
+                    _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
+                  });
+                });
+                _pitchDeviationController!.forward(from: 0);
+              }
 
               _resetPitchValues();
             }
@@ -535,23 +612,24 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
                 _selectedFrequency = currentFrequency;
                 _selectedOctave = (octave?.clamp(0, 8).toString()) ?? "";
                 _accuracy = data['accuracy'] ?? 0;
+                _pitchDeviation = _pitchDeviation.clamp(-50, 50).toInt() ?? 0;
                 _isOnPitch = data['isOnPitch'] ?? false;
               });
 
-              _animationController.stop();
+              if(_animationController!=null) _animationController!.stop();
               _loudnessAnimation = Tween<double>(
                 begin: _animatedLoudness,
                 end: data['volume'] ?? 0,
               ).animate(
                 CurvedAnimation(
-                  parent: _animationController,
+                  parent: _animationController!,
                   curve: Curves.easeOut,
                 ),
               );
-              _animationController.forward(from: 0);
+              _animationController!.forward(from: 0);
 
               setState(() {
-                _samples = _isCleanWave ? Utils.updateSamples(currentFrequency, sr) : streamData;
+                _samples = _isRawWave ? streamData : Utils.updateSamples(currentFrequency, sr);
               });
             }
           } else {
@@ -572,6 +650,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     if(_rec) {
       try {
         _silenceTimer?.cancel();
+        _silenceTimer = null;
         await _pitchSubscription?.cancel();
         _pitchSubscription = null;
 

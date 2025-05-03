@@ -2,18 +2,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SoundWaveCubit extends Cubit<bool> {
-  SoundWaveCubit() : super(true) {
+  SoundWaveCubit() : super(false) {
     _loadInitialState();
   }
 
   Future<void> _loadInitialState() async {
     final prefs = await SharedPreferences.getInstance();
-    emit(prefs.getBool('isCleanWave') ?? true);
+    emit(prefs.getBool('isRawWave') ?? true);
   }
 
-  Future<void> toggleWaveType(bool isCleanWave) async {
+  Future<void> toggleWaveType(bool isRawWave) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isCleanWave', isCleanWave);
-    emit(isCleanWave);
+    await prefs.setBool('isRawWave', isRawWave);
+    emit(isRawWave);
   }
 }

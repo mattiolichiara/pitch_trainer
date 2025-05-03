@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 
 import 'app.dart';
-import 'general/cubit/sound_wave_cubit.dart';
 import 'general/cubit/theme_cubit.dart';
 import 'general/utils/languages.dart';
 

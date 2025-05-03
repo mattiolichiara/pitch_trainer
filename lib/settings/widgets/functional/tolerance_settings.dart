@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 
-import '../../../general/cubit/can_scroll_precision_cubit.dart';
-import '../../../general/cubit/precision_cubit.dart';
+import '../../../general/cubit/reset_cubit.dart';
+import '../../../general/cubit/scroll_position_tolerance.dart';
 import '../../../general/cubit/tolerance_cubit.dart';
 import '../../../general/utils/languages.dart';
 import '../../../general/widgets/ui_utils.dart';
-import '../../../sampling/utils/constants.dart';
 import '../ValueSlider.dart';
 
 class ToleranceSettings extends StatefulWidget {
@@ -33,33 +32,45 @@ class _ToleranceSettings extends State<ToleranceSettings> {
   }
 
   Widget _toleranceSlider(Size size, ThemeData td) {
-    return BlocBuilder<ToleranceCubit, double>(
+    int min = 10;
+    return BlocBuilder<ToleranceCubit, int>(
       builder: (context, tolerance) {
-        final sliderValue = (tolerance * 100).toInt();
-        return SizedBox(
-          width: size.width * 0.9,
-          child: ValueSlider(
-            selectedValue: sliderValue,
-            boxWidth: size.width * 0.15,
-            boxHeight: size.height * 0.04,
-            activeColor: td.colorScheme.secondary,
-            inactiveColor: Colors.white30,
-            max: 100,
-            min: 0,
-            boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
-            boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            textColor: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
-            ticksHeight: size.height*0.06,
-            ticksWidth: size.width*0.01,
-            ticksMargin: size.width*0.012,
-            boxBorderColor: td.colorScheme.primary,
-            onChanged: (newValue) {
-              if(context.read<CanScrollCubit>().state) context.read<ToleranceCubit>().updateTolerance(newValue/100);
-            },
-          ),
-        );
+        return BlocBuilder<ScrollPositionTolerance, double>(
+            builder: (context, scrollPosition) {
+              return BlocBuilder<ResetCubit, ResetState>(
+                  builder: (context, key) {
+                    return SizedBox(
+                      width: size.width * 0.9,
+                      child: ValueSlider(
+                        key: key.key,
+                        selectedValue: context.read<ToleranceCubit>().state,
+                        boxWidth: size.width * 0.15,
+                        boxHeight: size.height * 0.04,
+                        activeColor: td.colorScheme.secondary,
+                        inactiveColor: Colors.white30,
+                        max: 50,
+                        min: min,
+                        boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
+                        boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        textColor: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
+                        ticksHeight: size.height*0.06,
+                        ticksWidth: size.width*0.01,
+                        ticksMargin: size.width*0.012,
+                        boxBorderColor: td.colorScheme.primary,
+                        onChanged: (newValue) {
+                          BlocProvider.of<ToleranceCubit>(context).updateTolerance(newValue);
+                        },
+                        initialPosition: context.read<ScrollPositionTolerance>().state,
+                        onScrollPositionChanged: (double value) {
+                          //debugPrint("Current Pos TOLERANCE: $value, Current Value: ${(context.read<ToleranceCubit>().state)}}");
+                          BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(value);
+                        },
+                      ),
+                    );
+                  });
+            });
       },
     );
   }
@@ -79,3 +90,4 @@ class _ToleranceSettings extends State<ToleranceSettings> {
     );
   }
 }
+

@@ -10,6 +10,7 @@ import 'package:pitch_trainer/settings/widgets/functional/precision_settings.dar
 import 'package:pitch_trainer/settings/widgets/functional/sample_rate_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../general/cubit/reset_cubit.dart';
 import '../../general/widgets/home_app_bar.dart';
 import '../../general/widgets/ui_utils.dart';
 import '../../sampling/view/sound_sampling.dart';
@@ -40,6 +41,7 @@ class _Settings extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+
     return PopScope(
       canPop: true,
       onPopInvoked: (pop) async {

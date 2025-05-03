@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class UiUtils {
 
@@ -58,7 +57,7 @@ class UiUtils {
   }
 
   static TextStyle getSubTextStyle(ThemeData td) {
-    return GoogleFonts.rubik(
+    return TextStyle(
         color: td.colorScheme.onSurface,
         fontWeight: FontWeight.w100,
         fontSize: 12
