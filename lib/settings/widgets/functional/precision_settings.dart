@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
-import 'package:pitch_trainer/general/cubit/can_reset_cubit.dart';
+import 'package:pitch_trainer/general/cubit/reset_cubit.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 
 import '../../../general/cubit/scroll_position_precision.dart';
@@ -34,44 +34,44 @@ class _PrecisionSettings extends State<PrecisionSettings> {
 
   Widget _precisionSlider(Size size, ThemeData td) {
     int min = 70;
-    int selectedValue = context.read<PrecisionCubit>().state;
-    double position = context.read<ScrollPositionPrecision>().state;
 
     return BlocBuilder<PrecisionCubit, int>(
       builder: (context, precision) {
         return BlocBuilder<ScrollPositionPrecision, double>(
           builder: (context, scrollPosition) {
-          return SizedBox(
-            width: size.width * 0.9,
-            child: ValueSlider(
-              selectedValue: selectedValue,
-              boxWidth: size.width * 0.15,
-              boxHeight: size.height * 0.04,
-              activeColor: td.colorScheme.secondary,
-              inactiveColor: Colors.white30,
-              max: 100,
-              min: min,
-              boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
-              boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              textColor: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
-              ticksHeight: size.height*0.06,
-              ticksWidth: size.width*0.01,
-              ticksMargin: size.width*0.012,
-              boxBorderColor: td.colorScheme.primary,
-              onChanged: (newValue) {
-                selectedValue = newValue;
-                //debugPrint("newValue: $newValue");
-                BlocProvider.of<PrecisionCubit>(context).updatePrecision(selectedValue);
-              },
-              initialPosition: position,
-              onScrollPositionChanged: (double value) {
-                debugPrint("Current Pos PRECISION: $value, Current Value: ${(context.read<PrecisionCubit>().state)}, INDEX: $selectedValue}");
-                BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(value);
-              },
-            ),
-          );
+            return BlocBuilder<ResetCubit, ResetState>(
+                builder: (context, key) {
+                  return SizedBox(
+                    key: key.key,
+                    width: size.width * 0.9,
+                    child: ValueSlider(
+                      selectedValue: context.read<PrecisionCubit>().state,
+                      boxWidth: size.width * 0.15,
+                      boxHeight: size.height * 0.04,
+                      activeColor: td.colorScheme.secondary,
+                      inactiveColor: Colors.white30,
+                      max: 100,
+                      min: min,
+                      boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
+                      boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      textColor: Color.lerp(td.colorScheme.primary, Colors.white, 0.6)!,
+                      ticksHeight: size.height*0.06,
+                      ticksWidth: size.width*0.01,
+                      ticksMargin: size.width*0.012,
+                      boxBorderColor: td.colorScheme.primary,
+                      onChanged: (newValue) {
+                        BlocProvider.of<PrecisionCubit>(context).updatePrecision(newValue);
+                      },
+                      initialPosition: context.read<ScrollPositionPrecision>().state,
+                      onScrollPositionChanged: (double value) {
+                        //debugPrint("Current Pos PRECISION: $value, Current Value: ${(context.read<PrecisionCubit>().state)}}");
+                        BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(value);
+                      },
+                    ),
+                  );
+                });
         });
       });
   }

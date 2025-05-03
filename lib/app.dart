@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:pitch_trainer/general/cubit/can_reset_cubit.dart';
+import 'package:pitch_trainer/general/cubit/reset_cubit.dart';
 import 'package:pitch_trainer/general/cubit/scroll_position_precision.dart';
 import 'package:pitch_trainer/general/cubit/tolerance_cubit.dart';
 
@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => ToleranceCubit()),
         BlocProvider(create: (context) => ScrollPositionPrecision()),
         BlocProvider(create: (context) => ScrollPositionTolerance()),
-        BlocProvider(create: (context) => CanResetCubit()),
+        BlocProvider(create: (context) => ResetCubit()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeData>(
         builder: (context, theme) {
