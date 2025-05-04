@@ -34,6 +34,9 @@ mixin Languages {
   static const String sampleRateWarningSubText = "sampleRateWarningSubText";
   static const String yes = "yes";
   static const String no = "no";
+  static const String resetOnSilence = "resetOnSilence";
+  static const String dynamicSilence = "dynamic";
+  static const String staticSilence = "static";
 
   static const Map<String, dynamic> EN = {
     selectTheme: "Themes",
@@ -69,6 +72,9 @@ mixin Languages {
     sampleRateWarningSubText: "22.05 kHz may not accurately capture higher frequencies.",
     yes: "Yes",
     no: "No",
+    resetOnSilence: "Reset On Silence",
+    dynamicSilence: "Dynamic",
+    staticSilence: "Static",
   };
 
   static const Map<String, dynamic> IT = {
@@ -105,5 +111,8 @@ mixin Languages {
     sampleRateWarningSubText: "22,05 kHz potrebbe non catturare accuratamente le frequenze più alte.",
     yes: "Si",
     no: "No",
+    resetOnSilence: "Azzera Al silenzio",
+    dynamicSilence: "Dinamico",
+    staticSilence: "Statico",
   };
 }

@@ -47,6 +47,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   late double _precision;
   late int _bufferSize;
   late bool _isRawWave;
+  late bool _isResetOnSilence;
   bool _isOnPitch = false;
   bool _rec = false;
   int _midiNote = 0;
@@ -55,6 +56,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   AnimationController? _animationController;
   late Animation<double> _loudnessAnimation;
   double _animatedLoudness = 0;
+  double _animatedPitchDeviation = 0;
   Timer? _silenceTimer;
   final Duration _silenceTimeout = Duration(milliseconds: 500);
   AnimationController? _pitchDeviationController;
@@ -65,28 +67,19 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
+
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 250),
     );
 
     _pitchDeviationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 350),
     );
 
-    _loudnessAnimation = Tween<double>(begin: 0, end: _loudness).animate(
-      CurvedAnimation(
-        parent: _animationController!,
-        curve: Curves.elasticInOut,
-      ),
-    )..addListener(() {
-      setState(() {
-        _animatedLoudness = _loudnessAnimation.value;
-      });
-    });
-
     _loadPreferences().then((_) {
+      _samples = List.filled(100, 0.0);
       _startRecording();
     });
   }
@@ -121,26 +114,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   //STYLE
-  Widget _loudnessBarStyle(size, td) {
-    return Center(
-      child: Container(
-        width: 10,
-        height: size.height * 0.0035,
-        decoration: BoxDecoration(
-          color: td.colorScheme.onSurface,
-          boxShadow: [
-            BoxShadow(
-              color: td.colorScheme.onSurface,
-              spreadRadius: 1,
-              blurRadius: 15,
-              offset: Offset(0, 1),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Color _getAccuracyColor(double accuracy, ThemeData td) {
     if(_isOnPitch) return td.colorScheme.primary;
     return Color.lerp(Colors.white, td.colorScheme.primary, accuracy / 100)!;
@@ -394,7 +367,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
             ),
           ),
           Text(
-            _rec ? "${_accuracy.toStringAsFixed(2)}%" : "0%",
+            _rec ? "$_accuracy%" : "0%",
             style: TextStyle(
               color: td.colorScheme.onSurface,
               fontSize: size.width * 0.038,
@@ -440,6 +413,24 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   //METHODS
+  void _setPitchValues(String note, String octave, int midiNote, double frequency, int accuracy, int pitchDeviation, bool isOnPitch, double loudness, sampleRate, data) {
+    setState(() {
+      _selectedNote = note;
+      _midiNote = midiNote;
+      _selectedFrequency = frequency;
+      _selectedOctave = octave;
+      _accuracy = accuracy;
+      _pitchDeviation = pitchDeviation;
+      _isOnPitch = isOnPitch;
+      _pitchDeviation = pitchDeviation;
+      _loudness = loudness;
+      _samples = _isRawWave ? data : Utils.updateSamples(frequency, sampleRate);
+    });
+
+    _handleLoudnessAnimation(loudness);
+    _handlePitchDeviationAnimation(pitchDeviation.toDouble());
+  }
+
   void _resetPitchValues() {
     setState(() {
       _selectedFrequency = 0.0;
@@ -447,10 +438,13 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _selectedOctave = "";
       _midiNote = 0;
       _accuracy = 0;
-      _loudness = 0;
       _pitchDeviation = 0;
-      _samples = [];
+      _samples = _rec ? List.filled(100, 0.0) : [];
+      _loudness = 0;
+      _animatedLoudness = 0;
     });
+
+    _handlePitchDeviationAnimation(0);
   }
 
   Future<void> _loadPreferences() async {
@@ -493,12 +487,14 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _precision = (prefs.getInt('precision') ?? Constants.defaultPrecision)/100;
       _tolerance = (prefs.getInt('tolerance') ?? Constants.defaultTolerance)/100;
       _isRawWave = prefs.getBool('isRawWave') ?? true;
+      _isResetOnSilence = prefs.getBool('isResetOnSilence') ?? true;
     });
   }
 
   Future<void> _startRecording() async {
     WakelockPlus.enable();
     _getPermissionStatus();
+
     if(!_rec) {
       try {
         await _pitchDetector.startDetection();
@@ -509,145 +505,101 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
         });
         debugPrint("[START] Is Recording: $_rec");
         _pitchDetector.setParameters(toleranceCents: _tolerance, bufferSize: _bufferSize, sampleRate: _sampleRate, minPrecision: _precision);
-        debugPrint(
-            'PitchDetector Parameters -> '
-                'toleranceCents: $_tolerance, '
-                'bufferSize: $_bufferSize, '
-                'sampleRate: $_sampleRate, '
-                'minPrecision: $_precision'
-        );
 
         _pitchSubscription = _pitchDetector.onPitchDetected.listen((data) async {
-          _silenceTimer?.cancel();
           final streamData = await _pitchDetector.getRawDataFromStream();
-          final currentFrequency = data['frequency'] ?? 0;
-          final octave = data['octave'] ?? 0;
-          final sr = data['sampleRate'] ?? 0;
-          final currentVolume = data['volume'] ?? 0;
-          final pitchDeviation = data['pitchDeviation'] ?? 0;
+          final int sampleRate = data['sampleRate'] ?? 0;
+          final String note = data['note'] ?? "";
+          final int octave = data['octave'] ?? "";
+          final int midiNote = data['midiNote'] ?? 0;
+          final double frequency = data['frequency'] ?? 0;
+          final int accuracy = data['accuracy'] ?? 0;
+          final double pitchDeviation = data['pitchDeviation'] ?? 0;
+          final bool isOnPitch = data['isOnPitch'] ?? false;
+          final double loudness = data['volume'] ?? 0;
+          debugPrint("PITCH DEVIATION: $pitchDeviation");
 
-          if (_selectedNote != "") {
-            if (_pitchDeviationController != null) {
-              _pitchDeviationController!.stop();
-              _pitchDeviationAnimation = Tween<double>(
-                begin: _pitchDeviation.toDouble(),
-                end: pitchDeviation.toDouble(),
-              ).animate(_pitchDeviationController!)..addListener(() {
-                setState(() {
-                  _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
-                });
-              });
-              _pitchDeviationController!.forward(from: 0);
-            } else {
-              setState(() {
-                _pitchDeviation = pitchDeviation.toInt();
-              });
-            }
-
-            if (_animationController != null) _animationController!.stop();
-            _loudnessAnimation = Tween<double>(
-              begin: _animatedLoudness,
-              end: currentVolume,
-            ).animate(
-              CurvedAnimation(
-                parent: _animationController!,
-                curve: Curves.elasticInOut,
-              ),
-            )..addListener(() {
-              setState(() {
-                _animatedLoudness = _loudnessAnimation.value;
-              });
+          if(!_isResetOnSilence) {
+            _silenceTimer?.cancel();
+            if (frequency > _minFrequency && frequency < _maxFrequency) _setPitchValues(note, octave.toString(), midiNote, frequency, accuracy, pitchDeviation.toInt(), isOnPitch, loudness, sampleRate, streamData);
+            _silenceTimer = Timer(_silenceTimeout, () {
+              _handleLoudnessAnimation(0);
+              //_samples = List.filled(100, 0.0);
             });
-            _animationController!.forward(from: 0);
+            return;
           }
 
-          _silenceTimer = Timer(_silenceTimeout, () {
-            if (_selectedNote != "") {
-              if (_animationController != null && _animationController!.isAnimating) {
-                _animationController!.stop();
-              }
-              if (_animationController != null) {
-                _loudnessAnimation = Tween<double>(
-                  begin: _animatedLoudness,
-                  end: 0,
-                ).animate(
-                  CurvedAnimation(
-                    parent: _animationController!,
-                    curve: Curves.easeOut,
-                  ),
-                )..addListener(() {
-                  setState(() {
-                    _animatedLoudness = _loudnessAnimation.value;
-                  });
-                });
-                _animationController!.forward(from: 0);
-              }
+          if (_isResetOnSilence) {
+            _silenceTimer?.cancel();
 
-              if (_pitchDeviationController != null && _pitchDeviationController!.isAnimating) {
-                _pitchDeviationController!.stop();
-              }
-              if (_pitchDeviationController != null) {
-                _pitchDeviationAnimation = Tween<double>(
-                  begin: _pitchDeviation.toDouble(),
-                  end: 0,
-                ).animate(
-                  CurvedAnimation(
-                    parent: _pitchDeviationController!,
-                    curve: Curves.easeOut,
-                  ),
-                )..addListener(() {
-                  setState(() {
-                    _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
-                  });
-                });
-                _pitchDeviationController!.forward(from: 0);
-              }
+            if (frequency > _minFrequency && frequency < _maxFrequency) {
+              _setPitchValues(note, octave.toString(), midiNote, frequency, accuracy, pitchDeviation.toInt(), isOnPitch, loudness, sampleRate, streamData);
 
-              _resetPitchValues();
-            }
-          });
-
-          if (currentFrequency > _minFrequency && currentFrequency < _maxFrequency) {
-            final newNote = data['note'] ?? "";
-
-            if (newNote.isNotEmpty && newNote != _selectedNote) {
-              setState(() {
-                _selectedNote = newNote;
-                _midiNote = data['midiNote'] ?? 0;
-                _selectedFrequency = currentFrequency;
-                _selectedOctave = (octave?.clamp(0, 8).toString()) ?? "";
-                _accuracy = data['accuracy'] ?? 0;
-                _pitchDeviation = _pitchDeviation.clamp(-50, 50).toInt() ?? 0;
-                _isOnPitch = data['isOnPitch'] ?? false;
+              _silenceTimer = Timer(_silenceTimeout, () {
+                if (mounted) _resetPitchValues();
               });
-
-              if(_animationController!=null) _animationController!.stop();
-              _loudnessAnimation = Tween<double>(
-                begin: _animatedLoudness,
-                end: data['volume'] ?? 0,
-              ).animate(
-                CurvedAnimation(
-                  parent: _animationController!,
-                  curve: Curves.easeOut,
-                ),
-              );
-              _animationController!.forward(from: 0);
-
-              setState(() {
-                _samples = _isRawWave ? streamData : Utils.updateSamples(currentFrequency, sr);
-              });
-            }
-          } else {
-            if (_selectedNote.isNotEmpty) {
-              _resetPitchValues();
+            } else {
+              if (_silenceTimer == null || !_silenceTimer!.isActive) {
+                _silenceTimer = Timer(_silenceTimeout, () {
+                  if (mounted) _resetPitchValues();
+                });
+              }
             }
           }
+          debugPrint("SELECTED PITCH DEVIATION: $_pitchDeviation");
         });
 
       } catch (e) {
         debugPrint("Start Recording Error: $e");
       }
     }
+  }
+
+  void _handleLoudnessAnimation(double loudness) {
+    _animationController!.stop();
+
+    _loudnessAnimation = Tween<double>(
+        begin: _animatedLoudness,
+        end: loudness.clamp(0.0, 100.0)
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController!,
+        curve: _getAppropriateCurve(_animatedLoudness, loudness),
+      ),
+    )..addListener(() {
+      setState(() {
+        _animatedLoudness = _loudnessAnimation.value;
+      });
+    });
+    _animationController!.forward(from: 0.0);
+  }
+
+  void _handlePitchDeviationAnimation(double pitchDeviation) {
+    _pitchDeviationController!.stop();
+
+    final clampedDeviation = pitchDeviation.clamp(-50.0, 50.0);
+
+    _pitchDeviationAnimation = Tween<double>(
+      begin: _animatedPitchDeviation,
+      end: clampedDeviation,
+    ).animate(
+      CurvedAnimation(
+        parent: _pitchDeviationController!,
+        curve: Curves.fastOutSlowIn,
+      ),
+    )..addListener(() {
+      setState(() {
+        _animatedPitchDeviation = _pitchDeviationAnimation!.value;
+      });
+    });
+
+    _pitchDeviationController!.forward(from: 0.0);
+  }
+
+  Curve _getAppropriateCurve(double current, double target) {
+    return target > current
+        ? Curves.bounceIn
+        : Curves.easeInOut;
   }
 
   Future<void> _stopRecording() async {
@@ -658,44 +610,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
         _silenceTimer = null;
         await _pitchSubscription?.cancel();
         _pitchSubscription = null;
-
-        // Add this to animate loudness to zero
-        if (_animationController != null) {
-          _animationController!.stop();
-          _loudnessAnimation = Tween<double>(
-            begin: _animatedLoudness,
-            end: 0,
-          ).animate(
-            CurvedAnimation(
-              parent: _animationController!,
-              curve: Curves.easeOut,
-            ),
-          )..addListener(() {
-            setState(() {
-              _animatedLoudness = _loudnessAnimation.value;
-            });
-          });
-          _animationController!.forward(from: 0);
-        }
-
-        // Add this to animate pitch deviation to zero
-        if (_pitchDeviationController != null) {
-          _pitchDeviationController!.stop();
-          _pitchDeviationAnimation = Tween<double>(
-            begin: _pitchDeviation.toDouble(),
-            end: 0,
-          ).animate(
-            CurvedAnimation(
-              parent: _pitchDeviationController!,
-              curve: Curves.easeOut,
-            ),
-          )..addListener(() {
-            setState(() {
-              _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
-            });
-          });
-          _pitchDeviationController!.forward(from: 0);
-        }
 
         await _pitchDetector.stopDetection();
         setState(() {

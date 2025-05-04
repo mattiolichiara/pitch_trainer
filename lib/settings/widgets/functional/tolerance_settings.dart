@@ -83,6 +83,7 @@ class _ToleranceSettings extends State<ToleranceSettings> {
         _toleranceTitle(size, td),
         SizedBox(height: size.height * 0.03),
         _toleranceSlider(size, td),
+        SizedBox(height: size.height * 0.03),
       ],
     );
   }

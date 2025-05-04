@@ -3,18 +3,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 
-import '../../../general/cubit/sound_wave_cubit.dart';
+import '../../../general/cubit/reset_on_silence_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
-import '../../../sampling/logic/utils.dart';
 
-class SoundWaveSettings extends StatefulWidget {
-  const SoundWaveSettings({super.key,});
+class ResetOnSlienceSettings extends StatefulWidget {
+  const ResetOnSlienceSettings({super.key,});
 
   @override
-  State<SoundWaveSettings> createState() => _SoundWaveSettings();
+  State<ResetOnSlienceSettings> createState() => _ResetOnSilenceSettings();
 }
 
-class _SoundWaveSettings extends State<SoundWaveSettings> {
+class _ResetOnSilenceSettings extends State<ResetOnSlienceSettings> {
 
   @override
   void initState() {
@@ -22,22 +21,22 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
     super.initState();
   }
 
-  //WAVE VIEW
+  //RESET ON SILENCE VIEW
   //STYLE
-  Widget _waveTitle(size, td) {
+  Widget _resetOnSilenceTitle(size, td) {
     return SizedBox(
       width: size.width*0.8,
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          "Sound Wave",
+          Languages.resetOnSilence.getString(context),
           style: TextStyle(color: td.colorScheme.onSurface, fontWeight: FontWeight.w800, fontSize: 18, shadows: [UiUtils.widgetsShadow(80, 20, td),]),
         ),
       ),
     );
   }
 
-  Widget _waveTypeText(String text, ThemeData td) {
+  Widget _resetOnSilenceTypeText(String text, ThemeData td) {
     return Text(
       text,
       style: TextStyle(
@@ -49,7 +48,7 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
     );
   }
 
-  Widget _switchWaveWrapper(String rawText, ThemeData td, String polishedText, Size size) {
+  Widget _switchResetOnSilenceWrapper(String dynamicText, ThemeData td, String staticText, Size size) {
     return SizedBox(
       width: size.width,
       child: Center(
@@ -57,25 +56,25 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _waveTypeText(polishedText, td),
-            _switchWave(size, td),
-            _waveTypeText(rawText, td),
+            _resetOnSilenceTypeText(staticText, td),
+            _switchResetOnSilence(size, td),
+            _resetOnSilenceTypeText(dynamicText, td),
           ],
         ),
       ),
     );
   }
 
-  Widget _waveSection(size, td) {
+  Widget _resetOnSilenceSection(size, td) {
     return Center(
       child: SizedBox(
         width: size.width*0.9,
         child: Column(
           children: [
             SizedBox(height: size.height*0.04,),
-            _waveTitle(size, td),
+            _resetOnSilenceTitle(size, td),
             SizedBox(height: size.height*0.03,),
-            _switchWaveWrapper(Languages.rawWave.getString(context), td, Languages.polishedWave.getString(context), size),
+            _switchResetOnSilenceWrapper(Languages.dynamicSilence.getString(context), td, Languages.staticSilence.getString(context), size),
           ],
         ),
       ),
@@ -83,16 +82,16 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
   }
 
   //WIDGETS
-  Widget _switchWave(Size size, ThemeData td) {
-    return BlocBuilder<SoundWaveCubit, bool>(
-      builder: (context, isRawWave) {
+  Widget _switchResetOnSilence(Size size, ThemeData td) {
+    return BlocBuilder<ResetOnSilenceCubit, bool>(
+      builder: (context, isRawResetOnSilence) {
         return SizedBox(
           height: size.height*0.04,
           width: size.width*0.4,
           child: Switch(
-            value: isRawWave,
+            value: isRawResetOnSilence,
             onChanged: (value) {
-              context.read<SoundWaveCubit>().toggleWaveType(value);
+              context.read<ResetOnSilenceCubit>().toggleSilenceReset(value);
             },
             inactiveTrackColor: td.colorScheme.onPrimaryContainer,
             inactiveThumbColor: td.colorScheme.primary,
@@ -113,7 +112,7 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
 
     return Column(
       children: [
-        _waveSection(size, td),
+        _resetOnSilenceSection(size, td),
         SizedBox(height: size.height * 0.03),
       ],
     );

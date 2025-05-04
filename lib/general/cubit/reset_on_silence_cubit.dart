@@ -1,19 +1,19 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SoundWaveCubit extends Cubit<bool> {
-  SoundWaveCubit() : super(true) {
+class ResetOnSilenceCubit extends Cubit<bool> {
+  ResetOnSilenceCubit() : super(true) {
     _loadInitialState();
   }
 
   Future<void> _loadInitialState() async {
     final prefs = await SharedPreferences.getInstance();
-    emit(prefs.getBool('isRawWave') ?? true);
+    emit(prefs.getBool('isResetOnSilence') ?? true);
   }
 
-  Future<void> toggleWaveType(bool isRawWave) async {
+  Future<void> toggleSilenceReset(bool isResetOnSilence) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isRawWave', isRawWave);
-    emit(isRawWave);
+    await prefs.setBool('isResetOnSilence', isResetOnSilence);
+    emit(isResetOnSilence);
   }
 }

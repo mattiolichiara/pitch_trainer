@@ -7,6 +7,7 @@ import 'package:pitch_trainer/sampling/utils/constants.dart';
 import 'package:pitch_trainer/sampling/widgets/instrument_card.dart';
 import 'package:pitch_trainer/settings/widgets/functional/other_settings.dart';
 import 'package:pitch_trainer/settings/widgets/functional/precision_settings.dart';
+import 'package:pitch_trainer/settings/widgets/functional/reset_on_silence_settings.dart';
 import 'package:pitch_trainer/settings/widgets/functional/sample_rate_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -69,6 +70,9 @@ class _Settings extends State<Settings> {
               Divider(height: 0.1, color: Colors.white, thickness: 0.2,),
               PrecisionSettings(),
               ToleranceSettings(),
+              Divider(height: 0.1, color: Colors.white, thickness: 0.2,),
+              ResetOnSlienceSettings(),
+              Divider(height: 0.1, color: Colors.white, thickness: 0.2,),
               SoundWaveSettings(),
               Divider(height: 0.1, color: Colors.white, thickness: 0.2,),
               OtherSettings(),
