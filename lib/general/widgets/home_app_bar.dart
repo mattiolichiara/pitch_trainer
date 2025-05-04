@@ -49,8 +49,8 @@ class _HomeAppBar extends State<HomeAppBar> {
     return IconButton(
       icon: SvgPicture.asset(
         "assets/icons/sound-waves-svgrepo-com.svg",
-        height: 40,
-        width: 40,
+        height: MediaQuery.of(context).size.height*0.05,
+        width: MediaQuery.of(context).size.width*0.05,
         //colorFilter: ColorFilter.mode(const Color(0xFF9168B6), BlendMode.srcIn),
       ),
       onPressed: _onPressedHome,
