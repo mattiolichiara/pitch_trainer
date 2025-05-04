@@ -111,7 +111,7 @@ mixin Languages {
     sampleRateWarningSubText: "22,05 kHz potrebbe non catturare accuratamente le frequenze più alte.",
     yes: "Si",
     no: "No",
-    resetOnSilence: "Azzera Al silenzio",
+    resetOnSilence: "Azzera al silenzio",
     dynamicSilence: "Dinamico",
     staticSilence: "Statico",
   };
