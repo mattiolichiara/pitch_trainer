@@ -89,11 +89,12 @@ class _ValueSliderState extends State<ValueSlider> {
     super.didUpdateWidget(oldWidget);
 
     if(_shouldPerformReset) {
-      if (widget.selectedValue != oldWidget.selectedValue) {
+      int currentValue = widget.selectedValue-widget.min;
+      if (currentValue!=0) {
         setState(() {
-          _selectedValue = widget.selectedValue-widget.min;
+          _selectedValue = currentValue;
           _scrollToIndex(_selectedValue);
-          //debugPrint("[NEW SELECTED INDEX]: $_selectedValue");
+          debugPrint("[NEW SELECTED INDEX]: $_selectedValue, [WIDGET SELECTED VALUE]: ${currentValue}, [OLD WIDGET SELECTED VALUE]: ${oldWidget.selectedValue}");
         });
       }
     }

@@ -80,7 +80,9 @@ class _OtherSettings extends State<OtherSettings> {
   }
 
   void _triggerReload() {
-    BlocProvider.of<ResetCubit>(context).triggerRebuild();
+    if(context.read<PrecisionCubit>().state != Constants.defaultPrecision || context.read<ToleranceCubit>().state != Constants.defaultTolerance) {
+      BlocProvider.of<ResetCubit>(context).triggerRebuild();
+    }
   }
 
   void _triggerToast() {
@@ -92,11 +94,15 @@ class _OtherSettings extends State<OtherSettings> {
   }
 
   void _setPrecisionState() async {
-    BlocProvider.of<PrecisionCubit>(context).updatePrecision(Constants.defaultPrecision);
+    if(context.read<PrecisionCubit>().state != Constants.defaultPrecision) {
+      BlocProvider.of<PrecisionCubit>(context).updatePrecision(Constants.defaultPrecision);
+    }
   }
 
   void _setGeneralSettingsState() async {
-    BlocProvider.of<SoundWaveCubit>(context).toggleWaveType(true);
+    if(context.read<ToleranceCubit>().state != Constants.defaultTolerance) {
+      BlocProvider.of<SoundWaveCubit>(context).toggleWaveType(true);
+    }
   }
 
   void _onPressedResetSettings() async {
