@@ -32,7 +32,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   String _selectedNote = "";
   String _selectedOctave = "";
   double _selectedFrequency = 0.0;
-  List<double> _samples = [];
+  List<double> _samples = List.filled(100, 0.0);
   int _accuracy = 0;
   double _minFrequency = 0.0;
   double _maxFrequency = 0.0;
@@ -79,7 +79,6 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     );
 
     _loadPreferences().then((_) {
-      _samples = List.filled(100, 0.0);
       _startRecording();
     });
   }
