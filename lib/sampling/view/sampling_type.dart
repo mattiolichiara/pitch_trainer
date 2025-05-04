@@ -253,6 +253,7 @@ class _SamplingType extends State<SamplingType> {
               subText: "G3 (196.00) - E7 (2637.02)",
               isActive: !(_minFrequency == 196.00 && _maxFrequency == 2637.02 && _isNotCustom),
               leadingIcon: _instrumentIcons["Violin"]!,
+              iconSize: size.width*0.05,
               onPressed: () {
                 _saveFrequencyValues(196.00, 2637.02, true, _instrumentIcons["Violin"]);
               },

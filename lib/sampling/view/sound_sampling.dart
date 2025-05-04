@@ -178,8 +178,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     return IconButton(
       icon: SvgPicture.asset(
         "assets/icons/microphone-svgrepo-com-.svg",
-        height: size.height * 0.030,
-        width: size.width * 0.030,
+        height: size.height*0.027,
+        width: size.width*0.027,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -195,8 +195,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     return IconButton(
       icon: SvgPicture.asset(
         "assets/icons/microphone-svgrepo-com-disabled.svg",
-        height: size.height * 0.030,
-        width: size.width * 0.030,
+        height: size.height*0.027,
+        width: size.width*0.027,
         colorFilter: ColorFilter.mode(
           td.colorScheme.onSurface,
           BlendMode.srcIn,
@@ -242,9 +242,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   Widget _settings(size, td) {
     return IconButton(
       icon: SvgPicture.asset(
-        "assets/icons/icons8-settings (1).svg",
-        height: size.height * 0.04,
-        width: size.width * 0.04,
+        "assets/icons/wrench-svgrepo-com.svg",
+        height: size.height*0.025,
+        width: size.width*0.025,
         colorFilter: ColorFilter.mode(td.colorScheme.onSurface, BlendMode.srcIn),
       ),
       onPressed: _onPressedSettings,
