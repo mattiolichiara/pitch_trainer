@@ -4,10 +4,8 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:pitch_trainer/general/cubit/reset_cubit.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 
-import '../../../general/cubit/scroll_position_precision.dart';
 import '../../../general/cubit/precision_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
-import '../../../sampling/utils/constants.dart';
 import '../ValueSlider.dart';
 
 class PrecisionSettings extends StatefulWidget {
@@ -37,8 +35,6 @@ class _PrecisionSettings extends State<PrecisionSettings> {
 
     return BlocBuilder<PrecisionCubit, int>(
       builder: (context, precision) {
-        return BlocBuilder<ScrollPositionPrecision, double>(
-          builder: (context, scrollPosition) {
             return BlocBuilder<ResetCubit, ResetState>(
                 builder: (context, key) {
                   return SizedBox(
@@ -50,7 +46,7 @@ class _PrecisionSettings extends State<PrecisionSettings> {
                       boxHeight: size.height * 0.04,
                       activeColor: td.colorScheme.secondary,
                       inactiveColor: Colors.white30,
-                      max: 100,
+                      max: 95,
                       min: min,
                       boxShadow: [UiUtils.widgetsShadow(10, 90, td)],
                       boxColor: Color.lerp(td.colorScheme.primary, td.colorScheme.onSurfaceVariant, 0.2)!,
@@ -64,14 +60,8 @@ class _PrecisionSettings extends State<PrecisionSettings> {
                       onChanged: (newValue) {
                         BlocProvider.of<PrecisionCubit>(context).updatePrecision(newValue);
                       },
-                      initialPosition: context.read<ScrollPositionPrecision>().state,
-                      onScrollPositionChanged: (double value) {
-                        //debugPrint("Current Pos PRECISION: $value, Current Value: ${(context.read<PrecisionCubit>().state)}}");
-                        BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(value);
-                      },
                     ),
                   );
-                });
         });
       });
   }

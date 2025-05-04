@@ -5,15 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pitch_trainer/general/cubit/reset_cubit.dart';
-import 'package:pitch_trainer/general/cubit/scroll_position_precision.dart';
 import 'package:pitch_trainer/general/cubit/tolerance_cubit.dart';
 import 'package:pitch_trainer/general/utils/languages.dart';
 import 'package:pitch_trainer/general/utils/warning_dialog.dart';
-import 'package:pitch_trainer/sampling/widgets/instrument_expansion_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../general/cubit/precision_cubit.dart';
-import '../../../general/cubit/scroll_position_tolerance.dart';
 import '../../../general/cubit/sound_wave_cubit.dart';
 import '../../../general/cubit/theme_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
@@ -92,12 +89,10 @@ class _OtherSettings extends State<OtherSettings> {
 
   void _setToleranceState() async {
     BlocProvider.of<ToleranceCubit>(context).updateTolerance(Constants.defaultTolerance);
-    BlocProvider.of<ScrollPositionTolerance>(context).updateScrollPositionTolerance(Constants.defaultScrollPositionTolerance);
   }
 
   void _setPrecisionState() async {
     BlocProvider.of<PrecisionCubit>(context).updatePrecision(Constants.defaultPrecision);
-    BlocProvider.of<ScrollPositionPrecision>(context).updateScrollPositionPrecision(Constants.defaultScrollPositionPrecision);
   }
 
   void _setGeneralSettingsState() async {

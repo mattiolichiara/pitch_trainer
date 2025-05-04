@@ -27,8 +27,6 @@ class ValueSlider extends StatefulWidget {
     required this.ticksWidth,
     required this.ticksMargin,
     required this.boxBorderColor,
-    required this.initialPosition,
-    required this.onScrollPositionChanged,
   });
 
   final Color activeColor;
@@ -49,8 +47,6 @@ class ValueSlider extends StatefulWidget {
   final double ticksWidth;
   final double ticksMargin;
   final Color boxBorderColor;
-  final double initialPosition;
-  final ValueChanged<double> onScrollPositionChanged;
 
   @override
   State<ValueSlider> createState() => _ValueSliderState();
@@ -72,7 +68,7 @@ class _ValueSliderState extends State<ValueSlider> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.jumpTo(widget.initialPosition);
+        _scrollToIndex(_selectedValue);
       }
       setState(() => _initialScrollDone = true);
     });
@@ -96,13 +92,8 @@ class _ValueSliderState extends State<ValueSlider> {
       if (widget.selectedValue != oldWidget.selectedValue) {
         setState(() {
           _selectedValue = widget.selectedValue-widget.min;
-          //debugPrint("[NEW SELECTED INDEX]: $_selectedValue");
-        });
-      }
-
-      if (widget.initialPosition != oldWidget.initialPosition) {
-        setState(() {
           _scrollToIndex(_selectedValue);
+          //debugPrint("[NEW SELECTED INDEX]: $_selectedValue");
         });
       }
     }
@@ -121,8 +112,6 @@ class _ValueSliderState extends State<ValueSlider> {
 
   void _handleScrollUpdate() {
     if (!_initialScrollDone) return;
-
-    widget.onScrollPositionChanged(_scrollController.offset);
 
     final double tickSizeWithMargin =
         widget.ticksWidth + (widget.ticksMargin * 2);
