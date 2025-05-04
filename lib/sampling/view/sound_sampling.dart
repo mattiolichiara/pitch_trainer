@@ -563,24 +563,30 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
 
           _silenceTimer = Timer(_silenceTimeout, () {
             if (_selectedNote != "") {
-              if(_animationController!=null) _animationController!.stop();
-              _loudnessAnimation = Tween<double>(
-                begin: _animatedLoudness,
-                end: 0,
-              ).animate(
-                CurvedAnimation(
-                  parent: _animationController!,
-                  curve: Curves.easeOut,
-                ),
-              )..addListener(() {
-                setState(() {
-                  _animatedLoudness = _loudnessAnimation.value;
+              if (_animationController != null && _animationController!.isAnimating) {
+                _animationController!.stop();
+              }
+              if (_animationController != null) {
+                _loudnessAnimation = Tween<double>(
+                  begin: _animatedLoudness,
+                  end: 0,
+                ).animate(
+                  CurvedAnimation(
+                    parent: _animationController!,
+                    curve: Curves.easeOut,
+                  ),
+                )..addListener(() {
+                  setState(() {
+                    _animatedLoudness = _loudnessAnimation.value;
+                  });
                 });
-              });
-              _animationController!.forward(from: 0);
+                _animationController!.forward(from: 0);
+              }
 
-              if(_pitchDeviationController != null) {
+              if (_pitchDeviationController != null && _pitchDeviationController!.isAnimating) {
                 _pitchDeviationController!.stop();
+              }
+              if (_pitchDeviationController != null) {
                 _pitchDeviationAnimation = Tween<double>(
                   begin: _pitchDeviation.toDouble(),
                   end: 0,
@@ -652,6 +658,44 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
         _silenceTimer = null;
         await _pitchSubscription?.cancel();
         _pitchSubscription = null;
+
+        // Add this to animate loudness to zero
+        if (_animationController != null) {
+          _animationController!.stop();
+          _loudnessAnimation = Tween<double>(
+            begin: _animatedLoudness,
+            end: 0,
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController!,
+              curve: Curves.easeOut,
+            ),
+          )..addListener(() {
+            setState(() {
+              _animatedLoudness = _loudnessAnimation.value;
+            });
+          });
+          _animationController!.forward(from: 0);
+        }
+
+        // Add this to animate pitch deviation to zero
+        if (_pitchDeviationController != null) {
+          _pitchDeviationController!.stop();
+          _pitchDeviationAnimation = Tween<double>(
+            begin: _pitchDeviation.toDouble(),
+            end: 0,
+          ).animate(
+            CurvedAnimation(
+              parent: _pitchDeviationController!,
+              curve: Curves.easeOut,
+            ),
+          )..addListener(() {
+            setState(() {
+              _pitchDeviation = _pitchDeviationAnimation!.value.toInt();
+            });
+          });
+          _pitchDeviationController!.forward(from: 0);
+        }
 
         await _pitchDetector.stopDetection();
         setState(() {
