@@ -5,6 +5,7 @@ import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_pitch_detection/flutter_pitch_detection.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:jumping_dot/jumping_dot.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -98,7 +99,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _silenceTimer?.cancel();
       _silenceTimer = null;
     }
-      super.dispose();
+    super.dispose();
   }
 
   @override
@@ -243,25 +244,25 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
 
   Widget _soundWave(size, td) {
     return SizedBox(
-        height: size.height * 0.035,
-        width: size.width * 0.85,
-        child: _rec && _samples.isNotEmpty ?
-        Container(
-          decoration: BoxDecoration(
-              boxShadow: [UiUtils.widgetsShadow(1, 45, td)]),
-          child: CurvedPolygonWaveform(
-            strokeWidth: 0.6,
-            style: PaintingStyle.stroke,
-            activeColor: td.colorScheme.secondary,
-            inactiveColor: const Color(0xFF252428),
-            samples: _samples,
-            height: size.height * 0.035,
-            width: size.width * 0.85,
-            showActiveWaveform: true,
-            elapsedDuration: Durations.short1,
-            maxDuration: Durations.short1,
-          ),
-        ) : Container(),
+      height: size.height * 0.035,
+      width: size.width * 0.85,
+      child: _rec && _samples.isNotEmpty ?
+      Container(
+        decoration: BoxDecoration(
+            boxShadow: [UiUtils.widgetsShadow(1, 45, td)]),
+        child: CurvedPolygonWaveform(
+          strokeWidth: 0.6,
+          style: PaintingStyle.stroke,
+          activeColor: td.colorScheme.secondary,
+          inactiveColor: const Color(0xFF252428),
+          samples: _samples,
+          height: size.height * 0.035,
+          width: size.width * 0.85,
+          showActiveWaveform: true,
+          elapsedDuration: Durations.short1,
+          maxDuration: Durations.short1,
+        ),
+      ) : Container(),
     );
   }
 
@@ -326,11 +327,11 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     return Text(
       "$_selectedNote$_selectedOctave",
       style: fontStyle.copyWith(
-            color: _getAccuracyColor(_accuracy.toDouble(), td),
-            fontSize: size.width * 0.35,
-            fontWeight: FontWeight.w900,
-            shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy.toDouble(), td))],
-          ),
+        color: _getAccuracyColor(_accuracy.toDouble(), td),
+        fontSize: size.width * 0.35,
+        fontWeight: FontWeight.w900,
+        shadows: [UiUtils.widgetsShadowColor(80, 20, _getAccuracyColorReverse(_accuracy.toDouble(), td))],
+      ),
     );
   }
 
@@ -352,37 +353,37 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
 
   Widget _frequencyBar(Size size, td) {
     return _permissionStatus ?
-      Row(
-        spacing: size.width * 0.05,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            _rec ? "${_selectedFrequency.toStringAsFixed(2)}Hz" : "0.0Hz",
-            style: TextStyle(
-              color: td.colorScheme.onSurface,
-              fontSize: size.width * 0.038,
-              shadows: [UiUtils.widgetsShadow(80, 20, td)],
-            ),
+    Row(
+      spacing: size.width * 0.05,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          _rec ? "${_selectedFrequency.toStringAsFixed(2)}Hz" : "0.0Hz",
+          style: TextStyle(
+            color: td.colorScheme.onSurface,
+            fontSize: size.width * 0.038,
+            shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
-          Text(
-            _rec ? "$_accuracy%" : "0%",
-            style: TextStyle(
-              color: td.colorScheme.onSurface,
-              fontSize: size.width * 0.038,
-              shadows: [UiUtils.widgetsShadow(80, 20, td)],
-            ),
+        ),
+        Text(
+          _rec ? "$_accuracy%" : "0%",
+          style: TextStyle(
+            color: td.colorScheme.onSurface,
+            fontSize: size.width * 0.038,
+            shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
-          Text(
-            _rec ? "$_midiNote MIDI" : "0 MIDI",
-            style: TextStyle(
-              color: td.colorScheme.onSurface,
-              fontSize: size.width * 0.038,
-              shadows: [UiUtils.widgetsShadow(80, 20, td)],
-            ),
+        ),
+        Text(
+          _rec ? "$_midiNote MIDI" : "0 MIDI",
+          style: TextStyle(
+            color: td.colorScheme.onSurface,
+            fontSize: size.width * 0.038,
+            shadows: [UiUtils.widgetsShadow(80, 20, td)],
           ),
-        ],
-      ) : Container();
+        ),
+      ],
+    ) : Container();
   }
 
   Widget _startStopRecording(size, td) {
@@ -491,66 +492,75 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   Future<void> _startRecording() async {
-    WakelockPlus.enable();
-    _getPermissionStatus();
+    if (_rec) return;
 
-    if(!_rec && _permissionStatus) {
-      try {
-        await _pitchDetector.startDetection();
-        bool rec = await _pitchDetector.isRecording();
+    _permissionStatus = await _getPermissionStatus();
+    if (!_permissionStatus) {
+      //Fluttertoast.showToast(msg: Languages.permissionsWarning.getString(context));
+      return;
+    }
 
-        setState(() {
-          _rec = rec;
-        });
-        debugPrint("[START] Is Recording: $_rec");
-        _pitchDetector.setParameters(toleranceCents: _tolerance, bufferSize: _bufferSize, sampleRate: _sampleRate, minPrecision: _precision);
+    try {
+      WakelockPlus.enable();
+      await _pitchDetector.startDetection();
+      bool rec = await _pitchDetector.isRecording();
 
-        _pitchSubscription = _pitchDetector.onPitchDetected.listen((data) async {
-          final streamData = await _pitchDetector.getRawDataFromStream();
-          final int sampleRate = data['sampleRate'] ?? 0;
-          final String note = data['note'] ?? "";
-          final int octave = data['octave'] ?? "";
-          final int midiNote = data['midiNote'] ?? 0;
-          final double frequency = data['frequency'] ?? 0;
-          final int accuracy = data['accuracy'] ?? 0;
-          final double pitchDeviation = data['pitchDeviation'] ?? 0;
-          final bool isOnPitch = data['isOnPitch'] ?? false;
-          final double loudness = data['volume'] ?? 0;
-          //debugPrint("PITCH DEVIATION: $pitchDeviation");
+      setState(() {
+        _rec = rec;
+      });
+      debugPrint("[START] Is Recording: $_rec");
+      _pitchDetector.setParameters(toleranceCents: _tolerance,
+          bufferSize: _bufferSize,
+          sampleRate: _sampleRate,
+          minPrecision: _precision);
 
-          if(!_isResetOnSilence) {
-            _silenceTimer?.cancel();
-            if (frequency > _minFrequency && frequency < _maxFrequency) _setPitchValues(note, octave.toString(), midiNote, frequency, accuracy, pitchDeviation.toInt(), isOnPitch, loudness, sampleRate, streamData);
-            _silenceTimer = Timer(_silenceTimeout, () {
-              _handleLoudnessAnimation(0);
-              //_samples = List.filled(100, 0.0);
-            });
-            return;
+      _pitchSubscription = _pitchDetector.onPitchDetected.listen((data) async {
+        final streamData = await _pitchDetector.getRawDataFromStream();
+        final int sampleRate = data['sampleRate'] ?? 0;
+        final String note = data['note'] ?? "";
+        final int octave = data['octave'] ?? "";
+        final int midiNote = data['midiNote'] ?? 0;
+        final double frequency = data['frequency'] ?? 0;
+        final int accuracy = data['accuracy'] ?? 0;
+        final double pitchDeviation = data['pitchDeviation'] ?? 0;
+        final bool isOnPitch = data['isOnPitch'] ?? false;
+        final double loudness = data['volume'] ?? 0;
+        //debugPrint("PITCH DEVIATION: $pitchDeviation");
+
+        if (!_isResetOnSilence) {
+          _silenceTimer?.cancel();
+          if (frequency > _minFrequency && frequency < _maxFrequency) {
+            _setPitchValues(note, octave.toString(), midiNote, frequency, accuracy, pitchDeviation.toInt(), isOnPitch, loudness, sampleRate, streamData);
           }
 
-          if (_isResetOnSilence) {
-            _silenceTimer?.cancel();
+          _silenceTimer = Timer(_silenceTimeout, () {
+            _handleLoudnessAnimation(0);
+            //_samples = List.filled(100, 0.0);
+          });
+          return;
+        }
 
-            if (frequency > _minFrequency && frequency < _maxFrequency) {
-              _setPitchValues(note, octave.toString(), midiNote, frequency, accuracy, pitchDeviation.toInt(), isOnPitch, loudness, sampleRate, streamData);
+        if (_isResetOnSilence) {
+          _silenceTimer?.cancel();
 
+          if (frequency > _minFrequency && frequency < _maxFrequency) {
+            _setPitchValues(note, octave.toString(), midiNote, frequency, accuracy, pitchDeviation.toInt(), isOnPitch, loudness, sampleRate, streamData);
+
+            _silenceTimer = Timer(_silenceTimeout, () {
+              if (mounted) _resetPitchValues();
+            });
+          } else {
+            if (_silenceTimer == null || !_silenceTimer!.isActive) {
               _silenceTimer = Timer(_silenceTimeout, () {
                 if (mounted) _resetPitchValues();
               });
-            } else {
-              if (_silenceTimer == null || !_silenceTimer!.isActive) {
-                _silenceTimer = Timer(_silenceTimeout, () {
-                  if (mounted) _resetPitchValues();
-                });
-              }
             }
           }
-          //debugPrint("SELECTED PITCH DEVIATION: $_pitchDeviation");
-        });
-
-      } catch (e) {
-        debugPrint("Start Recording Error: $e");
-      }
+        }
+        //debugPrint("SELECTED PITCH DEVIATION: $_pitchDeviation");
+      });
+    } catch (e) {
+      debugPrint("Start Recording Error: $e");
     }
   }
 
@@ -624,16 +634,30 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     }
   }
 
-  Future<void> _getPermissionStatus() async {
-    PermissionStatus status = await Permission.microphone.status;
+  Future<bool> _getPermissionStatus() async {
+    if (_permissionStatus) return true;
 
+    final status = await Permission.microphone.status;
 
-    _permissionStatus = status.isGranted;
-    if(status.isPermanentlyDenied && !_settingOpened) {
-      openAppSettings();
-      _settingOpened = true;
+    if (status.isGranted) {
+      return true;
     }
 
+    if (status.isPermanentlyDenied) {
+      if (!_settingOpened) {
+        _settingOpened = true;
+        openAppSettings();
+      }
+      return false;
+    }
+
+    if (status.isDenied) {
+      final newStatus = await Permission.microphone.request();
+      final status = newStatus.isGranted;
+      return status;
+    }
+
+    return false;
   }
 
   //BUILD
@@ -650,7 +674,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           isHome: true,
           action1: _startStopRecording(size, td),
           action2:
-              _isLoading ? UiUtils.loadingStyle(td) : _instruments(size, td),
+          _isLoading ? UiUtils.loadingStyle(td) : _instruments(size, td),
           action3: _settings(size, td),
         ),
         body: Column(
