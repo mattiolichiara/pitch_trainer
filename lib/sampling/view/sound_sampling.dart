@@ -494,7 +494,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
     WakelockPlus.enable();
     _getPermissionStatus();
 
-    if(!_rec) {
+    if(!_rec && _permissionStatus) {
       try {
         await _pitchDetector.startDetection();
         bool rec = await _pitchDetector.isRecording();
