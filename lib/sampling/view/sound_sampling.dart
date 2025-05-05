@@ -516,7 +516,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
           final double pitchDeviation = data['pitchDeviation'] ?? 0;
           final bool isOnPitch = data['isOnPitch'] ?? false;
           final double loudness = data['volume'] ?? 0;
-          debugPrint("PITCH DEVIATION: $pitchDeviation");
+          //debugPrint("PITCH DEVIATION: $pitchDeviation");
 
           if(!_isResetOnSilence) {
             _silenceTimer?.cancel();
@@ -545,7 +545,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
               }
             }
           }
-          debugPrint("SELECTED PITCH DEVIATION: $_pitchDeviation");
+          //debugPrint("SELECTED PITCH DEVIATION: $_pitchDeviation");
         });
 
       } catch (e) {

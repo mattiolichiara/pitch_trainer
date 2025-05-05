@@ -121,17 +121,17 @@ class _OtherSettings extends State<OtherSettings> {
 
     await sp.setInt('theme', 0);
     themeCubit.changeTheme(AppThemeMode.purple);
-    debugPrint("Theme: ${sp.getInt('theme')}");
-
-    await sp.setInt('sampleRate', Constants.defaultSampleRate);
-    debugPrint("SampleRate: ${sp.getInt('sampleRate')}");
-
-    await sp.setInt('bufferSize', Constants.defaultBufferSize);
-    debugPrint("bufferSize: ${sp.getInt('bufferSize')}");
-
-    debugPrint("precision: ${sp.getInt('precision')}");
-    debugPrint("tolerance: ${sp.getInt('tolerance')}");
-    debugPrint("isRawWave: ${sp.getBool('isRawWave')}");
+    // debugPrint("Theme: ${sp.getInt('theme')}");
+    //
+    // await sp.setInt('sampleRate', Constants.defaultSampleRate);
+    // debugPrint("SampleRate: ${sp.getInt('sampleRate')}");
+    //
+    // await sp.setInt('bufferSize', Constants.defaultBufferSize);
+    // debugPrint("bufferSize: ${sp.getInt('bufferSize')}");
+    //
+    // debugPrint("precision: ${sp.getInt('precision')}");
+    // debugPrint("tolerance: ${sp.getInt('tolerance')}");
+    // debugPrint("isRawWave: ${sp.getBool('isRawWave')}");
 
     _triggerToast();
   }

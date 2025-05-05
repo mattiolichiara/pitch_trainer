@@ -94,7 +94,7 @@ class _ValueSliderState extends State<ValueSlider> {
         setState(() {
           _selectedValue = currentValue;
           _scrollToIndex(_selectedValue);
-          debugPrint("[NEW SELECTED INDEX]: $_selectedValue, [WIDGET SELECTED VALUE]: ${currentValue}, [OLD WIDGET SELECTED VALUE]: ${oldWidget.selectedValue}");
+          //debugPrint("[NEW SELECTED INDEX]: $_selectedValue, [WIDGET SELECTED VALUE]: ${currentValue}, [OLD WIDGET SELECTED VALUE]: ${oldWidget.selectedValue}");
         });
       }
     }

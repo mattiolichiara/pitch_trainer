@@ -365,7 +365,7 @@ class _SamplingType extends State<SamplingType> {
   void _onPressedCustomCard() {
     setState(() {
       _isExpanded = !_isExpanded;
-      debugPrint("expanded $_isExpanded");
+      //debugPrint("expanded $_isExpanded");
       if (_isExpanded == false) {
         setState(() {
           _frequenciesListMin = [];

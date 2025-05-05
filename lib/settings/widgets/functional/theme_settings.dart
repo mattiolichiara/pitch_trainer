@@ -100,7 +100,7 @@ class _ThemeSettings extends State<ThemeSettings> {
         onTap: () {
           setState(() {
             themeCubit.changeTheme(theme.key);
-            debugPrint("Theme: ${theme.key}");
+            //debugPrint("Theme: ${theme.key}");
           });
 
         },
