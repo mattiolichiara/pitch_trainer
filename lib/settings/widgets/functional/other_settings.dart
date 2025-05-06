@@ -11,6 +11,7 @@ import 'package:pitch_trainer/general/utils/warning_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../general/cubit/precision_cubit.dart';
+import '../../../general/cubit/reset_on_silence_cubit.dart';
 import '../../../general/cubit/sound_wave_cubit.dart';
 import '../../../general/cubit/theme_cubit.dart';
 import '../../../general/widgets/ui_utils.dart';
@@ -100,9 +101,8 @@ class _OtherSettings extends State<OtherSettings> {
   }
 
   void _setGeneralSettingsState() async {
-    if(context.read<ToleranceCubit>().state != Constants.defaultTolerance) {
       BlocProvider.of<SoundWaveCubit>(context).toggleWaveType(true);
-    }
+      BlocProvider.of<ResetOnSilenceCubit>(context).toggleSilenceReset(true);
   }
 
   void _onPressedResetSettings() async {
@@ -131,7 +131,7 @@ class _OtherSettings extends State<OtherSettings> {
     //
     // debugPrint("precision: ${sp.getInt('precision')}");
     // debugPrint("tolerance: ${sp.getInt('tolerance')}");
-    // debugPrint("isRawWave: ${sp.getBool('isRawWave')}");
+    // debugPrint("isCleanWave: ${sp.getBool('isCleanWave')}");
 
     _triggerToast();
   }

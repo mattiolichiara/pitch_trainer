@@ -47,7 +47,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   late double _tolerance;
   late double _precision;
   late int _bufferSize;
-  late bool _isRawWave;
+  late bool _isCleanWave;
   late bool _isResetOnSilence;
   bool _isOnPitch = false;
   bool _rec = false;
@@ -424,7 +424,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _isOnPitch = isOnPitch;
       _pitchDeviation = pitchDeviation;
       _loudness = loudness;
-      _samples = _isRawWave ? data : Utils.updateSamples(frequency, sampleRate);
+      _samples = _isCleanWave ? Utils.updateSamples(frequency, sampleRate) : data;
     });
 
     _handleLoudnessAnimation(loudness);
@@ -486,7 +486,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _bufferSize = prefs.getInt('bufferSize') ?? Constants.defaultBufferSize;
       _precision = (prefs.getInt('precision') ?? Constants.defaultPrecision)/100;
       _tolerance = (prefs.getInt('tolerance') ?? Constants.defaultTolerance)/100;
-      _isRawWave = prefs.getBool('isRawWave') ?? true;
+      _isCleanWave = prefs.getBool('isCleanWave') ?? true;
       _isResetOnSilence = prefs.getBool('isResetOnSilence') ?? true;
     });
   }

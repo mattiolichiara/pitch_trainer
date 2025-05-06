@@ -57,9 +57,9 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _waveTypeText(polishedText, td),
-            _switchWave(size, td),
             _waveTypeText(rawText, td),
+            _switchWave(size, td),
+            _waveTypeText(polishedText, td),
           ],
         ),
       ),
@@ -85,12 +85,12 @@ class _SoundWaveSettings extends State<SoundWaveSettings> {
   //WIDGETS
   Widget _switchWave(Size size, ThemeData td) {
     return BlocBuilder<SoundWaveCubit, bool>(
-      builder: (context, isRawWave) {
+      builder: (context, isCleanWave) {
         return SizedBox(
           height: size.height*0.04,
           width: size.width*0.4,
           child: Switch(
-            value: isRawWave,
+            value: isCleanWave,
             onChanged: (value) {
               context.read<SoundWaveCubit>().toggleWaveType(value);
             },

@@ -8,12 +8,12 @@ class SoundWaveCubit extends Cubit<bool> {
 
   Future<void> _loadInitialState() async {
     final prefs = await SharedPreferences.getInstance();
-    emit(prefs.getBool('isRawWave') ?? true);
+    emit(prefs.getBool('isCleanWave') ?? true);
   }
 
-  Future<void> toggleWaveType(bool isRawWave) async {
+  Future<void> toggleWaveType(bool isCleanWave) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isRawWave', isRawWave);
-    emit(isRawWave);
+    await prefs.setBool('isCleanWave', isCleanWave);
+    emit(isCleanWave);
   }
 }
