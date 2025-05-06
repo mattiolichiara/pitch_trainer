@@ -565,7 +565,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   void _handleLoudnessAnimation(double loudness) {
-    _animationController!.stop();
+    _animationController?.stop();
 
     _loudnessAnimation = Tween<double>(
         begin: _animatedLoudness,
@@ -584,7 +584,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   }
 
   void _handlePitchDeviationAnimation(double pitchDeviation) {
-    _pitchDeviationController!.stop();
+    _pitchDeviationController?.stop();
 
     final clampedDeviation = pitchDeviation.clamp(-50.0, 50.0);
 
