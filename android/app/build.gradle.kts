@@ -15,7 +15,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.pitch_trainer"
+    namespace = "com.mattiolichiara.pitch_trainer"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"//flutter.ndkVersion
 
@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.pitch_trainer"
+        applicationId = "com.mattiolichiara.pitch_trainer"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24//flutter.minSdkVersion
