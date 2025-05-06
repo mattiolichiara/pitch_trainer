@@ -1,17 +1,17 @@
 import java.util.Properties
 import java.io.FileInputStream
 
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-}
-
-val keystorePropertiesFile = rootProject.file("key.properties")
-val keystoreProperties = Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -50,13 +50,6 @@ android {
         }
     }
 
-/*    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-        }
-    }*/
     buildTypes {
         release {
             signingConfig = if (keystorePropertiesFile.exists()) {
@@ -64,27 +57,18 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
-            matchingFallbacks += listOf("release")
-
             isMinifyEnabled = true
             isShrinkResources = true
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
-            ndk {
-//                abiFilters.add("armeabi-v7a")
-                abiFilters.add("arm64-v8a")
-            }
         }
     }
+
 }
 
 flutter {
     source = "../.."
-}
-
-dependencies {
-    implementation("com.google.android.play:core-ktx:1.8.1")
 }
