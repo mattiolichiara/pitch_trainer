@@ -2,7 +2,7 @@
 -keep class io.flutter.plugin.** { *; }
 -keep class io.flutter.** { *; }
 
--keep class com.example.pitch_trainer.** { *; }
+-keep class com.mattiolichiara.pitch_trainer.** { *; }
 
 -keep class com.mattiolichiara.flutter_pitch_detection.** { *; }
 -keep class be.tarsos.dsp.** { *; }
