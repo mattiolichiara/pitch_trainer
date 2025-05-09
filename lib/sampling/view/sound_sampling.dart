@@ -511,6 +511,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
 
       setState(() {
         _rec = rec;
+        _samples = List.filled(100, 0.0);
       });
       debugPrint("[START] Is Recording: $_rec");
       _pitchDetector.setParameters(toleranceCents: _tolerance,
