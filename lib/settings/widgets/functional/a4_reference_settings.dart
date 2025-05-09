@@ -31,7 +31,7 @@ class _A4ReferenceSettings extends State<A4ReferenceSettings> {
   }
 
   Widget _a4ReferenceSlider(Size size, ThemeData td) {
-    int min = 432;
+    int min = 415;
 
     return BlocBuilder<A4ReferenceCubit, double>(
         builder: (context, a4Reference) {
