@@ -25,7 +25,7 @@ class _ResetOnSilenceSettings extends State<ResetOnSlienceSettings> {
   //STYLE
   Widget _resetOnSilenceTitle(size, td) {
     return SizedBox(
-      width: size.width*0.8,
+      width: size.width*0.4,
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
@@ -48,35 +48,35 @@ class _ResetOnSilenceSettings extends State<ResetOnSlienceSettings> {
     );
   }
 
-  Widget _switchResetOnSilenceWrapper(String dynamicText, ThemeData td, String staticText, Size size) {
-    return SizedBox(
-      width: size.width,
-      child: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _resetOnSilenceTypeText(staticText, td),
-            _switchResetOnSilence(size, td),
-            _resetOnSilenceTypeText(dynamicText, td),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _switchResetOnSilenceWrapper(String dynamicText, ThemeData td, String staticText, Size size) {
+  //   return SizedBox(
+  //     width: size.width,
+  //     child: Center(
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         crossAxisAlignment: CrossAxisAlignment.center,
+  //         children: [
+  //           _resetOnSilenceTypeText(staticText, td),
+  //           _switchResetOnSilence(size, td),
+  //           _resetOnSilenceTypeText(dynamicText, td),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _resetOnSilenceSection(size, td) {
     return Center(
       child: SizedBox(
-        width: size.width*0.9,
-        child: Column(
+        width: size.width*0.8,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: size.height*0.04,),
             _resetOnSilenceTitle(size, td),
-            SizedBox(height: size.height*0.03,),
-            _switchResetOnSilenceWrapper(Languages.dynamicSilence.getString(context), td, Languages.staticSilence.getString(context), size),
+            _switchResetOnSilence(size, td),
           ],
-        ),
+        )
       ),
     );
   }
@@ -112,6 +112,7 @@ class _ResetOnSilenceSettings extends State<ResetOnSlienceSettings> {
 
     return Column(
       children: [
+        SizedBox(height: size.height * 0.03),
         _resetOnSilenceSection(size, td),
         SizedBox(height: size.height * 0.03),
       ],

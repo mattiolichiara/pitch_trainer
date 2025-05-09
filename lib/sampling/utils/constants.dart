@@ -7,4 +7,5 @@ class Constants {
   static const defaultMinFrequency = 27.50;
   static const defaultMaxFrequency = 4186.01;
   static const defaultIsNotCustom = true;
+  static const defaultA4Reference = 440.0;
   }

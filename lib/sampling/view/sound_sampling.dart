@@ -62,6 +62,8 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
   final Duration _silenceTimeout = Duration(milliseconds: 500);
   AnimationController? _pitchDeviationController;
   Animation<double>? _pitchDeviationAnimation;
+  double _a4Reference = 440.0;
+  bool _showWave = true;
 
   @override
   void initState() {
@@ -197,7 +199,7 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
               _noteSection(size, td),
               _pitchDeviationSection(size, td),
               _frequencyBar(size, td),
-              _soundWave(size, td),
+              _showWave ? _soundWave(size, td) : Container(),
             ],
           ),
         ),
@@ -486,7 +488,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _bufferSize = prefs.getInt('bufferSize') ?? Constants.defaultBufferSize;
       _precision = (prefs.getInt('precision') ?? Constants.defaultPrecision)/100;
       _tolerance = (prefs.getInt('tolerance') ?? Constants.defaultTolerance)/100;
+      _a4Reference = prefs.getDouble('a4Reference') ?? Constants.defaultA4Reference;
       _isCleanWave = prefs.getBool('isCleanWave') ?? true;
+      _showWave = prefs.getBool('showWave') ?? true;
       _isResetOnSilence = prefs.getBool('isResetOnSilence') ?? true;
     });
   }
@@ -512,7 +516,9 @@ class _SoundSampling extends State<SoundSampling> with WidgetsBindingObserver, T
       _pitchDetector.setParameters(toleranceCents: _tolerance,
           bufferSize: _bufferSize,
           sampleRate: _sampleRate,
-          minPrecision: _precision);
+          minPrecision: _precision,
+          a4Reference: _a4Reference);
+      debugPrint("A4 REFERENCE: $_a4Reference");
 
       _pitchSubscription = _pitchDetector.onPitchDetected.listen((data) async {
         final streamData = await _pitchDetector.getRawDataFromStream();

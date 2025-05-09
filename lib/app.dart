@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:pitch_trainer/general/cubit/a4_reference_cubit.dart';
 import 'package:pitch_trainer/general/cubit/reset_cubit.dart';
 import 'package:pitch_trainer/general/cubit/reset_on_silence_cubit.dart';
 import 'package:pitch_trainer/general/cubit/tolerance_cubit.dart';
 
 import 'general/cubit/precision_cubit.dart';
+import 'general/cubit/show_sound_wave_cubit.dart';
 import 'general/cubit/sound_wave_cubit.dart';
 import 'general/cubit/theme_cubit.dart';
 import 'sampling/view/sound_sampling.dart';
@@ -38,10 +40,12 @@ class _MyAppState extends State<MyApp> {
       providers: [
         BlocProvider.value(value: widget.themeCubit),
         BlocProvider(create: (context) => SoundWaveCubit()),
+        BlocProvider(create: (context) => ShowSoundWaveCubit()),
         BlocProvider(create: (context) => PrecisionCubit()),
         BlocProvider(create: (context) => ToleranceCubit()),
         BlocProvider(create: (context) => ResetCubit()),
         BlocProvider(create: (context) => ResetOnSilenceCubit()),
+        BlocProvider(create: (context) => A4ReferenceCubit()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeData>(
         builder: (context, theme) {

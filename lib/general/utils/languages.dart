@@ -37,6 +37,10 @@ mixin Languages {
   static const String resetOnSilence = "resetOnSilence";
   static const String dynamicSilence = "dynamic";
   static const String staticSilence = "static";
+  static const String a4Reference = "a4Reference";
+  static const String hiddenWave = "hiddenWave";
+  static const String displayWave = "displayWave";
+  static const String soundWave = "soundWave";
 
   static const Map<String, dynamic> EN = {
     selectTheme: "Themes",
@@ -75,6 +79,10 @@ mixin Languages {
     resetOnSilence: "Reset On Silence",
     dynamicSilence: "Dynamic",
     staticSilence: "Static",
+    a4Reference: "A4 Reference",
+    displayWave: "Displayed",
+    hiddenWave: "Hidden",
+    soundWave: "Sound Wave",
   };
 
   static const Map<String, dynamic> IT = {
@@ -114,5 +122,9 @@ mixin Languages {
     resetOnSilence: "Azzera al silenzio",
     dynamicSilence: "Dinamico",
     staticSilence: "Statico",
+    a4Reference: "Frequenza di Riferimento A4",
+    displayWave: "Visibile",
+    hiddenWave: "Nascosta",
+    soundWave: "Onda Sonora",
   };
 }
