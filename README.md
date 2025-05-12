@@ -2,30 +2,67 @@
 
 Pitch Detector - Mobile Application
 
-## THE PROJECT<br/>
+## OVERVIEW<br/>
+Pitch Trainer is a real-time pitch detection app that helps musicians and audio enthusiasts accurately tune their instruments. It provides detailed feedback on pitch, frequency, MIDI note, and more, with customizable settings for optimal performance.
 
 ## HOME PAGE
-On the main view, the microphone is activated as soon as usage permissions are given, notes, frequencies and pitch accuracy are displayed dynamically.<br/><br/>
-<img src="https://github.com/user-attachments/assets/4e34c23e-f6df-46fd-bf3a-0b8207497f63" width="200"><br/>
+- **Note & Octave**: Displays the detected musical note (e.g., A4, C#5).
 
-If you need to mute the microphone and stop the pitch detection you can easily click on the microphone icon on the AppBar to deactivate the mic.<br/><br/>
-<img src="https://github.com/user-attachments/assets/540cc614-7327-4f0b-b7df-bd9d6d4b41a9" width="200"><br/>
+- **Pitch Deviation Bar**: Visual indicator showing how far the pitch is from the target.
 
-## OPTIONS
-In the range selection view, you can choose a predefined range of frequencies to be detected, based on popular instruments.<br/>
-This way you can avoid annoying and unwanted frequencies to be detected.<br/><br/>
+- **Frequency**: The detected frequency in Hz (e.g., 440.0 Hz).
 
-<img src="https://github.com/user-attachments/assets/bdf39eb6-76f3-402b-b62a-294534a304f8" width="200"><br/>
+- **Accuracy Percentage**: Shows tuning accuracy from 0% to 100%.
 
-If you're using a peculiar instrument or you want to check your singing, you can add a custom range of frequencies or your vocal range.<br/><br/>
+- **MIDI Note**: The corresponding MIDI note number.
 
-<img src="https://github.com/user-attachments/assets/23578cad-cd0c-4221-a4a2-90ea06c63416" width="200"><br/>
+- **Volume Bar**: Dynamic indicator of input volume.
 
-## SETTINGS
-Inside the settings page, the app theme color can be changed to your preference<br/><br/>
-<img src="https://github.com/user-attachments/assets/77338f8a-9363-4a6d-ae3a-ebfe5d18d90e" width="200">
-<img src="https://github.com/user-attachments/assets/8f13bbdf-ca56-437d-b3d0-7172dc522770" width="200"><br/>
+- **Sound Wave Visualization**: Real-time waveform display (can be toggled).
+
+- **Dynamic Note Color**: Changes based on tuning accuracy (e.g., red for far off, green for in-tune).
+
+- **Microphone Mute**: Ability to disable microphone input.<br/></br>
+
+<img src="https://github.com/user-attachments/assets/fcc854ae-5187-4d90-a520-0280d8405825" width="200"><br/>
+<img src="https://github.com/user-attachments/assets/5088112d-4dff-43c5-ab57-8795e860dda9" width="200"><br/>
+
+## INSTRUMENT PRESETS
+- **Instrument Presets**: Predefined frequency detection ranges for common instruments (e.g., Guitar, Violin, Bass).
+
+- **Custom Frequency Range**: Adjustable via scroll wheel for non-standard instruments.<br/><br/>
+
+
+
+## GENERAL SETTINGS
+
+- **Language**: English or Italian.
+
+- **Color Themes**: 7 different UI color schemes.
+
+- **Screen Always On**: Prevents screen dimming/locking during use.
+
+- **Reset on Silence**: Toggle whether detected values reset when no sound is detected.
+
+- **Toggle Sound Wave Visibility**: (On/Off).
+
+- **Waveform Type**: Choose between Raw or Polished waveform rendering.
+
+- **Reset All Settings**: Restores default configurations.<br>
+
+## TUNING & PRECISION
+
+- **Reference Pitch (A4)**: Adjustable standard (default: 440 Hz).
+
+- **Detection Tolerance**: Fine-tune sensitivity for pitch recognition.
+
+- **Precision Settings**: Control how strictly pitch accuracy is calculated.<br>
+
+## ADVANCED SETTIGS
+
+- **Sample Range**: Modify the audio sample size for detection.
+
+- **Buffer Size**: Adjust processing buffer for performance optimization.<br>
 
 ## DETAILS
-- Audio and frequency processing are done with FFT <br/>
-- Audio processing is done by using the package: [record: ^5.2.1](https://pub.dev/packages/record)<br/>
+- Audio processing is done by using my flutter plugin, which integrates the Tarsos DSP Library: [flutter_pitch_detection: ^1.3.1](https://pub.dev/packages/flutter_pitch_detection)<br/>
