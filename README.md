@@ -1,6 +1,6 @@
-# pitch_trainer
+# PITCH TRAINER
 
-Pitch Detector - Mobile Application
+Pitch Trainer - Mobile Application
 
 ## OVERVIEW<br/>
 Pitch Trainer is a real-time pitch detection app that helps musicians and audio enthusiasts accurately tune their instruments. It provides detailed feedback on pitch, frequency, MIDI note, and more, with customizable settings for optimal performance.
