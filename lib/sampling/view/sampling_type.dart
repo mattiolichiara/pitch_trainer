@@ -400,7 +400,7 @@ class _SamplingType extends State<SamplingType> {
       },
       child: Scaffold(
         appBar: HomeAppBar(
-          title: /*Pitch Trainer - */'${Languages.options.getString(context)}',
+          title: /*Pitch Trainer - */'${Languages.instrumentPresets.getString(context)}',
           action1: Container(),
           action2: Container(),
           action3: Container(),

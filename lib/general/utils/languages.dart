@@ -4,7 +4,7 @@ mixin Languages {
   static const String selectTheme = "selectTheme";
   static const String languages = "languages";
   static const String samplingTypeSubtitle = "samplingTypeSubtitle";
-  static const String options = "options";
+  static const String instrumentPresets = "instrumentPresets";
   static const String permissionsWarning = "permissionsWarning";
   static const String piano = "piano";
   static const String guitar = "guitar";
@@ -46,7 +46,7 @@ mixin Languages {
     selectTheme: "Themes",
     languages: "Language",
     samplingTypeSubtitle: "To avoid for unwanted frequencies to be detected, select an instrument and if needed, add a custom frequency range.",
-    options: "Options",
+    instrumentPresets: "Instrument Presets",
     permissionsWarning: "Allow Microphone Access To Use The App",
     piano : "Piano - 88 Keys",
     guitar : "Guitar - 6 Strings",
@@ -89,7 +89,7 @@ mixin Languages {
     selectTheme: "Temi",
     languages: "Lingua",
     samplingTypeSubtitle: "Per evitare che vengano rilevate frequenze indesiderate, puo' essere selezionato uno strumento, se necessario puo' essere aggiunto un range di frequenze personalizzato.",
-    options: "Opzioni",
+    instrumentPresets: "Preset Strumento",
     permissionsWarning: "Attivare i Permessi del Microfono",
     piano : "Pianoforte - 88 Tasti",
     guitar : "Chitarra - 6 Corde",
