@@ -22,7 +22,7 @@ Pitch Trainer is a real-time pitch detection app that helps musicians and audio 
 
 - **Dynamic Note Color**: Changes based on tuning accuracy (e.g., red for far off, green for in-tune).
 
-- **Microphone Mute**: Ability to disable microphone input.<br/><br>
+- **Microphone Mute**: Ability to disable microphone input.<br><br>
 
 <img src="https://github.com/user-attachments/assets/fcc854ae-5187-4d90-a520-0280d8405825" width="200">
 <img src="https://github.com/user-attachments/assets/5088112d-4dff-43c5-ab57-8795e860dda9" width="200">
