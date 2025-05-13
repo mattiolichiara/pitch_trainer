@@ -24,15 +24,16 @@ Pitch Trainer is a real-time pitch detection app that helps musicians and audio 
 
 - **Microphone Mute**: Ability to disable microphone input.<br/></br>
 
-<img src="https://github.com/user-attachments/assets/fcc854ae-5187-4d90-a520-0280d8405825" width="200"><br/>
-<img src="https://github.com/user-attachments/assets/5088112d-4dff-43c5-ab57-8795e860dda9" width="200"><br/>
+<img src="https://github.com/user-attachments/assets/fcc854ae-5187-4d90-a520-0280d8405825" width="200">
+<img src="https://github.com/user-attachments/assets/5088112d-4dff-43c5-ab57-8795e860dda9" width="200">
+<img src="https://github.com/user-attachments/assets/060a22ee-1b0c-4710-8bb1-153623336f1e" width="200"><br/>
 
 ## INSTRUMENT PRESETS
 - **Instrument Presets**: Predefined frequency detection ranges for common instruments (e.g., Guitar, Violin, Bass).
-
 - **Custom Frequency Range**: Adjustable via scroll wheel for non-standard instruments.<br/><br/>
 
-
+<img src="https://github.com/user-attachments/assets/4347c05f-ccdb-460a-bc10-fc3419fc0967" width="200">
+<img src="https://github.com/user-attachments/assets/ed2faf54-a601-4595-b959-cf939679b950" width="200"><br>
 
 ## GENERAL SETTINGS
 
@@ -48,7 +49,10 @@ Pitch Trainer is a real-time pitch detection app that helps musicians and audio 
 
 - **Waveform Type**: Choose between Raw or Polished waveform rendering.
 
-- **Reset All Settings**: Restores default configurations.<br>
+- **Reset All Settings**: Restores default configurations.<br><br>
+
+<img src="https://github.com/user-attachments/assets/c5b7a286-7a89-4e11-9781-c9b34bff0f5b" width="200">
+<img src="https://github.com/user-attachments/assets/b42fa773-5934-478d-9915-e87b99e81f94" width="200"><br>
 
 ## TUNING & PRECISION
 
@@ -62,7 +66,9 @@ Pitch Trainer is a real-time pitch detection app that helps musicians and audio 
 
 - **Sample Range**: Modify the audio sample size for detection.
 
-- **Buffer Size**: Adjust processing buffer for performance optimization.<br>
+- **Buffer Size**: Adjust processing buffer for performance optimization.<br><br>
+
+<img src="https://github.com/user-attachments/assets/43760bd1-efdd-486a-9001-adc3594a0399" width="200"><br>
 
 ## DETAILS
-- Audio processing is done by using my flutter plugin, which integrates the Tarsos DSP Library: [flutter_pitch_detection: ^1.3.1](https://pub.dev/packages/flutter_pitch_detection)<br/>
+- Audio processing via [flutter_pitch_detection: ^1.3.1](https://pub.dev/packages/flutter_pitch_detection) (integrates TarsosDSP).<br/>
