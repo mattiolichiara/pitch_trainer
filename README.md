@@ -24,7 +24,7 @@ Pitch Trainer is a real-time pitch detection app that helps musicians and audio 
 
 - **Microphone Mute**: Ability to disable microphone input.<br><br>
 
-![Demonstration](MEDIA/gif.gif)
+<img src="MEDIA/gif.gif" width="200">
 <img src="https://github.com/user-attachments/assets/fcc854ae-5187-4d90-a520-0280d8405825" width="200">
 <img src="https://github.com/user-attachments/assets/5088112d-4dff-43c5-ab57-8795e860dda9" width="200">
 <img src="https://github.com/user-attachments/assets/060a22ee-1b0c-4710-8bb1-153623336f1e" width="200"><br/>
